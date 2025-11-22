@@ -1,0 +1,78 @@
+/* ToothZones Component Styles */
+
+.zones {
+    order: -1;
+    width: 40vh;
+    min-width: 304px;
+    max-width: 40%;
+    padding: 16px;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(5, 1fr) repeat(2, 1.5fr);
+    grid-template-areas:
+        "cervical1 cervical1 cervical1 cervical1 cervical1 cervical1"
+        ". . direction1 direction1 . ."
+        "direction2 direction2 direction3 direction3 direction4 direction4"
+        ". . direction5 direction5 . ."
+        "cervical2 cervical2 cervical2 cervical2 cervical2 cervical2"
+        "cusp1 cusp1 cusp1 cusp2 cusp2 cusp2"
+        "cusp3 cusp3 cusp3 cusp4 cusp4 cusp4";
+    box-shadow: 3px 0 6px 0 rgba(0, 0, 0, .08);
+}
+
+.zones-list {
+    display: contents;
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.zone-pad {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f8f9fa;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+    font-weight: 500;
+    color: #7a8599;
+    text-align: center;
+    user-select: none;
+}
+
+.zone-pad:hover {
+    background: #e5e7eb;
+    border-color: #3b82f6;
+}
+
+.zone-pad.selected {
+    background: #3b82f6;
+    border-color: #2563eb;
+    color: white;
+}
+
+.zone-pad.inactive {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.zone-pad.inactive:hover {
+    background: #f8f9fa;
+    border-color: #e5e7eb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .zones {
+        width: 100%;
+        max-width: 100%;
+        min-width: unset;
+    }
+}

@@ -68,6 +68,130 @@ export const ActionType = Object.freeze({
     DONE: 'Done'
 });
 
+// Pathology Options Configuration
+export const PathologyOptions = Object.freeze({
+    DECAY: {
+        id: 'decay',
+        label: 'Decay',
+        steps: [
+            {
+                id: 'material',
+                label: 'Material',
+                options: [
+                    { id: 'dentin', label: 'Dentin', value: 'dentin' },
+                    { id: 'enamel', label: 'Enamel', value: 'enamel' }
+                ]
+            },
+            {
+                id: 'cavitation',
+                label: 'Cavitation',
+                options: [
+                    { id: 'cavitation', label: 'Cavitation', value: 'cavitation' },
+                    { id: 'no-cavitation', label: 'No Cavitation', value: 'no-cavitation' }
+                ]
+            },
+            {
+                id: 'level',
+                label: 'Level',
+                options: [
+                    { id: 'c1', label: 'C1', value: 'C1' },
+                    { id: 'c2', label: 'C2', value: 'C2' },
+                    { id: 'c3', label: 'C3', value: 'C3' },
+                    { id: 'c4', label: 'C4', value: 'C4' }
+                ]
+            }
+        ]
+    },
+    FRACTURE: {
+        id: 'fracture',
+        label: 'Fracture',
+        steps: [
+            {
+                id: 'location',
+                label: 'Location',
+                options: [
+                    { id: 'crown', label: 'Crown', value: 'crown' },
+                    { id: 'root', label: 'Root', value: 'root' }
+                ]
+            },
+            {
+                id: 'direction',
+                label: 'Direction',
+                dependsOn: 'root', // Only show if 'root' is selected in previous step
+                options: [
+                    { id: 'vertical', label: 'Vertical', value: 'vertical' },
+                    { id: 'horizontal', label: 'Horizontal', value: 'horizontal' }
+                ]
+            }
+        ]
+    },
+    TOOTH_WEAR: {
+        id: 'tooth-wear',
+        label: 'Tooth Wear',
+        steps: [
+            {
+                id: 'type',
+                label: 'Type',
+                options: [
+                    { id: 'abrasion', label: 'Abrasion', value: 'abrasion' },
+                    { id: 'erosion', label: 'Erosion', value: 'erosion' }
+                ]
+            },
+            {
+                id: 'surface',
+                label: 'Surface',
+                options: [
+                    { id: 'buccal', label: 'Buccal', value: 'buccal' },
+                    { id: 'lingual', label: 'Lingual', value: 'lingual' }
+                ]
+            }
+        ]
+    },
+    DISCOLORATION: {
+        id: 'discoloration',
+        label: 'Discoloration',
+        steps: [
+            {
+                id: 'color',
+                label: 'Color',
+                options: [
+                    { id: 'gray', label: 'Gray', value: 'gray' },
+                    { id: 'red', label: 'Red', value: 'red' },
+                    { id: 'yellow', label: 'Yellow', value: 'yellow' }
+                ]
+            }
+        ]
+    },
+    APICAL: {
+        id: 'apical',
+        label: 'Apical',
+        steps: [
+            {
+                id: 'present',
+                label: 'Apical Pathology',
+                options: [
+                    { id: 'yes', label: 'Yes', value: true },
+                    { id: 'no', label: 'No', value: false }
+                ]
+            }
+        ]
+    },
+    DEVELOPMENT_DISORDER: {
+        id: 'development-disorder',
+        label: 'Development Disorder',
+        steps: [
+            {
+                id: 'present',
+                label: 'Development Disorder',
+                options: [
+                    { id: 'yes', label: 'Yes', value: true },
+                    { id: 'no', label: 'No', value: false }
+                ]
+            }
+        ]
+    }
+});
+
 // --- Classes ---
 
 export class Patient {

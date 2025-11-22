@@ -254,3 +254,15 @@
     font-weight: 600;
     /* font-semibold */
 }
+
+.perio-card.has-data {
+    background-color: #dbeafe;
+    /* bg-blue-100 */
+    border-color: #3b82f6;
+    /* border-blue-500 */
+}
+
+.perio-card.has-data .perio-label {
+    color: #1e40af;
+    /* text-blue-800 */
+}

@@ -1,12 +1,56 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { ChevronLeft, PlusCircle, RefreshCw, XCircle, Snowflake, Gavel, Hand, Flame, Zap } from 'lucide-react';
 import useChartStore from '../../store/chartStore';
+import ConfirmationModal from '../UI/ConfirmationModal';
 import './ToothOverview.css';
 
 const ToothOverview = () => {
     const { tooth } = useOutletContext();
     const navigate = useNavigate();
+    const updateTooth = useChartStore(state => state.updateTooth);
+
+    const [modalState, setModalState] = useState({
+        isOpen: false,
+        action: null,
+        title: '',
+        message: ''
+    });
+
+    const handleResetClick = () => {
+        setModalState({
+            isOpen: true,
+            action: 'reset',
+            title: 'Reset Tooth',
+            message: `Are you sure you want to reset all data for tooth ${tooth.isoNumber}? This action cannot be undone.`
+        });
+    };
+
+    const handleMissingClick = () => {
+        setModalState({
+            isOpen: true,
+            action: 'missing',
+            title: 'Mark Tooth as Missing',
+            message: `Are you sure you want to mark tooth ${tooth.isoNumber} as missing?`
+        });
+    };
+
+    const handleConfirm = () => {
+        if (modalState.action === 'reset') {
+            // Reset the tooth
+            tooth.reset();
+            updateTooth(tooth.isoNumber, { ...tooth });
+        } else if (modalState.action === 'missing') {
+            // Mark tooth as missing
+            updateTooth(tooth.isoNumber, { isMissing: true });
+        }
+
+        setModalState({ isOpen: false, action: null, title: '', message: '' });
+    };
+
+    const handleCancel = () => {
+        setModalState({ isOpen: false, action: null, title: '', message: '' });
+    };
 
     const getIcon = (test) => {
         switch (test) {
@@ -28,13 +72,13 @@ const ToothOverview = () => {
                         <h1 className="page-title">Dental</h1>
                     </div>
                     <div className="header-actions">
-                        <button className="action-btn">
+                        <button className="action-btn" onClick={handleResetClick}>
                             <RefreshCw size={16} /> RESET
                         </button>
-                        <button className="action-btn">
+                        <button className="action-btn" onClick={handleMissingClick}>
                             <XCircle size={16} /> MISSING
                         </button>
-                        <button className="action-btn">
+                        <button className="action-btn" onClick={() => navigate('pathology')}>
                             <PlusCircle size={16} /> PATHOLOGY
                         </button>
                         <button className="action-btn">
@@ -102,7 +146,16 @@ const ToothOverview = () => {
                         ))}
                     </div>
                 </div>
+
             </div>
+
+            <ConfirmationModal
+                isOpen={modalState.isOpen}
+                onClose={handleCancel}
+                onConfirm={handleConfirm}
+                title={modalState.title}
+                message={modalState.message}
+            />
         </div>
     );
 };
