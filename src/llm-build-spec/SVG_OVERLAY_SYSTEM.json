@@ -1,0 +1,359 @@
+{
+  "feature": "SVG Overlay System for Tooth Surface Coloring",
+  "description": "System pentru colorarea suprafețelor dinților folosind SVG paths peste imagini PNG",
+  "approach": "Hybrid PNG + SVG",
+  "advantages": [
+    "Imagini PNG realiste pentru anatomia dintelui",
+    "SVG paths pentru control precis al suprafețelor",
+    "Culori dinamice aplicate prin CSS/JS",
+    "Performanță excelentă",
+    "Flexibilitate maximă"
+  ],
+  "architecture": {
+    "layers": [
+      {
+        "layer": 1,
+        "name": "Base PNG Image",
+        "content": "Tooth anatomy (iso{number}-{view}.png)",
+        "zIndex": 1
+      },
+      {
+        "layer": 2,
+        "name": "SVG Surface Overlay",
+        "content": "SVG paths defining tooth surfaces",
+        "zIndex": 2
+      },
+      {
+        "layer": 3,
+        "name": "SVG Colored Regions",
+        "content": "Filled SVG paths with colors for restorations/pathology",
+        "zIndex": 3,
+        "opacity": "0.6-0.8"
+      }
+    ]
+  },
+  "implementation": {
+    "containerStructure": {
+      "html": "<div class='tooth-container'>\n  <img src='iso24-frontal.png' class='tooth-base' />\n  <svg class='tooth-overlay' viewBox='0 0 100 150'>\n    <path d='M...' data-surface='O' class='surface-occlusal' />\n    <path d='M...' data-surface='B' class='surface-buccal' />\n    <path d='M...' data-surface='M' class='surface-mesial' />\n    <path d='M...' data-surface='D' class='surface-distal' />\n    <path d='M...' data-surface='L' class='surface-lingual' />\n  </svg>\n</div>",
+      "positioning": {
+        "container": "position: relative",
+        "image": "position: absolute, top: 0, left: 0",
+        "svg": "position: absolute, top: 0, left: 0, width: 100%, height: 100%"
+      }
+    },
+    "svgPaths": {
+      "description": "SVG paths pentru fiecare suprafață a dintelui",
+      "fileStructure": "src/assets/tooth-surfaces/",
+      "fileNaming": "tooth-{toothNumber}-{view}-surfaces.svg",
+      "examples": [
+        "tooth-24-frontal-surfaces.svg",
+        "tooth-24-topview-surfaces.svg",
+        "tooth-24-lingual-surfaces.svg"
+      ]
+    },
+    "surfaceDefinitions": {
+      "frontal_view": {
+        "description": "Vista frontală (buccal/labial)",
+        "surfaces": [
+          {
+            "id": "buccal",
+            "code": "B",
+            "path": "M10,30 L90,30 L90,120 L10,120 Z",
+            "description": "Suprafața buccală/labială vizibilă"
+          },
+          {
+            "id": "mesial",
+            "code": "M",
+            "path": "M0,30 L10,30 L10,120 L0,120 Z",
+            "description": "Marginea mezială"
+          },
+          {
+            "id": "distal",
+            "code": "D",
+            "path": "M90,30 L100,30 L100,120 L90,120 Z",
+            "description": "Marginea distală"
+          },
+          {
+            "id": "cervical-buccal",
+            "code": "CB",
+            "path": "M10,110 L90,110 L90,130 L10,130 Z",
+            "description": "Zona cervicală buccală (pentru carii cervicale)"
+          }
+        ]
+      },
+      "topview_occlusal": {
+        "description": "Vista ocluzală (de sus)",
+        "surfaces": [
+          {
+            "id": "occlusal",
+            "code": "O",
+            "path": "M30,30 L70,30 L70,70 L30,70 Z",
+            "description": "Suprafața ocluzală centrală"
+          },
+          {
+            "id": "mesial",
+            "code": "M",
+            "path": "M10,20 L30,30 L30,70 L10,80 Z",
+            "description": "Suprafața mezială"
+          },
+          {
+            "id": "distal",
+            "code": "D",
+            "path": "M70,30 L90,20 L90,80 L70,70 Z",
+            "description": "Suprafața distală"
+          },
+          {
+            "id": "buccal",
+            "code": "B",
+            "path": "M30,10 L70,10 L70,30 L30,30 Z",
+            "description": "Marginea buccală"
+          },
+          {
+            "id": "lingual",
+            "code": "L",
+            "path": "M30,70 L70,70 L70,90 L30,90 Z",
+            "description": "Marginea linguală/palatală"
+          }
+        ]
+      },
+      "lingual_view": {
+        "description": "Vista linguală/palatală (din spate)",
+        "surfaces": [
+          {
+            "id": "lingual",
+            "code": "L",
+            "path": "M10,30 L90,30 L90,120 L10,120 Z",
+            "description": "Suprafața linguală/palatală vizibilă"
+          },
+          {
+            "id": "mesial",
+            "code": "M",
+            "path": "M0,30 L10,30 L10,120 L0,120 Z",
+            "description": "Marginea mezială"
+          },
+          {
+            "id": "distal",
+            "code": "D",
+            "path": "M90,30 L100,30 L100,120 L90,120 Z",
+            "description": "Marginea distală"
+          }
+        ]
+      }
+    }
+  },
+  "coloringStrategies": {
+    "restorations": {
+      "description": "Colorare pentru restaurări dentare",
+      "method": "Fill SVG path cu culoarea materialului",
+      "examples": [
+        {
+          "type": "amalgam",
+          "surfaces": ["O"],
+          "color": "#8B8B8B",
+          "opacity": 0.7,
+          "svgClass": "restoration-amalgam"
+        },
+        {
+          "type": "composite",
+          "surfaces": ["O", "M", "D"],
+          "color": "#E8E8E8",
+          "opacity": 0.6,
+          "svgClass": "restoration-composite",
+          "notation": "MOD filling"
+        },
+        {
+          "type": "crown",
+          "surfaces": ["all"],
+          "color": "#9575CD",
+          "opacity": 0.5,
+          "svgClass": "restoration-crown",
+          "coverage": "full-tooth"
+        }
+      ],
+      "cssImplementation": ".restoration-amalgam {\n  fill: #8B8B8B;\n  opacity: 0.7;\n  stroke: #6B6B6B;\n  stroke-width: 1px;\n}\n\n.restoration-composite {\n  fill: #E8E8E8;\n  opacity: 0.6;\n  stroke: #C8C8C8;\n  stroke-width: 1px;\n}"
+    },
+    "pathology": {
+      "description": "Colorare pentru patologii",
+      "method": "Fill SVG path cu culoarea specific patologiei",
+      "examples": [
+        {
+          "type": "caries",
+          "surfaces": ["O"],
+          "color": "#8B4513",
+          "opacity": 0.8,
+          "pattern": "solid",
+          "svgClass": "pathology-caries"
+        },
+        {
+          "type": "fracture",
+          "surfaces": ["B"],
+          "color": "#FF4444",
+          "opacity": 0.7,
+          "pattern": "line",
+          "svgClass": "pathology-fracture",
+          "renderAs": "stroke instead of fill"
+        },
+        {
+          "type": "discoloration",
+          "surfaces": ["B", "L"],
+          "color": "#9575CD",
+          "opacity": 0.4,
+          "pattern": "gradient",
+          "svgClass": "pathology-discoloration"
+        }
+      ],
+      "cssImplementation": ".pathology-caries {\n  fill: #8B4513;\n  opacity: 0.8;\n}\n\n.pathology-fracture {\n  fill: none;\n  stroke: #FF4444;\n  stroke-width: 3px;\n  stroke-dasharray: 5,3;\n}"
+    },
+    "multipleConditions": {
+      "description": "Când un dinte are multiple condiții",
+      "approach": "Layer multiple SVG paths",
+      "example": {
+        "tooth": 24,
+        "conditions": [
+          {
+            "type": "restoration",
+            "subtype": "amalgam",
+            "surfaces": ["O"],
+            "zIndex": 3,
+            "opacity": 0.7
+          },
+          {
+            "type": "pathology",
+            "subtype": "caries",
+            "surfaces": ["D"],
+            "zIndex": 4,
+            "opacity": 0.8
+          }
+        ],
+        "rendering": "Both SVG paths are rendered, caries on top"
+      }
+    }
+  },
+  "interactiveBehavior": {
+    "surfaceSelection": {
+      "description": "Utilizatorul selectează suprafețe pentru a marca probleme/restaurări",
+      "implementation": {
+        "onClick": "Toggle surface selection",
+        "onHover": "Highlight surface",
+        "selected": "Add 'selected' class, change fill color",
+        "cssExample": ".surface-path:hover {\n  fill: rgba(0, 163, 224, 0.3);\n  cursor: pointer;\n}\n\n.surface-path.selected {\n  fill: rgba(0, 163, 224, 0.5);\n  stroke: #00A3E0;\n  stroke-width: 2px;\n}"
+      }
+    },
+    "tooltips": {
+      "onHover": "Show surface name and existing conditions",
+      "example": "Surface: Occlusal (O)\nRestoration: Composite filling\nDate: 2024-01-15"
+    }
+  },
+  "dataModel": {
+    "toothSurfaceCondition": {
+      "id": "uuid",
+      "toothNumber": "number",
+      "surface": "enum: O | B | L | M | D | CB | CL",
+      "conditionType": "enum: restoration | pathology",
+      "subtype": "string",
+      "color": "string (hex)",
+      "opacity": "number (0-1)",
+      "svgPath": "string (SVG path data)",
+      "zIndex": "number",
+      "pattern": "enum: solid | gradient | striped | dashed",
+      "date": "ISO date"
+    }
+  },
+  "assetRequirements": {
+    "svgSurfaceFiles": {
+      "description": "SVG files definind suprafețele pentru fiecare dinte",
+      "required": true,
+      "count": "32 permanent teeth × 3 views = 96 SVG files",
+      "naming": "tooth-{number}-{view}-surfaces.svg",
+      "content": "SVG paths cu data-surface attributes",
+      "mirroring": "Use transform='scale(-1,1)' for left quadrants"
+    },
+    "alternativeApproach": {
+      "description": "Generate SVG paths programmatically",
+      "method": "Hardcode SVG paths în JavaScript pentru fiecare tip de dinte",
+      "advantages": [
+        "No extra files needed",
+        "Easier to maintain",
+        "Dynamic generation"
+      ],
+      "implementation": "const toothSurfaces = {\n  molar: {\n    frontal: { B: 'M10,30...', M: 'M0,30...', D: 'M90,30...' },\n    topview: { O: 'M30,30...', B: 'M30,10...', L: 'M30,70...', M: 'M10,20...', D: 'M70,30...' }\n  },\n  premolar: { ... },\n  canine: { ... },\n  incisor: { ... }\n}"
+    }
+  },
+  "componentStructure": {
+    "ToothRenderer": {
+      "props": [
+        "toothNumber: number",
+        "view: 'frontal' | 'topview' | 'lingual'",
+        "conditions: ToothCondition[]",
+        "onSurfaceClick?: (surface: string) => void",
+        "interactive?: boolean"
+      ],
+      "rendering": "1. Render base PNG\n2. Load/generate SVG surface definitions\n3. Render colored SVG paths for each condition\n4. Add event listeners for interaction",
+      "example": "<ToothRenderer\n  toothNumber={24}\n  view='frontal'\n  conditions={[\n    { surface: 'O', type: 'restoration', subtype: 'amalgam', color: '#8B8B8B' },\n    { surface: 'D', type: 'pathology', subtype: 'caries', color: '#8B4513' }\n  ]}\n  onSurfaceClick={(surface) => handleSurfaceSelect(surface)}\n  interactive={true}\n/>"
+    }
+  },
+  "examples": {
+    "simpleFilling": {
+      "description": "Amalgam filling pe suprafața ocluzală",
+      "tooth": 16,
+      "view": "topview",
+      "svg": "<svg viewBox='0 0 100 100' class='tooth-overlay'>\n  <path d='M30,30 L70,30 L70,70 L30,70 Z'\n        class='surface-O restoration-amalgam'\n        data-surface='O' />\n</svg>",
+      "color": "#8B8B8B",
+      "opacity": 0.7
+    },
+    "modRestoration": {
+      "description": "Composite MOD (Mesio-Occlusal-Distal)",
+      "tooth": 24,
+      "view": "topview",
+      "svg": "<svg viewBox='0 0 100 100' class='tooth-overlay'>\n  <path d='M10,20 L30,30 L30,70 L10,80 Z' class='surface-M restoration-composite' />\n  <path d='M30,30 L70,30 L70,70 L30,70 Z' class='surface-O restoration-composite' />\n  <path d='M70,30 L90,20 L90,80 L70,70 Z' class='surface-D restoration-composite' />\n</svg>",
+      "color": "#E8E8E8",
+      "opacity": 0.6
+    },
+    "cariesWithFilling": {
+      "description": "Dinte cu obturație veche și carie nouă",
+      "tooth": 36,
+      "view": "topview",
+      "conditions": [
+        {
+          "surface": "O",
+          "type": "restoration",
+          "subtype": "amalgam",
+          "color": "#8B8B8B",
+          "date": "2020-03-15"
+        },
+        {
+          "surface": "D",
+          "type": "pathology",
+          "subtype": "caries",
+          "color": "#8B4513",
+          "date": "2025-01-10",
+          "severity": "moderate"
+        }
+      ],
+      "svg": "<svg viewBox='0 0 100 100' class='tooth-overlay'>\n  <!-- Existing amalgam restoration -->\n  <path d='M30,30 L70,30 L70,70 L30,70 Z'\n        class='restoration-amalgam'\n        style='fill: #8B8B8B; opacity: 0.7' />\n  <!-- New caries on distal -->\n  <path d='M70,30 L90,20 L90,80 L70,70 Z'\n        class='pathology-caries'\n        style='fill: #8B4513; opacity: 0.8' />\n</svg>"
+    }
+  },
+  "bestPractices": [
+    "Use viewBox='0 0 100 150' for consistent scaling",
+    "Keep SVG paths simple for performance",
+    "Use CSS classes for styling, not inline styles when possible",
+    "Layer z-index: restorations (lower) < pathology (higher)",
+    "Use opacity 0.6-0.8 for visibility of underlying tooth anatomy",
+    "Add stroke to SVG paths for better definition",
+    "Use transform='scale(-1,1)' for mirroring left quadrants",
+    "Cache SVG path definitions for performance",
+    "Consider using SVG <defs> and <use> for repeated patterns"
+  ],
+  "performanceConsiderations": {
+    "optimization": [
+      "Pre-calculate SVG paths for each tooth type",
+      "Use CSS transforms for mirroring, not duplicate paths",
+      "Memoize ToothRenderer component",
+      "Use React.memo for SVG overlay components",
+      "Lazy load SVG definitions",
+      "Consider using canvas for 100+ teeth simultaneously"
+    ],
+    "caching": "Store SVG path definitions in memory, not re-generate each render"
+  }
+}
+

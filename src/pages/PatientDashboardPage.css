@@ -1,0 +1,140 @@
+.dashboard-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    max-height: 100vh;
+    overflow: hidden;
+    gap: var(--spacing-8);
+}
+
+.dashboard-content-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-width: 0;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-6);
+}
+
+.patient-name-large {
+    font-size: 1.75rem;
+    font-weight: 500;
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-1);
+}
+
+.patient-meta {
+    color: var(--color-gray-500);
+    font-size: 0.9rem;
+}
+
+.chart-action-button {
+    background-color: var(--color-primary);
+    color: white;
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.chart-action-button:hover {
+    background-color: var(--color-primary-dark);
+}
+
+.dashboard-tabs-nav {
+    display: flex;
+    gap: var(--spacing-8);
+    border-bottom: 1px solid var(--color-gray-200);
+    margin-bottom: var(--spacing-6);
+}
+
+.tab-link {
+    padding-bottom: var(--spacing-3);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-gray-500);
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+}
+
+.tab-link:hover {
+    color: var(--color-primary-dark);
+}
+
+.tab-link.active {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+}
+
+.tab-content-area {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.empty-state {
+    color: var(--color-gray-500);
+    font-style: italic;
+    padding: var(--spacing-4) 0;
+}
+
+/* Right Column Styles */
+.dashboard-right-col {
+    width: 350px;
+    min-width: 350px;
+    max-width: 350px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+    border-left: 1px solid var(--color-gray-200);
+    padding-left: var(--spacing-8);
+    overflow-y: auto;
+}
+
+.dashboard-widget {
+    /* Flat design: No background, no border, no shadow */
+    background-color: transparent;
+    padding: 0;
+    margin-bottom: var(--spacing-4);
+}
+
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-4);
+}
+
+.widget-header h3 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: var(--color-gray-700);
+}
+
+.edit-link {
+    color: var(--color-primary);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    background: none;
+    border: none;
+}
+
+.edit-link:hover {
+    text-decoration: underline;
+}

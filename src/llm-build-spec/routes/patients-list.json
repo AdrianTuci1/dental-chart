@@ -1,0 +1,271 @@
+{
+  "route": "/patients",
+  "component": "PatientsListPage",
+  "description": "Patient listing and search interface",
+  "layout": {
+    "type": "full-width-with-sidebar",
+    "showGlobalSidebar": true
+  },
+  "header": {
+    "title": "Patients",
+    "actions": [
+      {
+        "type": "button",
+        "label": "Add Patient",
+        "icon": "plus",
+        "action": "openAddPatientModal",
+        "styling": {
+          "backgroundColor": "#00A3E0",
+          "color": "#FFFFFF",
+          "padding": "12px 24px",
+          "borderRadius": "8px",
+          "border": "none",
+          "cursor": "pointer"
+        }
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "SearchBar",
+      "type": "search-input",
+      "placeholder": "Search patients by name, email, or phone...",
+      "debounce": 300,
+      "styling": {
+        "width": "100%",
+        "maxWidth": "600px",
+        "padding": "12px 16px",
+        "border": "1px solid #E0E0E0",
+        "borderRadius": "8px",
+        "fontSize": "14px",
+        "marginBottom": "24px"
+      },
+      "functionality": {
+        "searchFields": ["firstName", "lastName", "email", "phone"],
+        "caseSensitive": false,
+        "highlightMatches": true
+      }
+    },
+    {
+      "name": "FilterOptions",
+      "type": "filter-group",
+      "filters": [
+        {
+          "type": "dropdown",
+          "label": "Sort by",
+          "options": [
+            { "value": "lastName-asc", "label": "Last Name (A-Z)" },
+            { "value": "lastName-desc", "label": "Last Name (Z-A)" },
+            { "value": "lastVisit-desc", "label": "Last Visit (Newest)" },
+            { "value": "lastVisit-asc", "label": "Last Visit (Oldest)" }
+          ],
+          "default": "lastName-asc"
+        },
+        {
+          "type": "dropdown",
+          "label": "Status",
+          "options": [
+            { "value": "all", "label": "All Patients" },
+            { "value": "active", "label": "Active" },
+            { "value": "inactive", "label": "Inactive" }
+          ],
+          "default": "active"
+        }
+      ],
+      "styling": {
+        "display": "flex",
+        "gap": "16px",
+        "marginBottom": "24px"
+      }
+    },
+    {
+      "name": "PatientsList",
+      "type": "data-grid",
+      "columns": [
+        {
+          "field": "avatar",
+          "header": "",
+          "width": "60px",
+          "render": "PatientAvatar"
+        },
+        {
+          "field": "lastName",
+          "header": "Last Name",
+          "sortable": true,
+          "width": "150px"
+        },
+        {
+          "field": "firstName",
+          "header": "First Name",
+          "sortable": true,
+          "width": "150px"
+        },
+        {
+          "field": "dateOfBirth",
+          "header": "Date of Birth",
+          "sortable": true,
+          "width": "120px",
+          "format": "date"
+        },
+        {
+          "field": "age",
+          "header": "Age",
+          "width": "80px",
+          "calculated": true
+        },
+        {
+          "field": "phone",
+          "header": "Phone",
+          "width": "140px"
+        },
+        {
+          "field": "email",
+          "header": "Email",
+          "width": "200px"
+        },
+        {
+          "field": "lastVisit",
+          "header": "Last Visit",
+          "sortable": true,
+          "width": "120px",
+          "format": "date"
+        },
+        {
+          "field": "actions",
+          "header": "Actions",
+          "width": "100px",
+          "render": "ActionsCell"
+        }
+      ],
+      "rowActions": [
+        {
+          "type": "button",
+          "icon": "chart",
+          "label": "View Chart",
+          "action": "navigateToChart"
+        },
+        {
+          "type": "button",
+          "icon": "dashboard",
+          "label": "View Dashboard",
+          "action": "navigateToDashboard"
+        },
+        {
+          "type": "button",
+          "icon": "edit",
+          "label": "Edit Patient",
+          "action": "openEditModal"
+        }
+      ],
+      "onRowClick": "navigateToPatientDashboard",
+      "styling": {
+        "backgroundColor": "#FFFFFF",
+        "borderRadius": "8px",
+        "boxShadow": "0 1px 3px rgba(0,0,0,0.12)",
+        "overflow": "hidden"
+      },
+      "pagination": {
+        "enabled": true,
+        "itemsPerPage": 25,
+        "showPageSize": true,
+        "pageSizeOptions": [10, 25, 50, 100]
+      }
+    }
+  ],
+  "modals": {
+    "addPatient": {
+      "title": "Add New Patient",
+      "width": "600px",
+      "form": {
+        "fields": [
+          {
+            "name": "firstName",
+            "label": "First Name",
+            "type": "text",
+            "required": true,
+            "validation": "min:2"
+          },
+          {
+            "name": "lastName",
+            "label": "Last Name",
+            "type": "text",
+            "required": true,
+            "validation": "min:2"
+          },
+          {
+            "name": "dateOfBirth",
+            "label": "Date of Birth",
+            "type": "date",
+            "required": true
+          },
+          {
+            "name": "gender",
+            "label": "Gender",
+            "type": "select",
+            "options": ["Male", "Female", "Other"],
+            "required": true
+          },
+          {
+            "name": "email",
+            "label": "Email",
+            "type": "email",
+            "required": false,
+            "validation": "email"
+          },
+          {
+            "name": "phone",
+            "label": "Phone",
+            "type": "tel",
+            "required": true,
+            "validation": "phone"
+          }
+        ],
+        "actions": [
+          {
+            "type": "button",
+            "label": "Cancel",
+            "action": "closeModal",
+            "styling": "secondary"
+          },
+          {
+            "type": "submit",
+            "label": "Create Patient",
+            "action": "createPatient",
+            "styling": "primary"
+          }
+        ]
+      }
+    },
+    "editPatient": {
+      "title": "Edit Patient Information",
+      "width": "600px",
+      "note": "Same form as addPatient but pre-filled with existing data"
+    }
+  },
+  "functionality": {
+    "navigation": {
+      "toChart": "Navigate to /patients/{patientId}/chart",
+      "toDashboard": "Navigate to /patients/{patientId}/dashboard"
+    },
+    "search": {
+      "algorithm": "Fuzzy search across firstName, lastName, email, phone",
+      "realtime": true,
+      "minCharacters": 2
+    },
+    "sorting": {
+      "default": "lastName ascending",
+      "multiColumn": false
+    }
+  },
+  "stateManagement": {
+    "store": "patientStore",
+    "actions": [
+      "fetchPatients",
+      "searchPatients",
+      "addPatient",
+      "updatePatient",
+      "deletePatient"
+    ]
+  }
+}
+

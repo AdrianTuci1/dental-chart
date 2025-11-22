@@ -1,0 +1,143 @@
+.chart-page-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Patient Name - Top Left (Absolute) */
+.chart-patient-name {
+    position: absolute;
+    top: var(--spacing-6);
+    left: var(--spacing-6);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-gray-900);
+    z-index: 10;
+}
+
+/* Chart Header - Top Center (Absolute) */
+.chart-header {
+    position: absolute;
+    top: var(--spacing-6);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.chart-nav {
+    display: flex;
+    background-color: var(--color-gray-100);
+    padding: var(--spacing-1);
+    border-radius: var(--radius-lg);
+}
+
+.chart-nav-link {
+    padding-left: 1rem;
+    /* px-4 */
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    /* py-2 */
+    padding-bottom: 0.5rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    /* text-sm */
+    font-weight: 500;
+    transition: all 0.2s;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.chart-nav-link.active {
+    background-color: var(--color-white);
+    box-shadow: var(--shadow-sm);
+    color: var(--color-primary);
+}
+
+.chart-nav-link:not(.active) {
+    color: var(--color-gray-500);
+}
+
+.chart-nav-link:not(.active):hover {
+    color: var(--color-gray-700);
+}
+
+/* Chart View Selector - Top Right Center (Absolute) */
+.chart-view-selector {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    outline: 1px solid var(--color-gray-200);
+    top: 40%;
+    right: var(--spacing-6);
+    gap: var(--spacing-2);
+    background-color: var(--color-gray-100);
+    padding: var(--spacing-1);
+    border-radius: var(--radius-lg);
+    z-index: 10;
+}
+
+.view-button {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: transparent;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-gray-500);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.view-button:hover {
+    color: var(--color-gray-700);
+}
+
+.view-button.active {
+    background-color: var(--color-white);
+    box-shadow: var(--shadow-sm);
+    color: var(--color-primary);
+}
+
+/* Date Selector - Bottom Left (Absolute) */
+.chart-date-selector {
+    position: absolute;
+    bottom: var(--spacing-6);
+    left: var(--spacing-6);
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    box-shadow: var(--shadow-md);
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.chart-date-selector:hover {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-lg);
+}
+
+.chart-date-selector:active {
+    transform: scale(0.95);
+}
+
+/* Main Chart Content */
+.chart-outlet-container {
+    position: absolute;
+    /* Below header */
+    top: 10px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
+}

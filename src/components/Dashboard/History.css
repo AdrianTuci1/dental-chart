@@ -1,0 +1,51 @@
+.history-card {
+    background-color: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-gray-200);
+    padding: var(--spacing-6);
+}
+
+.history-title {
+    font-size: 1.125rem;
+    /* text-lg */
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-4);
+}
+
+.history-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+}
+
+.history-item {
+    padding-bottom: var(--spacing-4);
+    border-bottom: 1px solid var(--color-gray-100);
+}
+
+.history-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.history-date {
+    font-size: 0.75rem;
+    /* text-xs */
+    color: var(--color-gray-500);
+    margin-bottom: var(--spacing-1);
+}
+
+.history-description {
+    font-weight: 500;
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-1);
+}
+
+.history-provider {
+    font-size: 0.75rem;
+    /* text-xs */
+    color: var(--color-gray-500);
+    font-style: italic;
+}

@@ -1,0 +1,79 @@
+.oral-health-metrics {
+    background-color: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-gray-200);
+    padding: var(--spacing-6);
+}
+
+.metrics-title {
+    font-size: 1.125rem;
+    /* text-lg */
+    font-weight: 700;
+    color: var(--color-gray-900);
+    margin-bottom: var(--spacing-4);
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-4);
+}
+
+.metric-card {
+    padding: var(--spacing-4);
+    border-radius: var(--radius-lg);
+    text-align: center;
+}
+
+.metric-card.blue {
+    background-color: #EFF6FF;
+    /* bg-blue-50 */
+}
+
+.metric-card.red {
+    background-color: #FEF2F2;
+    /* bg-red-50 */
+}
+
+.metric-label {
+    font-size: 0.75rem;
+    /* text-xs */
+    color: var(--color-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    /* tracking-wide */
+    margin-bottom: var(--spacing-1);
+}
+
+.metric-value {
+    font-size: 1.5rem;
+    /* text-2xl */
+    font-weight: 700;
+}
+
+.metric-value.blue {
+    color: #2563EB;
+    /* text-blue-600 */
+}
+
+.metric-value.red {
+    color: #DC2626;
+    /* text-red-600 */
+}
+
+.metric-status {
+    font-size: 0.75rem;
+    /* text-xs */
+    margin-top: var(--spacing-1);
+}
+
+.metric-status.blue {
+    color: #60A5FA;
+    /* text-blue-400 */
+}
+
+.metric-status.red {
+    color: #F87171;
+    /* text-red-400 */
+}

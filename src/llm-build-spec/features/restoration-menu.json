@@ -1,0 +1,526 @@
+{
+  "feature": "Restoration Menu",
+  "description": "Comprehensive interface for planning and tracking dental restorations",
+  "routes": [
+    "/patients/:patientId/chart/restoration",
+    "/patients/:patientId/tooth/:toothNumber/restoration"
+  ],
+  "layout": {
+    "type": "drawer-or-modal",
+    "width": "800px",
+    "position": "right",
+    "overlay": true
+  },
+  "header": {
+    "title": "Restoration",
+    "subtitle": "Plan and track dental restorations",
+    "actions": [
+      {
+        "icon": "close",
+        "label": "Close",
+        "action": "closeRestorationPanel"
+      }
+    ]
+  },
+  "mainLayout": {
+    "type": "single-column-form",
+    "padding": "24px"
+  },
+  "formSections": [
+    {
+      "name": "RestorationType",
+      "type": "card-selector",
+      "label": "Restoration Type",
+      "required": true,
+      "layout": {
+        "display": "grid",
+        "gridTemplateColumns": "repeat(3, 1fr)",
+        "gap": "16px",
+        "marginBottom": "24px"
+      },
+      "options": [
+        {
+          "value": "filling",
+          "label": "Filling",
+          "icon": "tooth-fill",
+          "color": "#E8E8E8",
+          "description": "Direct restoration"
+        },
+        {
+          "value": "crown",
+          "label": "Crown",
+          "icon": "crown",
+          "color": "#9575CD",
+          "description": "Full coverage restoration"
+        },
+        {
+          "value": "bridge",
+          "label": "Bridge",
+          "icon": "bridge",
+          "color": "#4DD0E1",
+          "description": "Fixed partial denture"
+        },
+        {
+          "value": "veneer",
+          "label": "Veneer",
+          "icon": "layer",
+          "color": "#B39DDB",
+          "description": "Esthetic laminate"
+        },
+        {
+          "value": "inlay",
+          "label": "Inlay",
+          "icon": "tooth-inlay",
+          "color": "#FFD700",
+          "description": "Indirect intracoronal restoration"
+        },
+        {
+          "value": "onlay",
+          "label": "Onlay",
+          "icon": "tooth-onlay",
+          "color": "#FFA726",
+          "description": "Indirect extracoronal restoration"
+        },
+        {
+          "value": "implant",
+          "label": "Implant",
+          "icon": "implant",
+          "color": "#BDBDBD",
+          "description": "Implant-supported crown"
+        },
+        {
+          "value": "partial-denture",
+          "label": "Partial Denture",
+          "icon": "denture-partial",
+          "color": "#F48FB1",
+          "description": "Removable partial denture"
+        },
+        {
+          "value": "full-denture",
+          "label": "Full Denture",
+          "icon": "denture-full",
+          "color": "#F06292",
+          "description": "Complete denture"
+        }
+      ],
+      "cardStyling": {
+        "padding": "20px",
+        "border": "2px solid #E0E0E0",
+        "borderRadius": "8px",
+        "backgroundColor": "#FFFFFF",
+        "cursor": "pointer",
+        "textAlign": "center",
+        "transition": "all 0.2s"
+      },
+      "selectedStyling": {
+        "borderColor": "#00A3E0",
+        "backgroundColor": "#E3F2FD"
+      }
+    },
+    {
+      "name": "SurfaceSelector",
+      "type": "interactive-surface-diagram",
+      "label": "Affected Surfaces",
+      "required": true,
+      "conditional": {
+        "showWhen": "type in ['filling', 'inlay', 'onlay']",
+        "description": "Only shown for restorations that affect specific surfaces"
+      },
+      "surfaces": [
+        {
+          "id": "O",
+          "label": "Occlusal",
+          "position": "center",
+          "clickable": true
+        },
+        {
+          "id": "B",
+          "label": "Buccal",
+          "position": "left",
+          "clickable": true
+        },
+        {
+          "id": "L",
+          "label": "Lingual/Palatal",
+          "position": "right",
+          "clickable": true
+        },
+        {
+          "id": "M",
+          "label": "Mesial",
+          "position": "top",
+          "clickable": true
+        },
+        {
+          "id": "D",
+          "label": "Distal",
+          "position": "bottom",
+          "clickable": true
+        }
+      ],
+      "multiSelect": true,
+      "commonCombinations": [
+        {
+          "label": "O",
+          "surfaces": ["O"],
+          "shortcut": "O"
+        },
+        {
+          "label": "MO",
+          "surfaces": ["M", "O"],
+          "shortcut": "MO"
+        },
+        {
+          "label": "DO",
+          "surfaces": ["D", "O"],
+          "shortcut": "DO"
+        },
+        {
+          "label": "MOD",
+          "surfaces": ["M", "O", "D"],
+          "shortcut": "MOD"
+        },
+        {
+          "label": "MODBL",
+          "surfaces": ["M", "O", "D", "B", "L"],
+          "shortcut": "All"
+        }
+      ],
+      "styling": {
+        "diagram": {
+          "width": "200px",
+          "height": "200px",
+          "margin": "0 auto 16px"
+        },
+        "surface": {
+          "default": {
+            "fill": "#F5F5F5",
+            "stroke": "#BDBDBD",
+            "strokeWidth": "2px"
+          },
+          "selected": {
+            "fill": "#00A3E0",
+            "stroke": "#0083B8"
+          },
+          "hover": {
+            "fill": "#E0E0E0"
+          }
+        }
+      }
+    },
+    {
+      "name": "Material",
+      "type": "dropdown-select",
+      "label": "Material",
+      "required": true,
+      "options": [
+        {
+          "value": "amalgam",
+          "label": "Amalgam",
+          "color": "#8B8B8B",
+          "description": "Silver filling"
+        },
+        {
+          "value": "composite",
+          "label": "Composite",
+          "color": "#E8E8E8",
+          "description": "Tooth-colored resin"
+        },
+        {
+          "value": "ceramic",
+          "label": "Ceramic",
+          "color": "#F5F5F5",
+          "description": "All-ceramic"
+        },
+        {
+          "value": "porcelain",
+          "label": "Porcelain",
+          "color": "#FAFAFA",
+          "description": "Porcelain fused to metal"
+        },
+        {
+          "value": "gold",
+          "label": "Gold",
+          "color": "#FFD700",
+          "description": "Gold alloy"
+        },
+        {
+          "value": "zirconia",
+          "label": "Zirconia",
+          "color": "#FFFFFF",
+          "description": "Zirconium oxide"
+        },
+        {
+          "value": "resin",
+          "label": "Resin",
+          "color": "#FFE5E5",
+          "description": "Acrylic resin"
+        },
+        {
+          "value": "metal",
+          "label": "Metal",
+          "color": "#9E9E9E",
+          "description": "Metal alloy"
+        }
+      ],
+      "conditionalOptions": {
+        "filling": ["amalgam", "composite"],
+        "crown": ["porcelain", "ceramic", "gold", "zirconia"],
+        "bridge": ["porcelain", "ceramic", "zirconia"],
+        "veneer": ["porcelain", "composite"],
+        "inlay": ["ceramic", "gold", "composite"],
+        "onlay": ["ceramic", "gold", "composite"],
+        "implant": ["ceramic", "zirconia", "porcelain"],
+        "partial-denture": ["resin", "metal"],
+        "full-denture": ["resin"]
+      }
+    },
+    {
+      "name": "Status",
+      "type": "segmented-control",
+      "label": "Status",
+      "required": true,
+      "options": [
+        {
+          "value": "planned",
+          "label": "Planned",
+          "color": "#FFD700"
+        },
+        {
+          "value": "in-progress",
+          "label": "In Progress",
+          "color": "#00A3E0"
+        },
+        {
+          "value": "completed",
+          "label": "Completed",
+          "color": "#00C851"
+        }
+      ],
+      "default": "planned"
+    },
+    {
+      "name": "Date",
+      "type": "date-picker",
+      "label": "Date",
+      "required": true,
+      "default": "today",
+      "description": "Date placed or planned placement date"
+    },
+    {
+      "name": "Cost",
+      "type": "currency-input",
+      "label": "Estimated Cost",
+      "required": false,
+      "currency": "USD",
+      "min": 0
+    },
+    {
+      "name": "BridgeDetails",
+      "type": "bridge-configurator",
+      "label": "Bridge Configuration",
+      "conditional": {
+        "showWhen": "type === 'bridge'"
+      },
+      "fields": [
+        {
+          "name": "abutmentTeeth",
+          "label": "Abutment Teeth",
+          "type": "multi-tooth-selector",
+          "required": true,
+          "description": "Teeth that support the bridge"
+        },
+        {
+          "name": "ponticTeeth",
+          "label": "Pontic Teeth",
+          "type": "multi-tooth-selector",
+          "required": true,
+          "description": "Missing teeth being replaced"
+        }
+      ]
+    },
+    {
+      "name": "ImplantDetails",
+      "type": "implant-configurator",
+      "label": "Implant Details",
+      "conditional": {
+        "showWhen": "type === 'implant'"
+      },
+      "fields": [
+        {
+          "name": "manufacturer",
+          "label": "Manufacturer",
+          "type": "text",
+          "placeholder": "e.g., Straumann, Nobel Biocare"
+        },
+        {
+          "name": "size",
+          "label": "Implant Size",
+          "type": "text",
+          "placeholder": "e.g., 4.1mm x 10mm"
+        },
+        {
+          "name": "placementDate",
+          "label": "Placement Date",
+          "type": "date"
+        },
+        {
+          "name": "osseointegrationComplete",
+          "label": "Osseointegration Complete",
+          "type": "checkbox"
+        }
+      ]
+    },
+    {
+      "name": "Notes",
+      "type": "textarea",
+      "label": "Notes",
+      "rows": 4,
+      "placeholder": "Additional notes about this restoration...",
+      "required": false
+    }
+  ],
+  "actions": {
+    "primary": [
+      {
+        "label": "SAVE",
+        "action": "saveRestoration",
+        "color": "#00A3E0",
+        "disabled": "form not valid"
+      }
+    ],
+    "secondary": [
+      {
+        "label": "Save & Add to Treatment Plan",
+        "action": "saveAndAddToTreatmentPlan",
+        "color": "#64B5F6"
+      },
+      {
+        "label": "Cancel",
+        "action": "cancelAndClose",
+        "styling": "text-button"
+      }
+    ]
+  },
+  "restorationList": {
+    "description": "List of existing restorations for the selected tooth",
+    "position": "below form",
+    "title": "Existing Restorations",
+    "emptyState": "No restorations recorded",
+    "itemTemplate": {
+      "type": "card",
+      "layout": "horizontal",
+      "fields": [
+        {
+          "name": "typeAndMaterial",
+          "display": "{type} - {material}",
+          "fontWeight": "600"
+        },
+        {
+          "name": "surfaces",
+          "display": "Surfaces: {surfaces.join(', ')}",
+          "conditional": "surfaces exist"
+        },
+        {
+          "name": "status",
+          "display": "badge",
+          "colors": {
+            "planned": "#FFD700",
+            "in-progress": "#00A3E0",
+            "completed": "#00C851"
+          }
+        },
+        {
+          "name": "date",
+          "display": "date format",
+          "fontSize": "12px"
+        }
+      ],
+      "actions": [
+        {
+          "icon": "edit",
+          "label": "Edit",
+          "action": "editRestoration"
+        },
+        {
+          "icon": "delete",
+          "label": "Delete",
+          "action": "deleteRestoration",
+          "confirmation": true
+        }
+      ]
+    }
+  },
+  "visualRepresentation": {
+    "onChart": {
+      "description": "How restorations are displayed on the main chart",
+      "methods": [
+        {
+          "type": "colored-overlay",
+          "usage": "For surface-level restorations (fillings, inlays, onlays)",
+          "implementation": "Apply material color to affected surfaces"
+        },
+        {
+          "type": "full-tooth-replacement",
+          "usage": "For crowns, implants",
+          "implementation": "Replace tooth image or apply full overlay"
+        },
+        {
+          "type": "connector",
+          "usage": "For bridges",
+          "implementation": "Visual connection between abutment teeth with pontic indication"
+        }
+      ],
+      "colors": {
+        "amalgam": "#8B8B8B",
+        "composite": "#E8E8E8",
+        "gold": "#FFD700",
+        "ceramic": "#F5F5F5",
+        "porcelain": "#FAFAFA",
+        "crown": "#9575CD",
+        "bridge": "#4DD0E1",
+        "implant": "#BDBDBD"
+      },
+      "visibility": "Controlled by 'Dental' toggle in global sidebar"
+    }
+  },
+  "dataModel": {
+    "restoration": {
+      "id": "uuid",
+      "toothNumber": "number | number[] (for bridges)",
+      "type": "enum: filling | crown | bridge | veneer | inlay | onlay | implant | partial-denture | full-denture",
+      "material": "enum: amalgam | composite | ceramic | gold | porcelain | zirconia | resin | metal",
+      "surfaces": "string[] | null",
+      "status": "enum: planned | in-progress | completed",
+      "date": "ISO date",
+      "cost": "number | null",
+      "bridgeDetails": {
+        "abutmentTeeth": "number[]",
+        "ponticTeeth": "number[]"
+      },
+      "implantDetails": {
+        "manufacturer": "string",
+        "size": "string",
+        "placementDate": "ISO date",
+        "osseointegrationComplete": "boolean"
+      },
+      "notes": "string",
+      "visualColor": "string (hex)",
+      "createdAt": "ISO timestamp",
+      "updatedAt": "ISO timestamp"
+    }
+  },
+  "validation": {
+    "rules": [
+      "type is required",
+      "material is required",
+      "status is required",
+      "date is required",
+      "surfaces required for filling, inlay, onlay",
+      "bridgeDetails required for bridge type",
+      "abutmentTeeth must be >= 2 for bridge",
+      "ponticTeeth must be >= 1 for bridge"
+    ]
+  }
+}
+

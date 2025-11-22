@@ -1,0 +1,394 @@
+{
+  "route": "/patients/:patientId/chart",
+  "component": "PatientChartPage",
+  "description": "Main dental charting interface with multiple view modes and full tooth interaction",
+  "layout": {
+    "type": "patient-layout-with-sidebar",
+    "showGlobalSidebar": true,
+    "showPatientHeader": true,
+    "fullWidth": true
+  },
+  "header": {
+    "patientName": true,
+    "tabs": [
+      {
+        "label": "Overview",
+        "route": "/patients/:patientId/chart",
+        "default": true
+      },
+      {
+        "label": "Quickselect",
+        "route": "/patients/:patientId/chart/quickselect"
+      },
+      {
+        "label": "Periodontal Probing",
+        "route": "/patients/:patientId/chart/periodontal-probing"
+      },
+      {
+        "label": "Pathology",
+        "route": "/patients/:patientId/chart/pathology"
+      },
+      {
+        "label": "Restoration",
+        "route": "/patients/:patientId/chart/restoration"
+      }
+    ],
+    "actions": [
+      {
+        "type": "time-travel-picker",
+        "label": "View History",
+        "component": "TimeTravelControls"
+      },
+      {
+        "type": "button",
+        "label": "Print Chart",
+        "icon": "print",
+        "action": "printChart"
+      },
+      {
+        "type": "button",
+        "label": "Export PDF",
+        "icon": "download",
+        "action": "exportPDF"
+      }
+    ],
+    "rightSection": {
+      "type": "info-label",
+      "text": "BASIC PERIODONTAL EXAMINATION",
+      "color": "#00A3E0",
+      "fontSize": "12px"
+    }
+  },
+  "chartOverview": {
+    "description": "Default 4-jaw view showing upper buccal, upper occlusal, lower occlusal, lower buccal",
+    "layout": {
+      "type": "vertical-stack",
+      "spacing": "24px",
+      "centerAlign": true,
+      "maxWidth": "1400px"
+    },
+    "views": [
+      {
+        "name": "UpperBuccalView",
+        "type": "jaw-row",
+        "orientation": "upper",
+        "perspective": "buccal",
+        "teethRange": [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28],
+        "displayOrder": "left-to-right",
+        "components": {
+          "toothImages": {
+            "view": "frontal",
+            "showRoots": true,
+            "mirroring": "auto"
+          },
+          "toothNumbers": {
+            "position": "above",
+            "fontSize": "12px",
+            "color": "#757575"
+          },
+          "gingivaOverlay": {
+            "show": true,
+            "dynamic": true,
+            "healthColors": {
+              "healthy": "rgba(255, 182, 185, 0.6)",
+              "inflamed": "rgba(255, 107, 107, 0.7)",
+              "recession": "rgba(211, 47, 47, 0.5)"
+            }
+          },
+          "restorations": {
+            "overlayType": "colored-regions",
+            "surfaces": ["buccal", "mesial", "distal"]
+          }
+        },
+        "height": "200px"
+      },
+      {
+        "name": "UpperOcclusalView",
+        "type": "jaw-row",
+        "orientation": "upper",
+        "perspective": "occlusal",
+        "teethRange": [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28],
+        "displayOrder": "left-to-right",
+        "components": {
+          "toothImages": {
+            "view": "topview",
+            "showRoots": false,
+            "mirroring": "auto"
+          },
+          "toothNumbers": {
+            "position": "below",
+            "fontSize": "12px",
+            "color": "#757575"
+          },
+          "restorations": {
+            "overlayType": "colored-regions",
+            "surfaces": ["occlusal", "mesial", "distal"]
+          }
+        },
+        "height": "120px"
+      },
+      {
+        "name": "LowerOcclusalView",
+        "type": "jaw-row",
+        "orientation": "lower",
+        "perspective": "occlusal",
+        "teethRange": [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38],
+        "displayOrder": "left-to-right",
+        "components": {
+          "toothImages": {
+            "view": "topview",
+            "showRoots": false,
+            "mirroring": "auto"
+          },
+          "toothNumbers": {
+            "position": "above",
+            "fontSize": "12px",
+            "color": "#757575"
+          },
+          "restorations": {
+            "overlayType": "colored-regions",
+            "surfaces": ["occlusal", "mesial", "distal"]
+          }
+        },
+        "height": "120px"
+      },
+      {
+        "name": "LowerBuccalView",
+        "type": "jaw-row",
+        "orientation": "lower",
+        "perspective": "buccal",
+        "teethRange": [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38],
+        "displayOrder": "left-to-right",
+        "components": {
+          "toothImages": {
+            "view": "frontal",
+            "showRoots": true,
+            "mirroring": "auto"
+          },
+          "toothNumbers": {
+            "position": "below",
+            "fontSize": "12px",
+            "color": "#757575"
+          },
+          "gingivaOverlay": {
+            "show": true,
+            "dynamic": true
+          },
+          "restorations": {
+            "overlayType": "colored-regions",
+            "surfaces": ["buccal", "mesial", "distal"]
+          }
+        },
+        "height": "200px"
+      }
+    ],
+    "rightSidebar": {
+      "description": "View toggle buttons on the right side",
+      "position": "fixed",
+      "right": "16px",
+      "top": "50%",
+      "transform": "translateY(-50%)",
+      "buttons": [
+        {
+          "icon": "upper-teeth",
+          "label": "Upper Jaw",
+          "toggle": "showUpperJaw",
+          "default": true
+        },
+        {
+          "icon": "middle-teeth",
+          "label": "All Teeth",
+          "toggle": "showAllTeeth",
+          "default": true
+        },
+        {
+          "icon": "lower-teeth",
+          "label": "Lower Jaw",
+          "toggle": "showLowerJaw",
+          "default": true
+        }
+      ],
+      "styling": {
+        "backgroundColor": "#FFFFFF",
+        "borderRadius": "8px",
+        "padding": "8px",
+        "boxShadow": "0 4px 6px rgba(0,0,0,0.1)"
+      }
+    }
+  },
+  "toothInteraction": {
+    "onClick": {
+      "action": "navigateToToothDetail",
+      "route": "/patients/:patientId/tooth/:toothNumber"
+    },
+    "onHover": {
+      "effect": "highlight",
+      "showTooltip": true,
+      "tooltipContent": {
+        "toothNumber": true,
+        "status": true,
+        "conditions": ["implant", "crown", "root-canal", "caries"],
+        "lastExamDate": true
+      }
+    },
+    "selection": {
+      "multiSelect": true,
+      "keyboard": "shift-click for range, ctrl-click for individual",
+      "visualFeedback": "blue-outline",
+      "actions": ["bulk-mark-pathology", "bulk-plan-treatment"]
+    }
+  },
+  "viewToggles": {
+    "description": "Control visibility of different overlays",
+    "location": "global-sidebar-bottom",
+    "toggles": [
+      {
+        "name": "Endo",
+        "key": "showEndo",
+        "default": true,
+        "affectedLayers": ["root-canal-indicators", "endodontic-status"]
+      },
+      {
+        "name": "Perio",
+        "key": "showPerio",
+        "default": true,
+        "affectedLayers": ["gingiva-overlay", "probing-depths", "mobility"]
+      },
+      {
+        "name": "Dental",
+        "key": "showDental",
+        "default": true,
+        "affectedLayers": ["restorations", "crowns", "bridges"]
+      }
+    ]
+  },
+  "quickselectView": {
+    "description": "Rapid charting interface for quick data entry",
+    "layout": "similar to overview but optimized for speed",
+    "features": [
+      "Single-click tooth selection",
+      "Quick-action toolbar",
+      "Keyboard shortcuts",
+      "Bulk operations",
+      "Auto-save"
+    ],
+    "quickActions": [
+      "Mark as missing",
+      "Mark for extraction",
+      "Add crown",
+      "Add filling",
+      "Add implant",
+      "Mark caries"
+    ]
+  },
+  "visualElements": {
+    "toothStates": {
+      "present": {
+        "image": "iso{number}-{view}.png",
+        "opacity": 1.0
+      },
+      "missing": {
+        "image": "iso{number}-{view}-missing.png",
+        "style": "dashed-outline",
+        "opacity": 0.3
+      },
+      "extracted": {
+        "display": "empty-socket",
+        "color": "#E0E0E0"
+      },
+      "toBeExtracted": {
+        "image": "iso{number}-{view}.png",
+        "overlay": "red-x",
+        "opacity": 0.7
+      },
+      "implant": {
+        "image": "iso{number}-{view}-implant.png",
+        "crownColor": "#BDBDBD"
+      }
+    },
+    "restorationColors": {
+      "amalgam": "#8B8B8B",
+      "composite": "#E8E8E8",
+      "gold": "#FFD700",
+      "ceramic": "#F5F5F5",
+      "porcelain": "#FAFAFA",
+      "crown-full": "#9575CD",
+      "crown-partial": "#64B5F6",
+      "bridge": "#4DD0E1",
+      "veneer": "#B39DDB",
+      "temporary": "#FFB6C1"
+    },
+    "pathologyIndicators": {
+      "caries": {
+        "color": "#8B4513",
+        "pattern": "solid-fill"
+      },
+      "fracture": {
+        "color": "#FF4444",
+        "pattern": "crack-line"
+      },
+      "abscess": {
+        "color": "#FF6B6B",
+        "pattern": "pulsing-dot",
+        "position": "root-tip"
+      }
+    },
+    "periodontalIndicators": {
+      "deepPocket": {
+        "color": "#FF4444",
+        "display": "red-line-above-gingiva"
+      },
+      "bleeding": {
+        "color": "#FF4444",
+        "display": "small-dot"
+      },
+      "mobility": {
+        "display": "arrows-indicating-movement",
+        "classes": {
+          "1": "single-arrow",
+          "2": "double-arrow",
+          "3": "triple-arrow"
+        }
+      }
+    }
+  },
+  "stateManagement": {
+    "store": "chartStore",
+    "state": {
+      "teeth": "Map<toothNumber, toothData>",
+      "selectedTooth": "number | null",
+      "selectedTeeth": "number[]",
+      "viewMode": "enum: overview | quickselect | periodontal | pathology | restoration",
+      "showUpperJaw": "boolean",
+      "showLowerJaw": "boolean",
+      "showEndo": "boolean",
+      "showPerio": "boolean",
+      "showDental": "boolean",
+      "historicalDate": "Date | null",
+      "isHistoricalView": "boolean"
+    },
+    "actions": [
+      "fetchChartData",
+      "selectTooth",
+      "updateToothStatus",
+      "addRestoration",
+      "addPathology",
+      "toggleView",
+      "loadHistoricalChart"
+    ]
+  },
+  "responsiveness": {
+    "breakpoints": {
+      "desktop": "1400px+",
+      "laptop": "1024px - 1399px",
+      "tablet": "768px - 1023px",
+      "mobile": "< 768px"
+    },
+    "adaptations": {
+      "mobile": "Stack jaw views vertically, hide sidebar, bottom toolbar",
+      "tablet": "Reduce tooth sizes, simplified overlays",
+      "laptop": "Standard layout, all features enabled"
+    }
+  }
+}
+

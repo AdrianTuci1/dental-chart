@@ -1,0 +1,120 @@
+.treatment-plan-card {
+    background-color: var(--color-white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-gray-200);
+    padding: var(--spacing-6);
+}
+
+.plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-4);
+}
+
+.plan-title {
+    font-size: 1.125rem;
+    /* text-lg */
+    font-weight: 700;
+    color: var(--color-gray-900);
+}
+
+.plan-total {
+    font-size: 0.875rem;
+    /* text-sm */
+    font-weight: 500;
+    color: var(--color-gray-500);
+}
+
+.plan-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.plan-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-3);
+    background-color: var(--color-gray-50);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-gray-100);
+}
+
+.item-details {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+}
+
+.priority-indicator {
+    width: 0.5rem;
+    /* w-2 */
+    height: 0.5rem;
+    /* h-2 */
+    border-radius: 9999px;
+    /* rounded-full */
+}
+
+.priority-urgent {
+    background-color: #EF4444;
+}
+
+/* bg-red-500 */
+.priority-high {
+    background-color: #F97316;
+}
+
+/* bg-orange-500 */
+.priority-medium {
+    background-color: #3B82F6;
+}
+
+/* bg-blue-500 */
+.priority-low {
+    background-color: #10B981;
+}
+
+/* bg-green-500 */
+
+.item-text {
+    font-weight: 500;
+    font-size: 0.875rem;
+    /* text-sm */
+    color: var(--color-gray-900);
+}
+
+.item-status {
+    font-size: 0.75rem;
+    /* text-xs */
+    color: var(--color-gray-500);
+    text-transform: capitalize;
+}
+
+.item-cost {
+    text-align: right;
+    font-weight: 500;
+    font-size: 0.875rem;
+    /* text-sm */
+    color: var(--color-gray-900);
+}
+
+.add-procedure-btn {
+    width: 100%;
+    margin-top: var(--spacing-4);
+    padding: var(--spacing-2);
+    border: 1px dashed var(--color-gray-300);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    /* text-sm */
+    color: var(--color-gray-500);
+    background-color: transparent;
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.add-procedure-btn:hover {
+    background-color: var(--color-gray-50);
+}

@@ -1,0 +1,339 @@
+{
+  "project": {
+    "name": "Dental Charting System",
+    "version": "1.0.0",
+    "description": "Professional dental practice management and charting application",
+    "technology": "React 18 + Vite",
+    "created": "2025-11-20",
+    "specificationVersion": "1.0.0"
+  },
+  "documentation": {
+    "quickStart": "QUICK_START.md",
+    "implementation": "IMPLEMENTATION_GUIDE.json",
+    "overview": "README.md"
+  },
+  "specifications": {
+    "core": {
+      "architecture": {
+        "file": "app-structure.json",
+        "description": "Application routing, layout, state management, design system",
+        "readFirst": true
+      },
+      "dataModels": {
+        "file": "data-models.json",
+        "description": "Complete data structures, tooth numbering, enums",
+        "readFirst": true
+      },
+      "assetNaming": {
+        "file": "asset-naming-convention.json",
+        "description": "Image asset organization and naming conventions",
+        "readFirst": true
+      },
+      "svgOverlaySystem": {
+        "file": "SVG_OVERLAY_SYSTEM.json",
+        "description": "SVG overlay system for coloring tooth surfaces",
+        "readFirst": true,
+        "examples": "SVG_EXAMPLES.md"
+      }
+    },
+    "routes": {
+      "description": "Detailed specifications for each page/route",
+      "files": {
+        "home": {
+          "file": "routes/home.json",
+          "route": "/",
+          "description": "Landing page with demo sign-in"
+        },
+        "patientsList": {
+          "file": "routes/patients-list.json",
+          "route": "/patients",
+          "description": "Patient listing and search"
+        },
+        "dashboard": {
+          "file": "routes/patient-dashboard.json",
+          "route": "/patients/:patientId/dashboard",
+          "description": "Treatment plan, history, metrics, medical issues"
+        },
+        "chart": {
+          "file": "routes/patient-chart.json",
+          "route": "/patients/:patientId/chart",
+          "description": "Main dental chart with 4-jaw view",
+          "priority": "CRITICAL"
+        },
+        "toothDetail": {
+          "file": "routes/tooth-detail.json",
+          "route": "/patients/:patientId/tooth/:toothNumber",
+          "description": "Individual tooth examination with 3-plane view",
+          "priority": "HIGH"
+        },
+        "report": {
+          "file": "routes/patient-report.json",
+          "route": "/patients/:patientId/report",
+          "description": "Report generation and export"
+        }
+      }
+    },
+    "features": {
+      "description": "Detailed specifications for specific features",
+      "files": {
+        "periodontalProbing": {
+          "file": "features/periodontal-probing.json",
+          "description": "6-site periodontal measurements per tooth",
+          "priority": "CRITICAL",
+          "complexity": "HIGH"
+        },
+        "pathologyMenu": {
+          "file": "features/pathology-menu.json",
+          "description": "Pathology selection and tracking (decay, fracture, etc.)",
+          "priority": "CRITICAL",
+          "complexity": "MEDIUM"
+        },
+        "restorationMenu": {
+          "file": "features/restoration-menu.json",
+          "description": "Restoration planning (fillings, crowns, bridges, etc.)",
+          "priority": "CRITICAL",
+          "complexity": "MEDIUM"
+        },
+        "endodonticTests": {
+          "file": "features/endodontic-tests.json",
+          "description": "Pulp vitality testing (cold, heat, percussion, etc.)",
+          "priority": "HIGH",
+          "complexity": "MEDIUM"
+        },
+        "oralHealthMetrics": {
+          "file": "features/oral-health-metrics.json",
+          "description": "Dashboard health indicators (plaque index, BPE, etc.)",
+          "priority": "MEDIUM",
+          "complexity": "MEDIUM"
+        },
+        "timeTravel": {
+          "file": "features/time-travel.json",
+          "description": "Historical chart viewing and comparison",
+          "priority": "MEDIUM",
+          "complexity": "HIGH"
+        },
+        "chartViews": {
+          "file": "features/chart-views.json",
+          "description": "Display modes, layer system, view toggles",
+          "priority": "HIGH",
+          "complexity": "MEDIUM"
+        }
+      }
+    }
+  },
+  "implementationOrder": {
+    "phase1": {
+      "name": "Foundation",
+      "duration": "4-8 hours",
+      "files": ["app-structure.json", "data-models.json"],
+      "deliverables": [
+        "Project setup",
+        "Routing configured",
+        "State stores created",
+        "Auth + patient list working"
+      ]
+    },
+    "phase2": {
+      "name": "Core Charting",
+      "duration": "12-16 hours",
+      "files": [
+        "routes/patient-chart.json",
+        "routes/tooth-detail.json",
+        "asset-naming-convention.json",
+        "features/chart-views.json"
+      ],
+      "deliverables": [
+        "4-jaw chart display",
+        "Tooth rendering with assets",
+        "Tooth detail view",
+        "Basic click interactions"
+      ],
+      "priority": "CRITICAL - Core functionality"
+    },
+    "phase3": {
+      "name": "Advanced Features",
+      "duration": "20-24 hours",
+      "files": [
+        "features/periodontal-probing.json",
+        "features/pathology-menu.json",
+        "features/restoration-menu.json",
+        "features/endodontic-tests.json"
+      ],
+      "deliverables": [
+        "Periodontal measurements",
+        "Pathology tracking",
+        "Restoration planning",
+        "Endodontic tests"
+      ],
+      "priority": "HIGH - Key differentiators"
+    },
+    "phase4": {
+      "name": "Dashboard & Reports",
+      "duration": "8-12 hours",
+      "files": [
+        "routes/patient-dashboard.json",
+        "routes/patient-report.json",
+        "features/oral-health-metrics.json"
+      ],
+      "deliverables": [
+        "Dashboard with metrics",
+        "Treatment plan management",
+        "Report generation",
+        "PDF export"
+      ]
+    },
+    "phase5": {
+      "name": "Enhancement & Polish",
+      "duration": "8-12 hours",
+      "files": ["features/time-travel.json"],
+      "deliverables": [
+        "Historical chart viewing",
+        "Animations and transitions",
+        "Responsive design",
+        "Performance optimization"
+      ]
+    }
+  },
+  "statistics": {
+    "totalSpecFiles": 17,
+    "totalRoutes": 6,
+    "totalFeatures": 7,
+    "estimatedImplementationTime": "52-72 hours",
+    "linesOfSpecification": "~5000",
+    "requiredAssets": 330
+  },
+  "keyComponents": {
+    "critical": [
+      {
+        "name": "ToothRenderer",
+        "description": "Renders individual tooth with overlays",
+        "complexity": "HIGH",
+        "estimatedTime": "4-6 hours"
+      },
+      {
+        "name": "ChartOverview",
+        "description": "Main 4-jaw chart view",
+        "complexity": "HIGH",
+        "estimatedTime": "6-8 hours"
+      },
+      {
+        "name": "PeriodontalProbing",
+        "description": "6-site measurement interface",
+        "complexity": "HIGH",
+        "estimatedTime": "8-10 hours"
+      },
+      {
+        "name": "ToothDetailPage",
+        "description": "Individual tooth examination",
+        "complexity": "MEDIUM",
+        "estimatedTime": "6-8 hours"
+      },
+      {
+        "name": "PathologyMenu",
+        "description": "Pathology tracking interface",
+        "complexity": "MEDIUM",
+        "estimatedTime": "4-6 hours"
+      },
+      {
+        "name": "RestorationMenu",
+        "description": "Restoration planning interface",
+        "complexity": "MEDIUM",
+        "estimatedTime": "4-6 hours"
+      }
+    ]
+  },
+  "technicalRequirements": {
+    "frontend": {
+      "framework": "React 18+",
+      "buildTool": "Vite",
+      "routing": "React Router v6",
+      "stateManagement": "Zustand",
+      "styling": "CSS Modules or Styled Components",
+      "icons": "Lucide React or similar",
+      "utilities": ["date-fns for dates"]
+    },
+    "assets": {
+      "toothImages": "330 PNG files with transparency",
+      "imageSize": "512x512px recommended",
+      "overlays": "Optional PNG overlays or CSS-based",
+      "logo": "Practice logo and branding"
+    },
+    "browser": {
+      "minimum": "Modern browsers (Chrome 90+, Firefox 88+, Safari 14+, Edge 90+)",
+      "responsive": "Desktop (1400px+), Laptop (1024px+), Tablet (768px+), Mobile (< 768px)",
+      "print": "Optimized print layout for reports"
+    }
+  },
+  "dataComplexity": {
+    "patients": {
+      "fields": 15,
+      "relationships": ["charts", "treatmentPlans", "medicalHistory"]
+    },
+    "dentalChart": {
+      "fields": 6,
+      "relationships": ["teeth (32 objects)", "snapshots"]
+    },
+    "tooth": {
+      "fields": 12,
+      "nestedObjects": [
+        "surfaces (5 surfaces)",
+        "conditions (6 booleans)",
+        "restorations (array)",
+        "periodontal (complex nested)",
+        "endodontic (complex nested)",
+        "pathology (array)"
+      ],
+      "complexity": "HIGH"
+    },
+    "periodontalData": {
+      "measurements": "6 sites × 3 measurements = 18 numbers per category",
+      "categories": ["probingDepth", "gingivalMargin"],
+      "indicators": "6 sites × 4 types = 24 booleans",
+      "complexity": "VERY HIGH"
+    }
+  },
+  "validationRules": {
+    "toothNumbers": "ISO 3950 (11-18, 21-28, 31-38, 41-48, 51-55, 61-65, 71-75, 81-85)",
+    "probingDepth": "0-12mm or >12",
+    "gingivalMargin": "-12 to +12mm",
+    "eptValue": "0-10",
+    "dates": "ISO 8601 format",
+    "ids": "UUIDs recommended",
+    "colors": "Hex format (#RRGGBB)"
+  },
+  "accessibilityConsiderations": {
+    "keyboard": "Full keyboard navigation support",
+    "aria": "ARIA labels on all interactive elements",
+    "contrast": "WCAG AA compliant color contrast",
+    "focusManagement": "Logical focus order and visible focus indicators",
+    "screenReader": "Meaningful labels and descriptions"
+  },
+  "performanceTargets": {
+    "initialLoad": "< 3 seconds",
+    "chartRender": "< 1 second for full chart",
+    "toothInteraction": "< 100ms response time",
+    "imageLoad": "Progressive loading with placeholders",
+    "bundleSize": "< 500KB gzipped (excluding images)"
+  },
+  "futureExtensions": {
+    "backend": "REST API or GraphQL for data persistence",
+    "realtime": "WebSocket for multi-user collaboration",
+    "mobile": "React Native port for iOS/Android",
+    "ai": "ML-powered pathology detection",
+    "imaging": "X-ray and photo upload/annotation",
+    "scheduling": "Appointment management integration",
+    "billing": "Treatment billing and insurance claims",
+    "portal": "Patient-facing portal"
+  },
+  "license": {
+    "specification": "MIT License - Free to use and modify",
+    "implementation": "Your choice of license for your implementation",
+    "assets": "Tooth images must be provided or created separately"
+  },
+  "support": {
+    "questions": "Refer to QUICK_START.md and IMPLEMENTATION_GUIDE.json",
+    "issues": "Review 'Common Pitfalls' section in IMPLEMENTATION_GUIDE.json",
+    "enhancements": "Follow 'Extension Points' for adding features"
+  }
+}
+

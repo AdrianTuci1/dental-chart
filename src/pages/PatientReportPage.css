@@ -1,0 +1,259 @@
+.report-container {
+    padding: var(--spacing-8);
+    max-width: 64rem;
+    /* max-w-5xl */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-8);
+}
+
+.report-title {
+    font-size: 1.5rem;
+    /* text-2xl */
+    line-height: 2rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+}
+
+.report-actions {
+    display: flex;
+    gap: var(--spacing-2);
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding-left: 1rem;
+    /* px-4 */
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    /* py-2 */
+    padding-bottom: 0.5rem;
+    border: 1px solid var(--color-gray-300);
+    border-radius: var(--radius-md);
+    color: var(--color-gray-700);
+    background-color: transparent;
+    transition: background-color 0.2s;
+}
+
+.action-btn:hover {
+    background-color: var(--color-gray-100);
+    /* bg-gray-50 equivalent */
+}
+
+.action-btn-primary {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding-left: 1rem;
+    /* px-4 */
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    /* py-2 */
+    padding-bottom: 0.5rem;
+    border-radius: var(--radius-md);
+    color: var(--color-white);
+    background-color: var(--color-primary);
+    transition: background-color 0.2s;
+}
+
+.action-btn-primary:hover {
+    background-color: var(--color-primary-dark);
+}
+
+.report-card {
+    background-color: var(--color-white);
+    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-8);
+    border: 1px solid var(--color-gray-200);
+}
+
+@media print {
+    .report-card {
+        box-shadow: none;
+        border: none;
+    }
+
+    .report-header {
+        display: none;
+    }
+
+    .report-container {
+        padding: 0;
+        max-width: none;
+    }
+}
+
+.clinic-header {
+    border-bottom: 1px solid var(--color-gray-200);
+    padding-bottom: var(--spacing-6);
+    margin-bottom: var(--spacing-6);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.clinic-name {
+    font-size: 1.875rem;
+    /* text-3xl */
+    line-height: 2.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+.clinic-info {
+    color: var(--color-gray-500);
+    margin-top: var(--spacing-1);
+}
+
+.report-meta {
+    text-align: right;
+}
+
+.report-meta-title {
+    font-size: 1.25rem;
+    /* text-xl */
+    line-height: 1.75rem;
+    font-weight: 700;
+    color: var(--color-gray-900);
+}
+
+.report-meta-date {
+    color: var(--color-gray-500);
+    margin-top: var(--spacing-1);
+}
+
+.section-container {
+    margin-bottom: var(--spacing-8);
+}
+
+.section-title {
+    font-size: 0.875rem;
+    /* text-sm */
+    font-weight: 700;
+    color: var(--color-gray-500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    /* tracking-wider */
+    margin-bottom: var(--spacing-3);
+}
+
+.patient-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-4);
+}
+
+.detail-label {
+    font-size: 0.875rem;
+    /* text-sm */
+    color: var(--color-gray-500);
+}
+
+.detail-value {
+    font-weight: 500;
+}
+
+.report-table {
+    min-width: 100%;
+    border-collapse: collapse;
+}
+
+.report-table thead th {
+    padding: var(--spacing-2) var(--spacing-3);
+    text-align: left;
+    font-size: 0.75rem;
+    /* text-xs */
+    font-weight: 500;
+    color: var(--color-gray-500);
+    text-transform: uppercase;
+}
+
+.report-table thead th.text-right {
+    text-align: right;
+}
+
+.report-table tbody tr {
+    border-top: 1px solid var(--color-gray-200);
+}
+
+.report-table td {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: 0.875rem;
+    /* text-sm */
+    color: var(--color-gray-900);
+}
+
+.report-table td.text-right {
+    text-align: right;
+}
+
+.report-table tfoot tr {
+    border-top: 1px solid var(--color-gray-200);
+}
+
+.report-table tfoot td {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-weight: 700;
+}
+
+.report-table tfoot td.text-right {
+    text-align: right;
+}
+
+.notes-content {
+    font-size: 0.875rem;
+    /* text-sm */
+    color: var(--color-gray-700);
+    background-color: var(--color-gray-100);
+    /* bg-gray-50 equivalent */
+    padding: var(--spacing-4);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-gray-200);
+}
+
+.report-footer {
+    margin-top: var(--spacing-12);
+    padding-top: var(--spacing-8);
+    border-top: 1px solid var(--color-gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.doctor-name {
+    font-size: 0.875rem;
+    /* text-sm */
+    font-weight: 700;
+    color: var(--color-gray-900);
+}
+
+.doctor-license {
+    font-size: 0.75rem;
+    /* text-xs */
+    color: var(--color-gray-500);
+}
+
+.signature-line {
+    height: 3rem;
+    /* h-12 */
+    width: 8rem;
+    /* w-32 */
+    border-bottom: 1px solid #9CA3AF;
+    /* border-gray-400 */
+    margin-bottom: var(--spacing-1);
+}
+
+.signature-label {
+    font-size: 0.75rem;
+    /* text-xs */
+    color: var(--color-gray-500);
+}

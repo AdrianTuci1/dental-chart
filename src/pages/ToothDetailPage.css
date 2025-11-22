@@ -1,0 +1,180 @@
+.tooth-detail-page {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+    background-color: #fff;
+    overflow: hidden;
+}
+
+.visualization-sidebar {
+    width: 200px;
+    flex-shrink: 0;
+    height: 100%;
+    border-right: 1px solid #e0e0e0;
+}
+
+.main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    /* Ensure it takes full height */
+}
+
+/* Top Half: Header & Status */
+.top-half-container {
+    height: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    /* Center vertically if needed, or flex-start */
+    padding: 30px 40px;
+    border-bottom: 1px solid #eee;
+}
+
+.detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.page-title {
+    font-size: 28px;
+    font-weight: 400;
+    color: #555;
+    margin: 0;
+}
+
+.header-actions {
+    display: flex;
+    gap: 20px;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    background: none;
+    border: none;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    color: #00a8e8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.action-btn:hover {
+    opacity: 0.8;
+}
+
+.status-message {
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    margin-top: auto;
+    /* Push to bottom of top container or center? */
+    margin-bottom: auto;
+}
+
+/* Bottom Half: Content Grid */
+.content-grid {
+    height: 50%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    /* Remove gap if using borders, or keep for spacing */
+}
+
+.section-container {
+    background: #fff;
+    padding: 30px 40px;
+    overflow-y: auto;
+    /* Allow scrolling within sections if needed */
+    border-right: 1px solid #eee;
+    /* Separator between columns */
+}
+
+.section-container:last-child {
+    border-right: none;
+}
+
+.section-header {
+    margin-bottom: 20px;
+}
+
+.section-header h2 {
+    font-size: 24px;
+    font-weight: 400;
+    color: #555;
+    margin: 0;
+}
+
+/* Endodontic List */
+.endo-list {
+    border-top: 1px solid #eee;
+}
+
+.endo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+    color: #666;
+}
+
+.endo-label {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+}
+
+.endo-action {
+    color: #888;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 12px;
+}
+
+/* Periodontal Grid */
+.perio-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.perio-card {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.perio-value {
+    font-size: 32px;
+    font-weight: 300;
+    color: #333;
+    line-height: 1;
+}
+
+.perio-sub {
+    font-size: 10px;
+    color: #aaa;
+    margin: 5px 0;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    display: inline-block;
+    padding: 0 8px;
+}
+
+.perio-label {
+    font-size: 10px;
+    color: #888;
+    font-weight: 600;
+    margin-top: 5px;
+}
