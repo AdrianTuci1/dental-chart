@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
 import useChartStore from '../../store/chartStore';
 import { generateMockTeeth } from '../../utils/mockData';
-import JawRow from './JawRow';
+
 import './ChartOverview.css';
 import NormalView from './views/NormalView';
 import UpperJawView from './views/UpperJawView';
@@ -11,7 +11,8 @@ import LowerJawView from './views/LowerJawView';
 const ChartOverview = () => {
     const { teeth, setTeeth, selectTooth } = useChartStore();
     const navigate = useNavigate();
-    const { patientId, view } = useParams();
+    const { patientId } = useParams();
+    const { chartView } = useOutletContext();
 
     useEffect(() => {
         if (Object.keys(teeth).length === 0) {
@@ -25,10 +26,10 @@ const ChartOverview = () => {
     };
 
     const renderView = () => {
-        switch (view) {
-            case 'upper-jaw':
+        switch (chartView) {
+            case 'upper':
                 return <UpperJawView teeth={teeth} onToothClick={handleToothClick} />;
-            case 'lower-jaw':
+            case 'lower':
                 return <LowerJawView teeth={teeth} onToothClick={handleToothClick} />;
             default:
                 return <NormalView teeth={teeth} onToothClick={handleToothClick} />;

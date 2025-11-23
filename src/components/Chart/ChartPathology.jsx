@@ -1,7 +1,7 @@
 import React from 'react';
 import useChartStore from '../../store/chartStore';
 
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
 import NormalView from './views/NormalView';
 import UpperJawView from './views/UpperJawView';
 import LowerJawView from './views/LowerJawView';
@@ -9,7 +9,8 @@ import LowerJawView from './views/LowerJawView';
 const ChartPathology = () => {
     const { teeth, selectedTooth, selectTooth } = useChartStore();
     const navigate = useNavigate();
-    const { patientId, view } = useParams();
+    const { patientId } = useParams();
+    const { chartView } = useOutletContext();
 
     const handleToothClick = (toothNumber) => {
         selectTooth(toothNumber);
@@ -17,10 +18,10 @@ const ChartPathology = () => {
     };
 
     const renderView = () => {
-        switch (view) {
-            case 'upper-jaw':
+        switch (chartView) {
+            case 'upper':
                 return <UpperJawView teeth={teeth} onToothClick={handleToothClick} />;
-            case 'lower-jaw':
+            case 'lower':
                 return <LowerJawView teeth={teeth} onToothClick={handleToothClick} />;
             default:
                 return <NormalView teeth={teeth} onToothClick={handleToothClick} />;
@@ -28,30 +29,8 @@ const ChartPathology = () => {
     };
 
     return (
-        <div className="flex flex-col gap-4">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                {renderView()}
-            </div>
-
-            {!selectedTooth ? (
-                <div className="p-8 text-center bg-white rounded-lg border border-gray-200">
-                    <p className="text-gray-500">Select a tooth from the chart above to add pathology.</p>
-                </div>
-            ) : (
-                <div className="p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                    <h2 className="text-lg font-bold mb-4">Add Pathology to Tooth {selectedTooth}</h2>
-                    <div className="grid grid-cols-3 gap-4">
-                        {['Caries', 'Fracture', 'Wear', 'Discoloration', 'Abscess'].map(type => (
-                            <button
-                                key={type}
-                                className="p-4 border rounded-lg hover:bg-red-50 hover:border-red-200 transition-colors text-center"
-                            >
-                                <span className="block font-medium text-gray-900">{type}</span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
+        <div className="chart-overview-container">
+            {renderView()}
         </div>
     );
 };

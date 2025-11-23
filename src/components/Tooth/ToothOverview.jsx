@@ -81,7 +81,7 @@ const ToothOverview = () => {
                         <button className="action-btn" onClick={() => navigate('pathology')}>
                             <PlusCircle size={16} /> PATHOLOGY
                         </button>
-                        <button className="action-btn">
+                        <button className="action-btn" onClick={() => navigate('restoration')}>
                             <PlusCircle size={16} /> RESTORATION
                         </button>
                     </div>

@@ -1,5 +1,6 @@
 import React from 'react';
-import JawRow from '../JawRow';
+import ToothRenderer from '../ToothRenderer';
+import { mapToothDataToConditions } from '../../../utils/toothUtils';
 
 const LowerJawView = ({ teeth, onToothClick }) => {
     // Quadrants following standard dental notation
@@ -8,43 +9,48 @@ const LowerJawView = ({ teeth, onToothClick }) => {
     const q4 = [48, 47, 46, 45, 44, 43, 42, 41];
     const q3 = [31, 32, 33, 34, 35, 36, 37, 38];
 
-    const getTeethObjects = (numbers) => numbers.map(n => teeth[n]).filter(Boolean);
+    const lowerTeethNumbers = [...q4, ...q3];
+
+    const renderTooth = (toothNumber, views) => {
+        const tooth = teeth[toothNumber];
+        if (!tooth) return null;
+
+        return (
+            <li key={toothNumber} className="tooth" data-number={toothNumber}>
+                {views.map((view, index) => {
+                    if (view === 'number') {
+                        return (
+                            <span key="number" className="number" onClick={() => onToothClick(toothNumber)}>
+                                {toothNumber}
+                            </span>
+                        );
+                    }
+                    return (
+                        <div key={view} className={`trigger visualization view-${view === 'frontal' ? 'buccal' : view === 'topview' ? 'occlusal' : 'lingual'}`} onClick={() => onToothClick(toothNumber)}>
+                            <ToothRenderer
+                                toothNumber={toothNumber}
+                                view={view}
+                                conditions={mapToothDataToConditions(tooth)}
+                                interactive={true}
+                                onSurfaceClick={(surface) => console.log(`Clicked surface ${surface} on tooth ${toothNumber}`)}
+                            />
+                        </div>
+                    );
+                })}
+            </li>
+        );
+    };
 
     return (
-        <div className="chart-overview-container">
-            <table className="dental-chart-table">
-                <tbody>
-                    {/* Row 1: Lower Jaw Palatal */}
-                    <tr className="lower-palatal-row">
-                        <td>
-                            <div className="quadrant-container">
-                                <JawRow teeth={getTeethObjects(q4)} view="lingual" onToothClick={onToothClick} />
-                                <JawRow teeth={getTeethObjects(q3)} view="lingual" onToothClick={onToothClick} />
-                            </div>
-                        </td>
-                    </tr>
-
-                    {/* Row 2: Lower Jaw Occlusal */}
-                    <tr className="lower-occlusal-row">
-                        <td>
-                            <div className="quadrant-container">
-                                <JawRow teeth={getTeethObjects(q4)} view="topview" onToothClick={onToothClick} />
-                                <JawRow teeth={getTeethObjects(q3)} view="topview" onToothClick={onToothClick} />
-                            </div>
-                        </td>
-                    </tr>
-
-                    {/* Row 3: Lower Jaw Buccal */}
-                    <tr className="lower-buccal-row">
-                        <td>
-                            <div className="quadrant-container">
-                                <JawRow teeth={getTeethObjects(q4)} view="frontal" onToothClick={onToothClick} />
-                                <JawRow teeth={getTeethObjects(q3)} view="frontal" onToothClick={onToothClick} />
-                            </div>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+        <div className="chart-overview-container" data-view="lower-jaw">
+            <div className="full-mouth jaw-box">
+                {/* Lower Jaw */}
+                <ol className="jaw" data-type="lower">
+                    {lowerTeethNumbers.map(number =>
+                        renderTooth(number, ['lingual', 'topview', 'frontal', 'number'])
+                    )}
+                </ol>
+            </div>
         </div>
     );
 };

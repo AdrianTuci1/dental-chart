@@ -1,0 +1,218 @@
+{
+    "description": "Tooth image configurations using ISO numbering with hash-based filenames organized in subfolders",
+    "imageStructure": {
+        "baseDirectory": "/assets/teeth/",
+        "folderStructure": "{toothNumber}/{condition}/{view}/",
+        "fileNaming": "hash-based (e.g., abc123.png)",
+        "fullPathExample": "/assets/teeth/11/withRoots/buccal/abc123.png"
+    },
+    "mirroringRules": {
+        "upperLeft": {
+            "range": "21-28",
+            "mirrors": "11-18",
+            "description": "Upper left teeth (21-28) use mirrored images from upper right teeth (11-18)"
+        },
+        "lowerRight": {
+            "range": "41-48",
+            "mirrors": "31-38",
+            "description": "Lower right teeth (41-48) use mirrored images from lower left teeth (31-38)"
+        }
+    },
+    "physicalImages": {
+        "permanent": {
+            "upperRight": {
+                "teeth": [
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18
+                ],
+                "description": "Physical images for upper right permanent teeth"
+            },
+            "lowerLeft": {
+                "teeth": [
+                    31,
+                    32,
+                    33,
+                    34,
+                    35,
+                    36,
+                    37,
+                    38
+                ],
+                "description": "Physical images for lower left permanent teeth"
+            }
+        },
+        "deciduous": {
+            "upperRight": {
+                "teeth": [
+                    51,
+                    52,
+                    53,
+                    54,
+                    55
+                ],
+                "description": "Physical images for upper right deciduous teeth"
+            },
+            "upperLeft": {
+                "teeth": [
+                    61,
+                    62,
+                    63,
+                    64,
+                    65
+                ],
+                "description": "Physical images for upper left deciduous teeth"
+            },
+            "lowerLeft": {
+                "teeth": [
+                    71,
+                    72,
+                    73,
+                    74,
+                    75
+                ],
+                "description": "Physical images for lower left deciduous teeth"
+            },
+            "lowerRight": {
+                "teeth": [
+                    81,
+                    82,
+                    83,
+                    84,
+                    85
+                ],
+                "description": "Physical images for lower right deciduous teeth"
+            }
+        }
+    },
+    "conditions": [
+        "withRoots",
+        "withoutRoots",
+        "missing",
+        "implant"
+    ],
+    "views": {
+        "anterior": [
+            "buccal",
+            "lingual",
+            "incisal"
+        ],
+        "posterior": [
+            "buccal",
+            "lingual",
+            "occlusal"
+        ]
+    },
+    "toothTypes": {
+        "11": "incisor",
+        "12": "incisor",
+        "13": "canine",
+        "14": "premolar",
+        "15": "premolar",
+        "16": "molar",
+        "17": "molar",
+        "18": "molar",
+        "31": "incisor",
+        "32": "incisor",
+        "33": "canine",
+        "34": "premolar",
+        "35": "premolar",
+        "36": "molar",
+        "37": "molar",
+        "38": "molar",
+        "51": "incisor",
+        "52": "incisor",
+        "53": "canine",
+        "54": "molar",
+        "55": "molar",
+        "61": "incisor",
+        "62": "incisor",
+        "63": "canine",
+        "64": "molar",
+        "65": "molar",
+        "71": "incisor",
+        "72": "incisor",
+        "73": "canine",
+        "74": "molar",
+        "75": "molar",
+        "81": "incisor",
+        "82": "incisor",
+        "83": "canine",
+        "84": "molar",
+        "85": "molar"
+    },
+    "imageRegistry": {
+        "11": {
+            "withRoots": {
+                "buccal": "/assets/teeth/11/buccal.a23a7db7.png",
+                "lingual": "/assets/teeth/11/lingual.10eb5e0c.png",
+                "incisal": "/assets/teeth/11/incisal.de514430.png"
+            },
+            "withoutRoots": {
+                "buccal": "/assets/teeth/11/buccal.5d5c5ba6.png",
+                "lingual": "hash5.png",
+                "incisal": "hash6.png"
+            },
+            "missing": {
+                "buccal": "hash7.png",
+                "lingual": "hash8.png",
+                "incisal": "hash9.png"
+            },
+            "implant": {
+                "buccal": "hash10.png",
+                "lingual": "hash11.png",
+                "incisal": "hash12.png"
+            }
+        }
+    },
+    "examples": [
+        {
+            "tooth": 11,
+            "condition": "withRoots",
+            "view": "buccal",
+            "folder": "/assets/teeth/11/withRoots/buccal/",
+            "filename": "hash1.png",
+            "fullPath": "/assets/teeth/11/withRoots/buccal/hash1.png",
+            "description": "Upper right central incisor with roots, buccal view"
+        },
+        {
+            "tooth": 21,
+            "condition": "withRoots",
+            "view": "buccal",
+            "folder": "/assets/teeth/11/withRoots/buccal/",
+            "filename": "hash1.png",
+            "fullPath": "/assets/teeth/11/withRoots/buccal/hash1.png",
+            "mirrored": true,
+            "description": "Upper left central incisor (uses mirrored image from tooth 11)"
+        },
+        {
+            "tooth": 36,
+            "condition": "implant",
+            "view": "occlusal",
+            "folder": "/assets/teeth/36/implant/occlusal/",
+            "filename": "hash_example.png",
+            "fullPath": "/assets/teeth/36/implant/occlusal/hash_example.png",
+            "description": "Lower left first molar implant, occlusal view"
+        }
+    ],
+    "notes": {
+        "totalPhysicalImages": "26 teeth × 4 conditions × 3 views = 312 images needed",
+        "breakdown": {
+            "permanentUpperRight": "8 teeth (11-18)",
+            "permanentLowerLeft": "8 teeth (31-38)",
+            "deciduousAll": "10 teeth (51-55, 61-65, 71-75, 81-85)"
+        },
+        "viewsByToothType": {
+            "incisors": "buccal, lingual, incisal",
+            "canines": "buccal, lingual, incisal",
+            "premolars": "buccal, lingual, occlusal",
+            "molars": "buccal, lingual, occlusal"
+        },
+        "usage": "Images are organized in subfolders by tooth number, condition, and view. The imageRegistry maps each tooth/condition/view combination to its hash filename. You can add actual hash values when uploading images."
+    }
+}

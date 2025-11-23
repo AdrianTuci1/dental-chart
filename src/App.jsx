@@ -54,7 +54,7 @@ function App() {
                 <Route path="endodontic" element={<ToothEndodontic />} />
                 <Route path="periodontal/:site?" element={<ToothPeriodontal />} />
                 <Route path="pathology/:type?" element={<ToothPathology />} />
-                <Route path="restoration" element={<ToothRestoration />} />
+                <Route path="restoration/:type?" element={<ToothRestoration />} />
               </Route>
             </Route>
           </Routes>

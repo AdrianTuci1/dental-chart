@@ -1,5 +1,38 @@
 import React from 'react';
+import useChartStore from '../../store/chartStore';
+import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
 
-const ChartQuickselect = () => <div>Chart Quick Select</div>;
+import NormalView from './views/NormalView';
+import UpperJawView from './views/UpperJawView';
+import LowerJawView from './views/LowerJawView';
+
+const ChartQuickselect = () => {
+    const { teeth, selectTooth } = useChartStore();
+    const navigate = useNavigate();
+    const { patientId } = useParams();
+    const { chartView } = useOutletContext();
+
+    const handleToothClick = (toothNumber) => {
+        selectTooth(toothNumber);
+        navigate(`/patients/${patientId}/tooth/${toothNumber}`);
+    };
+
+    const renderView = () => {
+        switch (chartView) {
+            case 'upper':
+                return <UpperJawView teeth={teeth} onToothClick={handleToothClick} />;
+            case 'lower':
+                return <LowerJawView teeth={teeth} onToothClick={handleToothClick} />;
+            default:
+                return <NormalView teeth={teeth} onToothClick={handleToothClick} />;
+        }
+    };
+
+    return (
+        <div className="chart-overview-container">
+            {renderView()}
+        </div>
+    );
+};
 
 export default ChartQuickselect;

@@ -119,7 +119,7 @@ const PatientLayout = () => {
             </div>
 
             {/* Main Content Area */}
-            <div className="layout-content">
+            <div className="layout-content" data-view="patient">
                 <Outlet />
             </div>
         </div>

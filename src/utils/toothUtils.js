@@ -33,15 +33,15 @@ export const shouldMirror = (toothNumber) => {
 
 export const getBaseToothNumber = (toothNumber) => {
     // Returns the corresponding right-side tooth number for a left-side tooth
-    // e.g., 21 -> 11, 36 -> 46
+    // e.g., 21 -> 11, 41 -> 31
     const n = parseInt(toothNumber);
     const quadrant = Math.floor(n / 10);
     const index = n % 10;
 
-    if (quadrant === 2) return 10 + index;
-    if (quadrant === 3) return 40 + index;
-    if (quadrant === 6) return 50 + index;
-    if (quadrant === 7) return 80 + index;
+    if (quadrant === 2) return 10 + index; // Upper left -> Upper right
+    if (quadrant === 4) return 30 + index; // Lower right -> Lower left
+    if (quadrant === 6) return 50 + index; // Deciduous upper left -> upper right
+    if (quadrant === 8) return 70 + index; // Deciduous lower right -> lower left
 
     return n;
 };
@@ -109,4 +109,86 @@ export const mapToothDataToConditions = (tooth) => {
     }
 
     return conditions;
+};
+
+// --- Tooth Image Loading Utilities ---
+import toothImagesData from '../data/toothImages.json';
+
+/**
+ * Get the tooth image path based on tooth number, condition, and view
+ * @param {number|string} toothNumber - ISO tooth number (11-18, 21-28, etc.)
+ * @param {string} condition - Tooth condition: 'withRoots', 'withoutRoots', 'missing', 'implant'
+ * @param {string} view - View type: 'buccal', 'lingual', 'incisal', 'occlusal'
+ * @returns {string|null} - Image path or null if not found
+ */
+export const getToothImage = (toothNumber, condition = 'withRoots', view = 'buccal') => {
+    const toothNum = parseInt(toothNumber);
+    const baseToothNum = getBaseToothNumber(toothNum);
+
+    // Get the image from the registry
+    const toothRegistry = toothImagesData.imageRegistry?.[baseToothNum.toString()];
+    if (!toothRegistry) {
+        console.warn(`No image registry found for tooth ${baseToothNum}`);
+        return null;
+    }
+
+    const conditionImages = toothRegistry[condition];
+    if (!conditionImages) {
+        console.warn(`No images found for condition '${condition}' on tooth ${baseToothNum}`);
+        return null;
+    }
+
+    const imagePath = conditionImages[view];
+    if (!imagePath) {
+        console.warn(`No image found for view '${view}' on tooth ${baseToothNum}, condition '${condition}'`);
+        return null;
+    }
+
+    // If it's a placeholder hash, return null
+    if (imagePath.startsWith('hash')) {
+        return null;
+    }
+
+    return imagePath;
+};
+
+/**
+ * Map view names from component to JSON format
+ * @param {string} view - Component view: 'frontal', 'lingual', 'topview'
+ * @param {number} toothNumber - ISO tooth number
+ * @returns {string} - JSON view name: 'buccal', 'lingual', 'incisal', 'occlusal'
+ */
+export const mapViewToImageView = (view, toothNumber) => {
+    const toothType = toothImagesData.toothTypes?.[toothNumber.toString()];
+
+    if (view === 'frontal') {
+        return 'buccal';
+    } else if (view === 'lingual') {
+        return 'lingual';
+    } else if (view === 'topview') {
+        // Incisors and canines use 'incisal', premolars and molars use 'occlusal'
+        if (toothType === 'incisor' || toothType === 'canine') {
+            return 'incisal';
+        } else {
+            return 'occlusal';
+        }
+    }
+
+    return 'buccal'; // Default
+};
+
+/**
+ * Get tooth condition from tooth data
+ * @param {object} tooth - Tooth data object
+ * @returns {string} - Condition: 'withRoots', 'withoutRoots', 'missing', 'implant'
+ */
+export const getToothCondition = (tooth) => {
+    if (!tooth) return 'withRoots';
+
+    if (tooth.status === 'missing') return 'missing';
+    if (tooth.restoration?.type === 'implant') return 'implant';
+
+    // Default to withRoots for now
+    // You can add more logic here based on your data model
+    return 'withRoots';
 };

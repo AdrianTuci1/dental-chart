@@ -192,6 +192,111 @@ export const PathologyOptions = Object.freeze({
     }
 });
 
+// Restoration Options Configuration
+export const RestorationOptions = Object.freeze({
+    FILLING: {
+        id: 'filling',
+        label: 'Filling',
+        steps: [
+            {
+                id: 'material',
+                label: 'Material',
+                options: [
+                    { id: 'composite', label: 'Composite', value: 'Composite' },
+                    { id: 'ceramic', label: 'Ceramic', value: 'Ceramic' },
+                    { id: 'gold', label: 'Gold', value: 'Gold' },
+                    { id: 'non-precious', label: 'Non-Precious Metal', value: 'Non-Precious' }
+                ]
+            },
+            {
+                id: 'quality',
+                label: 'Quality',
+                options: [
+                    { id: 'sufficient', label: 'Sufficient', value: 'Sufficient' },
+                    { id: 'uncertain', label: 'Uncertain', value: 'Uncertain' },
+                    { id: 'insufficient', label: 'Insufficient', value: 'Insufficient' }
+                ]
+            }
+        ]
+    },
+    VENEER: {
+        id: 'veneer',
+        label: 'Veneer',
+        steps: [
+            {
+                id: 'material',
+                label: 'Material',
+                options: [
+                    { id: 'composite', label: 'Composite', value: 'Composite' },
+                    { id: 'ceramic', label: 'Ceramic', value: 'Ceramic' },
+                    { id: 'gold', label: 'Gold', value: 'Gold' },
+                    { id: 'non-precious', label: 'Non-Precious Metal', value: 'Non-Precious' }
+                ]
+            },
+            {
+                id: 'quality',
+                label: 'Quality',
+                options: [
+                    { id: 'sufficient', label: 'Sufficient', value: 'Sufficient' },
+                    { id: 'uncertain', label: 'Uncertain', value: 'Uncertain' },
+                    { id: 'insufficient', label: 'Insufficient', value: 'Insufficient' }
+                ]
+            },
+            {
+                id: 'detail',
+                label: 'Detail',
+                options: [
+                    { id: 'overhang', label: 'Overhang', value: 'Overhang' },
+                    { id: 'flush', label: 'Flush', value: 'Flush' },
+                    { id: 'shortfall', label: 'Shortfall', value: 'Shortfall' }
+                ]
+            }
+        ]
+    },
+    CROWN: {
+        id: 'crown',
+        label: 'Crown',
+        steps: [
+            {
+                id: 'material',
+                label: 'Material',
+                options: [
+                    { id: 'composite', label: 'Composite', value: 'Composite' },
+                    { id: 'ceramic', label: 'Ceramic', value: 'Ceramic' },
+                    { id: 'gold', label: 'Gold', value: 'Gold' },
+                    { id: 'non-precious', label: 'Non-Precious Metal', value: 'Non-Precious' }
+                ]
+            },
+            {
+                id: 'crownType',
+                label: 'Crown Type',
+                options: [
+                    { id: 'single', label: 'Single Crown', value: 'Single' },
+                    { id: 'abutment', label: 'Abutment', value: 'Abutment' },
+                    { id: 'pontic', label: 'Pontic', value: 'Pontic' }
+                ]
+            },
+            {
+                id: 'crownBase',
+                label: 'Crown Base',
+                options: [
+                    { id: 'natural', label: 'Natural', value: 'Natural' },
+                    { id: 'implant', label: 'Implant', value: 'Implant' }
+                ]
+            },
+            {
+                id: 'implantType',
+                label: 'Implant Type',
+                dependsOn: 'implant', // Only show if 'implant' is selected in previous step
+                options: [
+                    { id: 'bone-level', label: 'Bone Level', value: 'Bone Level' },
+                    { id: 'tissue-level', label: 'Tissue Level', value: 'Tissue Level' }
+                ]
+            }
+        ]
+    }
+});
+
 // --- Classes ---
 
 export class Patient {

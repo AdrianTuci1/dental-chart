@@ -5,144 +5,159 @@
     width: 100%;
     height: 100%;
     background-color: transparent;
+    overflow: auto;
 }
 
-.dental-chart-table {
-    border-collapse: collapse;
-    margin: 0 auto;
+div[data-view=patient]>main {
+    flex-grow: 1;
+}
+
+main[data-view=chart] {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 24px;
+    color: #4d5565;
+    text-align: center;
+}
+
+main[data-view=chart]>div[data-view=full-mouth] {
+    padding: 45px 0;
+}
+
+main[data-view=chart]>div[data-view] {
+    position: relative;
+    margin: auto 0;
+}
+
+main[data-view=chart] .jaw-box {
+    /* position: relative;
+    width: 118vh;
+    min-width: 774.08px;
+    max-width: 100%; */
+    padding: 0 72px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
     background-color: #ffffff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border-radius: 8px;
-    overflow: hidden;
 }
 
-.dental-chart-table tr {
-    border: 1px solid #e5e7eb;
+ol,
+ol>li,
+ul,
+ul>li {
+    display: block;
+    margin: 0;
+    padding: 0;
 }
 
-.dental-chart-table th,
-.dental-chart-table td {
-    padding: 0.5rem;
+ol,
+ul {
+    position: relative;
+    list-style: none;
+}
+
+.jaw {
+    display: flex;
+    list-style-type: none;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+    padding-inline-start: 40px;
+    unicode-bidi: isolate;
+    padding: 0;
+    margin: 0;
+    gap: 4px;
+}
+
+main[data-view=chart] .jaw-box.full-mouth .jaw[data-type=upper] .tooth {
+    padding-top: 64px;
+}
+
+main[data-view=chart] .jaw-box .jaw .tooth {
+    position: relative;
     text-align: center;
-    vertical-align: middle;
-    border: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 48px;
 }
 
-/* Row labels */
-.row-label {
+main[data-view=chart] .jaw-box .jaw .tooth .trigger:not([role=none]) {
+    cursor: pointer;
+}
+
+main[data-view=chart] .jaw-box.full-mouth .tooth .number {
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+main[data-view=chart] .jaw-box .jaw .tooth .number {
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: normal;
+    display: block;
+    width: 24px;
+    height: 24px;
+    padding: 4px;
+    border-radius: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    color: inherit;
     background-color: #f3f4f6;
     font-weight: 600;
-    color: #374151;
-    padding: 0.75rem 1rem;
-    min-width: 120px;
-    text-align: right;
+    text-align: center;
 }
 
-/* Quadrant containers */
-.quadrant-container {
-    display: flex;
-    gap: 2rem;
-    padding: 0.5rem;
-    justify-content: center;
-}
-
-/* Tooth numbers row - matches JawRow gap */
-.tooth-numbers-row {
+.visualization {
+    /* Container for the canvas/tooth renderer */
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 0.25rem;
-    /* Same as gap-1 in JawRow (4px) */
-    padding-top: 0.5rem;
-    padding-bottom: 0.5rem;
 }
 
-/* Upper jaw buccal row */
-.upper-buccal-row {
+/* View specific backgrounds */
+.view-buccal {
     background-color: #fef3c7;
+    padding: 4px;
+    border-radius: 4px;
 }
 
-/* Upper jaw occlusal row */
-.upper-occlusal-row {
+.view-occlusal {
     background-color: #dbeafe;
+    padding: 4px;
+    border-radius: 4px;
 }
 
-/* Upper jaw tooth numbers row */
-.upper-numbers-row {
-    background-color: #f3f4f6;
-    font-weight: 600;
-    font-size: 0.875rem;
-}
-
-/* Lower jaw tooth numbers row */
-.lower-numbers-row {
-    background-color: #f3f4f6;
-    font-weight: 600;
-    font-size: 0.875rem;
-}
-
-/* Lower jaw occlusal row */
-.lower-occlusal-row {
-    background-color: #dbeafe;
-}
-
-/* Lower jaw buccal row */
-.lower-buccal-row {
-    background-color: #fef3c7;
-}
-
-/* Divider between upper and lower jaws */
-.jaw-divider {
-    height: 2px;
-    background-color: #9ca3af;
-    margin: 0.5rem 0;
-}
-
-/* Tooth number cells - exact width to match ToothRenderer */
-.tooth-number-cell {
-    width: 60px;
-    /* Exact match with ToothRenderer width */
-    min-width: 60px;
-    max-width: 60px;
-    padding: 0.5rem 0;
-    font-size: 0.875rem;
-    color: #1f2937;
-    text-align: center;
-    flex-shrink: 0;
-    box-sizing: border-box;
+.view-lingual {
+    background-color: #e5e7eb;
+    padding: 4px;
+    border-radius: 4px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 1024px) {
-    .chart-overview-container {
+    main[data-view=chart] .jaw-box {
+        width: 100%;
+        min-width: auto;
         padding: 1rem;
-    }
-
-    .quadrant-container {
-        gap: 1rem;
     }
 }
 
 @media (max-width: 768px) {
-    .chart-overview-container {
-        padding: 0.5rem;
+    .jaw {
+        gap: 2px;
     }
 
-    .row-label {
-        min-width: 80px;
-        font-size: 0.75rem;
-        padding: 0.5rem;
-    }
-
-    .tooth-number-cell {
-        width: 45px;
-        min-width: 45px;
-        max-width: 45px;
-        padding: 0.25rem 0;
-        font-size: 0.75rem;
-    }
-
-    .quadrant-container {
-        gap: 0.5rem;
+    main[data-view=chart] .jaw-box .jaw .tooth .number {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        padding: 2px;
     }
 }

@@ -1,31 +1,39 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import usePatientStore from '../store/patientStore';
+import useChartStore from '../store/chartStore';
 import { Calendar } from 'lucide-react';
 
 import './PatientChartPage.css';
 
 const PatientChartPage = () => {
     const { selectedPatient } = usePatientStore();
+    const { chartView, setChartView } = useChartStore();
     const location = useLocation();
     const navigate = useNavigate();
 
-    // Determine current view from URL
-    const getChartView = () => {
+    // Sync chartView with URL on initial load only
+    useEffect(() => {
         const path = location.pathname;
-        if (path.endsWith('/upper-jaw')) return 'upper';
-        if (path.endsWith('/lower-jaw')) return 'lower';
-        return 'normal';
-    };
-
-    const chartView = getChartView();
+        if (path.endsWith('/upper-jaw')) {
+            setChartView('upper');
+        } else if (path.endsWith('/lower-jaw')) {
+            setChartView('lower');
+        } else if (!path.includes('/chart/')) {
+            // Only reset to normal if we're navigating away from chart entirely
+            setChartView('normal');
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Only run on mount
 
     const handleViewChange = (view) => {
+        setChartView(view);
+
         const currentPath = location.pathname;
         // Remove existing view suffix
         let basePath = currentPath.replace(/\/upper-jaw$/, '').replace(/\/lower-jaw$/, '');
 
-        // Remove trailing slash if present (e.g. if we were at /chart/)
+        // Remove trailing slash if present
         if (basePath.endsWith('/') && basePath.length > 1) {
             basePath = basePath.slice(0, -1);
         }
@@ -37,8 +45,20 @@ const PatientChartPage = () => {
         }
     };
 
+    // Helper to get the correct path for navigation links
+    const getNavPath = (basePath) => {
+        const patientId = selectedPatient?.id || location.pathname.split('/')[2];
+        const chartBase = `/patients/${patientId}/chart`;
+        const fullBasePath = basePath ? `${chartBase}/${basePath}` : chartBase;
+
+        if (chartView === 'normal') {
+            return fullBasePath;
+        }
+        return `${fullBasePath}/${chartView}-jaw`;
+    };
+
     return (
-        <div className="chart-page-container">
+        <main className="chart-page-container" data-view="chart">
             {/* Patient Name - Top Left (Absolute) */}
             <div className="chart-patient-name">
                 {selectedPatient?.name || 'Patient'}
@@ -48,7 +68,7 @@ const PatientChartPage = () => {
             <div className="chart-header">
                 <div className="chart-nav">
                     <NavLink
-                        to=""
+                        to={getNavPath('')}
                         end
                         className={() => {
                             const path = location.pathname;
@@ -62,7 +82,7 @@ const PatientChartPage = () => {
                         Overview
                     </NavLink>
                     <NavLink
-                        to="quickselect"
+                        to={getNavPath('quickselect')}
                         className={({ isActive }) =>
                             `chart-nav-link ${isActive ? 'active' : ''}`
                         }
@@ -70,7 +90,7 @@ const PatientChartPage = () => {
                         Quickselect
                     </NavLink>
                     <NavLink
-                        to="periodontal-probing"
+                        to={getNavPath('periodontal-probing')}
                         className={({ isActive }) =>
                             `chart-nav-link ${isActive ? 'active' : ''}`
                         }
@@ -78,7 +98,7 @@ const PatientChartPage = () => {
                         Periodontal Probing
                     </NavLink>
                     <NavLink
-                        to="pathology"
+                        to={getNavPath('pathology')}
                         className={({ isActive }) =>
                             `chart-nav-link ${isActive ? 'active' : ''}`
                         }
@@ -86,7 +106,7 @@ const PatientChartPage = () => {
                         Pathology
                     </NavLink>
                     <NavLink
-                        to="restoration"
+                        to={getNavPath('restoration')}
                         className={({ isActive }) =>
                             `chart-nav-link ${isActive ? 'active' : ''}`
                         }
@@ -124,10 +144,8 @@ const PatientChartPage = () => {
             </button>
 
             {/* Main Chart Content */}
-            <div className="chart-outlet-container">
-                <Outlet context={{ chartView }} />
-            </div>
-        </div>
+            <Outlet context={{ chartView }} />
+        </main>
     );
 };
 
