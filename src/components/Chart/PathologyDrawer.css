@@ -1,0 +1,257 @@
+.pathology-drawer {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 400px;
+    background-color: #ffffff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease-in-out;
+}
+
+.pathology-drawer.left {
+    left: 0;
+    transform: translateX(0);
+}
+
+.pathology-drawer.right {
+    right: 0;
+    transform: translateX(0);
+}
+
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fff;
+}
+
+.drawer-nav {
+    display: flex;
+    gap: 16px;
+}
+
+.nav-arrow {
+    cursor: pointer;
+    color: #3b82f6;
+    font-size: 1.2rem;
+}
+
+.tooth-title {
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.drawer-actions {
+    display: flex;
+    gap: 16px;
+    color: #9ca3af;
+}
+
+.action-icon {
+    cursor: pointer;
+}
+
+.drawer-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.scrollable-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.added-items-list {
+    padding: 12px;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.added-item {
+    padding: 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    background-color: white;
+    cursor: pointer;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+}
+
+.added-item:hover {
+    border-color: #3b82f6;
+}
+
+.added-item-text {
+    font-weight: 600;
+    color: #374151;
+}
+
+.added-item-details {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+.type-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 16px;
+}
+
+.type-btn {
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    font-weight: 500;
+    color: #4b5563;
+    text-align: center;
+}
+
+.type-btn:hover {
+    border-color: #3b82f6;
+    background-color: #f3f4f6;
+}
+
+/* Configuration View Styles */
+.configuration-view {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    gap: 16px;
+    flex: 1;
+}
+
+.summary-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.summary-row {
+    display: flex;
+    align-items: baseline;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.summary-label {
+    font-weight: 700;
+    color: #9ca3af;
+    /* Gray-400 */
+    margin-right: 8px;
+    text-transform: uppercase;
+    min-width: 80px;
+}
+
+.summary-value {
+    color: #0ea5e9;
+    /* Sky-500 */
+    font-weight: 500;
+}
+
+.step-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.step-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #9ca3af;
+    text-transform: uppercase;
+}
+
+.options-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stack-btn {
+    width: 100%;
+    padding: 16px;
+    background-color: #f3f4f6;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #4b5563;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.stack-btn:hover {
+    background-color: #e5e7eb;
+    color: #1f2937;
+}
+
+.stack-btn.active {
+    background-color: #6b7280;
+    color: white;
+}
+
+.continue-btn {
+    width: 100%;
+    padding: 12px;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.continue-btn:disabled {
+    background-color: #d1d5db;
+    cursor: not-allowed;
+}
+
+/* Fixed Footer for Save Button */
+.fixed-footer {
+    padding: 16px;
+    border-top: 1px solid #e5e7eb;
+    background-color: white;
+}
+
+.save-full {
+    width: 100%;
+    padding: 16px;
+    background-color: #0ea5e9;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.save-full:hover {
+    background-color: #0284c7;
+}
+
+/* Zones container in drawer */
+.drawer-zones {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+    transform: scale(0.9);
+}

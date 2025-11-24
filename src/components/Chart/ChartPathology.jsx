@@ -1,36 +1,82 @@
 import React from 'react';
 import useChartStore from '../../store/chartStore';
+import { useOutletContext } from 'react-router-dom';
 
-import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
 import NormalView from './views/NormalView';
 import UpperJawView from './views/UpperJawView';
 import LowerJawView from './views/LowerJawView';
+import PathologyDrawer from './PathologyDrawer';
 
 const ChartPathology = () => {
-    const { teeth, selectedTooth, selectTooth } = useChartStore();
-    const navigate = useNavigate();
-    const { patientId } = useParams();
+    const { teeth, selectTooth, selectedTooth } = useChartStore();
     const { chartView } = useOutletContext();
 
     const handleToothClick = (toothNumber) => {
         selectTooth(toothNumber);
-        navigate(`/patients/${patientId}/tooth/${toothNumber}/pathology`);
+    };
+
+    const handleCloseDrawer = () => {
+        selectTooth(null);
+    };
+
+    const handleNextTooth = () => {
+        if (!selectedTooth) return;
+        const current = parseInt(selectedTooth);
+        const toothNumbers = Object.keys(teeth).map(Number).sort((a, b) => a - b);
+        const currentIndex = toothNumbers.indexOf(current);
+        if (currentIndex !== -1 && currentIndex < toothNumbers.length - 1) {
+            selectTooth(toothNumbers[currentIndex + 1]);
+        }
+    };
+
+    const handlePreviousTooth = () => {
+        if (!selectedTooth) return;
+        const current = parseInt(selectedTooth);
+        const toothNumbers = Object.keys(teeth).map(Number).sort((a, b) => a - b);
+        const currentIndex = toothNumbers.indexOf(current);
+        if (currentIndex > 0) {
+            selectTooth(toothNumbers[currentIndex - 1]);
+        }
+    };
+
+    const getDrawerPosition = (toothNumber) => {
+        if (!toothNumber) return 'right';
+        const n = parseInt(toothNumber);
+        if ((n >= 11 && n <= 18) || (n >= 41 && n <= 48)) {
+            return 'right';
+        }
+        return 'left';
     };
 
     const renderView = () => {
+        const props = {
+            teeth,
+            onToothClick: handleToothClick,
+            activeTooth: selectedTooth
+        };
+
         switch (chartView) {
             case 'upper':
-                return <UpperJawView teeth={teeth} onToothClick={handleToothClick} />;
+                return <UpperJawView {...props} />;
             case 'lower':
-                return <LowerJawView teeth={teeth} onToothClick={handleToothClick} />;
+                return <LowerJawView {...props} />;
             default:
-                return <NormalView teeth={teeth} onToothClick={handleToothClick} />;
+                return <NormalView {...props} />;
         }
     };
 
     return (
         <div className="chart-overview-container">
             {renderView()}
+            {selectedTooth && (
+                <PathologyDrawer
+                    toothNumber={selectedTooth}
+                    position={getDrawerPosition(selectedTooth)}
+                    onClose={handleCloseDrawer}
+                    onNext={handleNextTooth}
+                    onPrevious={handlePreviousTooth}
+                />
+            )}
         </div>
     );
 };
