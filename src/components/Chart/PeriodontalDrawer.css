@@ -1,0 +1,280 @@
+.periodontal-drawer {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 400px;
+    background-color: #ffffff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    transition: transform 0.3s ease-in-out;
+}
+
+.periodontal-drawer.left {
+    left: 0;
+    transform: translateX(0);
+}
+
+.periodontal-drawer.right {
+    right: 0;
+    transform: translateX(0);
+}
+
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.drawer-nav {
+    display: flex;
+    gap: 16px;
+}
+
+.nav-arrow {
+    cursor: pointer;
+    color: #3b82f6;
+    font-size: 1.2rem;
+}
+
+.tooth-title {
+    font-weight: 600;
+    color: #4b5563;
+}
+
+.drawer-actions {
+    display: flex;
+    gap: 16px;
+    color: #9ca3af;
+}
+
+.action-icon {
+    cursor: pointer;
+}
+
+.probing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 16px;
+}
+
+.probing-cell {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.probing-cell.active {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+}
+
+.probing-value {
+    font-size: 24px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.probing-label {
+    font-size: 10px;
+    color: #6b7280;
+    margin-top: 4px;
+    text-align: center;
+}
+
+.indicators {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.indicator-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+}
+
+.indicator-dot.red {
+    background-color: #ef4444;
+}
+
+.indicator-dot.blue {
+    background-color: #3b82f6;
+}
+
+.measurement-tabs {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tab {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.tab.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+}
+
+.numpad {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.numpad-btn {
+    padding: 16px 0;
+    border: 1px solid #f3f4f6;
+    background: none;
+    font-size: 14px;
+    color: #3b82f6;
+    cursor: pointer;
+}
+
+.numpad-btn.selected {
+    background-color: #6b7280;
+    color: white;
+}
+
+.toggles-section {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.toggle-btn {
+    padding: 12px;
+    border-radius: 6px;
+    border: none;
+    background-color: #f3f4f6;
+    color: #4b5563;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.toggle-btn.bleeding {
+    background-color: #6b7280;
+    color: white;
+}
+
+.toggle-btn.plaque {
+    background-color: #6b7280;
+    color: white;
+}
+
+.toggle-indicator {
+    position: absolute;
+    right: 12px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.toggle-indicator.red {
+    background-color: #ef4444;
+}
+
+.toggle-indicator.blue {
+    background-color: #3b82f6;
+}
+
+.toggle-indicator.yellow {
+    background-color: #fbbf24;
+}
+
+.drawer-footer {
+    margin-top: auto;
+    padding: 16px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.auto-switch {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background-color: #3b82f6;
+}
+
+input:checked+.slider:before {
+    transform: translateX(16px);
+}
+
+.next-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: #0ea5e9;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+}

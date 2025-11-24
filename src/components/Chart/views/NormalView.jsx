@@ -1,8 +1,9 @@
 import React from 'react';
 import ToothRenderer from '../ToothRenderer';
 import { mapToothDataToConditions } from '../../../utils/toothUtils';
+import './NormalView.css';
 
-const NormalView = ({ teeth, onToothClick }) => {
+const NormalView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
     // Quadrants following standard dental notation
     // Q1 (Upper Right) - teeth 18-11
     // Q2 (Upper Left) - teeth 21-28
@@ -20,8 +21,11 @@ const NormalView = ({ teeth, onToothClick }) => {
         const tooth = teeth[toothNumber];
         if (!tooth) return null;
 
+        const isSelected = selectedTeeth && selectedTeeth.has(toothNumber);
+        const isDimmed = activeTooth && activeTooth !== toothNumber;
+
         return (
-            <li key={toothNumber} className="tooth" data-number={toothNumber}>
+            <li key={toothNumber} className={`tooth ${isSelected ? 'selected' : ''} ${isDimmed ? 'dimmed' : ''}`} data-number={toothNumber}>
                 {views.map((view, index) => {
                     if (view === 'number') {
                         return (
@@ -30,8 +34,11 @@ const NormalView = ({ teeth, onToothClick }) => {
                             </span>
                         );
                     }
+
+                    const isBuccal = view === 'frontal';
+
                     return (
-                        <div key={view} className={`trigger visualization view-${view === 'frontal' ? 'buccal' : 'occlusal'}`} onClick={() => onToothClick(toothNumber)}>
+                        <div key={view} className={`trigger visualization view-${isBuccal ? 'buccal' : 'occlusal'}`} onClick={() => onToothClick(toothNumber)}>
                             <ToothRenderer
                                 toothNumber={toothNumber}
                                 view={view}
@@ -39,6 +46,13 @@ const NormalView = ({ teeth, onToothClick }) => {
                                 interactive={true}
                                 onSurfaceClick={(surface) => console.log(`Clicked surface ${surface} on tooth ${toothNumber}`)}
                             />
+                            {isSelected && isBuccal && (
+                                <div className="selection-overlay">
+                                    <div className="checkmark-circle">
+                                        ✓
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     );
                 })}

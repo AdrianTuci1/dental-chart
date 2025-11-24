@@ -565,6 +565,7 @@ export class Restoration {
         this.fillings = [];
         this.inlays = [];
         this.onlays = [];
+        this.veneers = [];
         this.partialCrowns = [];
         this.crowns = [];
     }
@@ -581,6 +582,10 @@ export class Restoration {
     addOnlay(zones, material, quality) {
         // Validate zones: Mesial, Distal only
         this.onlays.push({ zones, material, quality });
+    }
+
+    addVeneer(material, quality, detail) {
+        this.veneers.push({ material, quality, detail });
     }
 
     addPartialCrown(zones, material, quality) {

@@ -71,12 +71,11 @@ ul {
     unicode-bidi: isolate;
     padding: 0;
     margin: 0;
-    gap: 4px;
 }
 
-main[data-view=chart] .jaw-box.full-mouth .jaw[data-type=upper] .tooth {
+/* main[data-view=chart] .jaw-box.full-mouth .jaw[data-type=upper] .tooth {
     padding-top: 64px;
-}
+} */
 
 main[data-view=chart] .jaw-box .jaw .tooth {
     position: relative;
@@ -160,4 +159,92 @@ main[data-view=chart] .jaw-box .jaw .tooth .number {
         font-size: 10px;
         padding: 2px;
     }
+
+    main[data-view=chart] .jaw-box .jaw .tooth .number {
+        width: 20px;
+        height: 20px;
+        font-size: 10px;
+        padding: 2px;
+    }
+}
+
+/* Quickselect Styles */
+.chart-quickselect-page {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.chart-quickselect-page .chart-overview-container {
+    flex: 1;
+    overflow: auto;
+}
+
+.quickselect-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+    background-color: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.qs-btn {
+    padding: 8px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background-color: #ffffff;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.qs-btn:hover {
+    background-color: #f3f4f6;
+    border-color: #9ca3af;
+}
+
+.qs-btn:active {
+    background-color: #e5e7eb;
+}
+
+/* Selection Overlay */
+.selection-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    /* Allow clicks to pass through to the tooth */
+}
+
+.checkmark-circle {
+    width: 24px;
+    height: 24px;
+    background-color: #10b981;
+    /* Green */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tooth.selected .visualization {
+    /* Optional: highlight the container */
+}
+
+.tooth.dimmed {
+    opacity: 0.3;
+    transition: opacity 0.3s ease;
 }

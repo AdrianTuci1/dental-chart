@@ -1,0 +1,35 @@
+/* Align upper jaw teeth to the bottom (occlusal plane) */
+.jaw[data-type="upper"] {
+    display: flex;
+    align-items: flex-end;
+}
+
+/* Align lower jaw teeth to the top (occlusal plane) */
+.jaw[data-type="lower"] {
+    display: flex;
+    align-items: flex-start;
+}
+
+
+.view-occlusal {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.view-occlusal .tooth-renderer {
+    justify-content: center;
+}
+
+
+.view-buccal {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.view-buccal .tooth-renderer {
+    justify-content: flex-end;
+}

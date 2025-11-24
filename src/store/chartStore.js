@@ -29,6 +29,19 @@ const useChartStore = create((set) => ({
             }
         };
     }),
+    updateTeeth: (updates) => set((state) => {
+        const newTeeth = { ...state.teeth };
+        Object.keys(updates).forEach(toothNumber => {
+            if (newTeeth[toothNumber]) {
+                newTeeth[toothNumber] = Object.assign(
+                    Object.create(Object.getPrototypeOf(newTeeth[toothNumber])),
+                    newTeeth[toothNumber],
+                    updates[toothNumber]
+                );
+            }
+        });
+        return { teeth: newTeeth };
+    }),
     selectTooth: (toothNumber) => set({ selectedTooth: toothNumber }),
     setChartView: (view) => set({ chartView: view }),
     setViewMode: (mode) => set({ viewMode: mode }),
