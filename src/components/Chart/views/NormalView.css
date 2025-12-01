@@ -32,6 +32,10 @@
     justify-content: flex-end;
 }
 
-.view-buccal .tooth-renderer {
+.view-buccal .tooth-renderer.upper-jaw {
     justify-content: flex-end;
+}
+
+.view-buccal .tooth-renderer.lower-jaw {
+    justify-content: flex-start;
 }

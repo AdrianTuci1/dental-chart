@@ -132,10 +132,48 @@ main[data-view=chart] .jaw-box .jaw .tooth .number {
     border-radius: 4px;
 }
 
+/* Lingual view base styles */
 .view-lingual {
-    background-color: #e5e7eb;
+    height: 160px;
+    display: flex;
     padding: 4px;
     border-radius: 4px;
+}
+
+/* Upper jaw lingual: centered and rotated */
+[data-view="upper-jaw"] .view-lingual {
+    align-items: center;
+    justify-content: center;
+    transform: rotate(180deg);
+}
+
+/* Lower jaw lingual: aligned to bottom */
+[data-view="lower-jaw"] .view-lingual {
+    align-items: flex-end;
+    justify-content: center;
+}
+
+[data-view="lower-jaw"] .view-lingual .tooth-renderer {
+    justify-content: flex-end;
+}
+
+[data-view="upper-jaw"] .view-lingual .tooth-renderer {
+    justify-content: center;
+}
+
+/* Rotate incisal/topview on lower jaw 180 degrees */
+[data-view="lower-jaw"] .view-incisal {
+    transform: rotate(180deg);
+}
+
+/* Align upper jaw teeth to the bottom (occlusal plane) */
+[data-view="upper-jaw"] .jaw[data-type="upper"] {
+    align-items: flex-end;
+}
+
+/* Align lower jaw teeth to the top (occlusal plane) */
+[data-view="lower-jaw"] .jaw[data-type="lower"] {
+    align-items: flex-start;
 }
 
 /* Responsive adjustments */
@@ -239,9 +277,7 @@ main[data-view=chart] .jaw-box .jaw .tooth .number {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.tooth.selected .visualization {
-    /* Optional: highlight the container */
-}
+
 
 .tooth.dimmed {
     opacity: 0.3;

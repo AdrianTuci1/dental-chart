@@ -89,6 +89,14 @@ const ToothRenderer = ({
         imageScale = 2.5;
     }
 
+    // Determine image rotation for lower jaw buccal view
+    let imageRotation = 'none';
+    const isBuccalView = view === 'frontal' || view === 'buccal';
+
+    if (!isUpperJaw && isBuccalView) {
+        imageRotation = 'rotate(180deg)';
+    }
+
     return (
         <div
             className={`tooth-renderer ${jawClass} ${isSelected ? 'selected' : ''}`}
@@ -105,7 +113,10 @@ const ToothRenderer = ({
                             src={toothImagePath}
                             alt={`Tooth ${toothNumber} - ${imageView} view`}
                             className="tooth-image"
-                            style={{ scale: `${imageScale}` }}
+                            style={{
+                                scale: `${imageScale}`,
+                                transform: imageRotation
+                            }}
                         />
 
                         {/* Canvas overlay for conditions */}

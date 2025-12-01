@@ -30,9 +30,10 @@ const LowerJawView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
                     }
 
                     const isBuccal = view === 'frontal';
+                    const isLingual = view === 'lingual';
 
                     return (
-                        <div key={view} className={`trigger visualization view-${isBuccal ? 'buccal' : 'occlusal'}`} onClick={() => onToothClick(toothNumber)}>
+                        <div key={view} className={`trigger visualization ${isBuccal ? 'view-buccal' : isLingual ? 'view-lingual' : 'view-occlusal'}`} onClick={() => onToothClick(toothNumber)}>
                             <ToothRenderer
                                 toothNumber={toothNumber}
                                 view={view}
