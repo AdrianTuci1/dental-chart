@@ -7,10 +7,9 @@
     width: 200px;
     flex-shrink: 0;
     overflow: hidden;
-    /* Ensure no scrollbars spill out */
 }
 
-/* Tooth Selector Column (formerly ruler) */
+/* Tooth Selector Column - must fit all 32 teeth in page height */
 .tooth-selector-column {
     width: 50px;
     display: flex;
@@ -18,27 +17,28 @@
     align-items: center;
     border-right: 1px solid #eee;
     overflow-y: auto;
-    /* Allow scrolling through teeth */
     scrollbar-width: none;
-    /* Hide scrollbar Firefox */
     -ms-overflow-style: none;
-    /* Hide scrollbar IE/Edge */
-    padding: 10px 0;
+    padding: 4px 0;
     background: #fff;
+    max-height: 100%;
 }
 
 .tooth-selector-column::-webkit-scrollbar {
     display: none;
-    /* Hide scrollbar Chrome/Safari */
 }
 
 .tooth-number-item {
-    height: 40px;
+    /* Calculate height to fit ~32 teeth in viewport */
+    /* Assuming typical viewport height ~800px, with padding we have ~792px */
+    /* 792px / 32 = ~24.75px per tooth, let's use 26px for comfort */
+    height: 26px;
+    min-height: 26px;
     width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 14px;
+    font-size: 12px;
     color: #888;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -54,75 +54,81 @@
     font-weight: bold;
     color: #00a8e8;
     background-color: #e6f7ff;
-    font-size: 16px;
+    font-size: 14px;
 }
 
-/* Visualization Column */
+/* Visualization Column - now uses jaw view structure */
 .visualization-column {
     flex-grow: 1;
     position: relative;
     overflow: hidden;
-    /* Mask for carousel effect */
-    display: flex;
-    flex-direction: column;
-}
-
-.teeth-carousel-track {
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
-    height: 100%;
-}
-
-.tooth-slide {
-    height: 100%;
-    width: 100%;
-    flex-shrink: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-around;
-    padding: 20px 0;
-}
-
-.tooth-view-wrapper {
-    position: relative;
-    margin: 10px 0;
-    display: flex;
     justify-content: center;
-    align-items: center;
+    background-color: #fff;
 }
 
-/* Gum line indicators */
-.gum-line {
-    position: absolute;
-    width: 120%;
-    height: 1px;
-    background-color: #ff6b6b;
-    z-index: 5;
+/* Override jaw-box for single tooth display */
+.visualization-column .jaw-box {
+    padding: 20px;
+    margin: 0;
+    gap: 0;
 }
 
-.gum-zone {
-    position: absolute;
+/* Override jaw for vertical single tooth */
+.visualization-column .jaw {
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+}
+
+/* Tooth in visualization column should take full space */
+.visualization-column .tooth {
     width: 100%;
-    height: 20px;
-    background-color: rgba(135, 206, 235, 0.3);
-    border-radius: 50%;
-    z-index: 4;
+    gap: 8px;
 }
 
-.tooth-view-wrapper.top .gum-line {
-    bottom: 20px;
+/* Constrain view heights to prevent overlapping */
+.visualization-column .view-buccal,
+.visualization-column .view-lingual {
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.tooth-view-wrapper.top .gum-zone {
-    bottom: 10px;
+/* Upper jaw buccal (frontal) - align to bottom */
+.visualization-column[data-view="upper-jaw"] .view-buccal {
+    align-items: flex-end;
 }
 
-.tooth-view-wrapper.bottom .gum-line {
-    top: 20px;
+/* Lower jaw buccal (frontal) - align to top */
+.visualization-column[data-view="lower-jaw"] .view-buccal {
+    align-items: flex-start;
 }
 
-.tooth-view-wrapper.bottom .gum-zone {
-    top: 10px;
+/* Occlusal view - constrain size */
+.visualization-column .view-occlusal {
+    height: auto;
+    max-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Constrain tooth SVG sizes to prevent overlapping */
+.visualization-column .view-buccal svg,
+.visualization-column .view-lingual svg {
+    max-height: 100px;
+    max-width: 100px;
+    width: auto;
+    height: auto;
+}
+
+.visualization-column .view-occlusal svg {
+    max-height: 80px;
+    max-width: 80px;
+    width: auto;
+    height: auto;
 }

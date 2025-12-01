@@ -61,7 +61,7 @@ const UpperJawView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
                 {/* Upper Jaw */}
                 <ol className="jaw" data-type="upper">
                     {upperTeethNumbers.map(number =>
-                        renderTooth(number, ['frontal', 'topview', 'lingual', 'number'])
+                        renderTooth(number, ['frontal', 'topview', 'lingual'])
                     )}
                 </ol>
             </div>

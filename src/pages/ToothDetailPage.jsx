@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Outlet, useParams, useNavigate, useMatch } from 'react-router-dom';
 import useChartStore from '../store/chartStore';
 import ToothVisualization from '../components/Tooth/ToothVisualization';
+import { mapToothDataToConditions } from '../utils/toothUtils';
 import { RefreshCw, XCircle, PlusCircle, ChevronLeft } from 'lucide-react';
 
 import './ToothDetailPage.css';
@@ -35,7 +36,7 @@ const ToothDetailPage = () => {
             <div className="visualization-sidebar">
                 <ToothVisualization
                     toothNumber={toothNumber}
-                    conditions={tooth.conditions}
+                    conditions={mapToothDataToConditions(tooth)}
                     onSelectTooth={handleToothSelect}
                 />
             </div>
