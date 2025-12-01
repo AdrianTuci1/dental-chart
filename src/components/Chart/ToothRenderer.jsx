@@ -78,6 +78,17 @@ const ToothRenderer = ({
     const isUpperJaw = (tNum >= 11 && tNum <= 28) || (tNum >= 51 && tNum <= 65);
     const jawClass = isUpperJaw ? 'upper-jaw' : 'lower-jaw';
 
+    // Determine image scale
+    // Default scale is 1.1
+    // For lower jaw anterior/premolars (31-35, 41-45) in occlusal/incisal view, use 1.5
+    let imageScale = 1.1;
+    const isLowerAnteriorOrPremolar = (tNum >= 31 && tNum <= 35) || (tNum >= 41 && tNum <= 45);
+    const isOcclusalView = view === 'topview' || view === 'occlusal' || view === 'incisal';
+
+    if (isLowerAnteriorOrPremolar && isOcclusalView) {
+        imageScale = 2.5;
+    }
+
     return (
         <div
             className={`tooth-renderer ${jawClass} ${isSelected ? 'selected' : ''}`}
@@ -94,6 +105,7 @@ const ToothRenderer = ({
                             src={toothImagePath}
                             alt={`Tooth ${toothNumber} - ${imageView} view`}
                             className="tooth-image"
+                            style={{ scale: `${imageScale}` }}
                         />
 
                         {/* Canvas overlay for conditions */}

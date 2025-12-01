@@ -343,7 +343,7 @@
             "withRoots": {
                 "buccal": "/assets/teeth/19/buccal.6.png",
                 "lingual": "/assets/teeth/19/lingual.10eb5e0c.png",
-                "incisal": "/assets/teeth/19/incisal.40220eb01.png"
+                "incisal": "/assets/teeth/31/incisal.31.png"
             },
             "withoutRoots": {
                 "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
@@ -359,6 +359,160 @@
                 "buccal": "hash10.png",
                 "lingual": "hash11.png",
                 "incisal": "hash12.png"
+            }
+        },
+        "32": {
+            "withRoots": {
+                "buccal": "/assets/teeth/19/buccal.6.png",
+                "lingual": "/assets/teeth/19/lingual.10eb5e0c.png",
+                "incisal": "/assets/teeth/32/incisal.32.png"
+            },
+            "withoutRoots": {
+                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
+                "lingual": "hash5.png",
+                "incisal": "hash6.png"
+            },
+            "missing": {
+                "buccal": "hash7.png",
+                "lingual": "hash8.png",
+                "incisal": "hash9.png"
+            },
+            "implant": {
+                "buccal": "hash10.png",
+                "lingual": "hash11.png",
+                "incisal": "hash12.png"
+            }
+        },
+        "33": {
+            "withRoots": {
+                "buccal": "/assets/teeth/19/buccal.6.png",
+                "lingual": "/assets/teeth/19/lingual.10eb5e0c.png",
+                "incisal": "/assets/teeth/33/incisal.33.png"
+            },
+            "withoutRoots": {
+                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
+                "lingual": "hash5.png",
+                "incisal": "hash6.png"
+            },
+            "missing": {
+                "buccal": "hash7.png",
+                "lingual": "hash8.png",
+                "incisal": "hash9.png"
+            },
+            "implant": {
+                "buccal": "hash10.png",
+                "lingual": "hash11.png",
+                "incisal": "hash12.png"
+            }
+        },
+        "34": {
+            "withRoots": {
+                "buccal": "/assets/teeth/19/buccal.6.png",
+                "lingual": "/assets/teeth/19/lingual.10eb5e0c.png",
+                "occlusal": "/assets/teeth/34/incisal.34.png"
+            },
+            "withoutRoots": {
+                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
+                "lingual": "hash5.png",
+                "occlusal": "hash6.png"
+            },
+            "missing": {
+                "buccal": "hash7.png",
+                "lingual": "hash8.png",
+                "occlusal": "hash9.png"
+            },
+            "implant": {
+                "buccal": "hash10.png",
+                "lingual": "hash11.png",
+                "occlusal": "hash12.png"
+            }
+        },
+        "35": {
+            "withRoots": {
+                "buccal": "/assets/teeth/19/buccal.6.png",
+                "lingual": "/assets/teeth/19/lingual.10eb5e0c.png",
+                "occlusal": "/assets/teeth/35/incisal.35.png"
+            },
+            "withoutRoots": {
+                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
+                "lingual": "hash5.png",
+                "occlusal": "hash6.png"
+            },
+            "missing": {
+                "buccal": "hash7.png",
+                "lingual": "hash8.png",
+                "occlusal": "hash9.png"
+            },
+            "implant": {
+                "buccal": "hash10.png",
+                "lingual": "hash11.png",
+                "occlusal": "hash12.png"
+            }
+        },
+        "36": {
+            "withRoots": {
+                "buccal": "/assets/teeth/19/buccal.6.png",
+                "lingual": "/assets/teeth/19/lingual.10eb5e0c.png",
+                "occlusal": "/assets/teeth/36/incisal.b713ba6c.png"
+            },
+            "withoutRoots": {
+                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
+                "lingual": "hash5.png",
+                "occlusal": "hash6.png"
+            },
+            "missing": {
+                "buccal": "hash7.png",
+                "lingual": "hash8.png",
+                "occlusal": "hash9.png"
+            },
+            "implant": {
+                "buccal": "hash10.png",
+                "lingual": "hash11.png",
+                "occlusal": "hash12.png"
+            }
+        },
+        "37": {
+            "withRoots": {
+                "buccal": "/assets/teeth/19/buccal.6.png",
+                "lingual": "/assets/teeth/19/lingual.10eb5e0c.png",
+                "occlusal": "/assets/teeth/37/incisal.935c2e39.png"
+            },
+            "withoutRoots": {
+                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
+                "lingual": "hash5.png",
+                "occlusal": "hash6.png"
+            },
+            "missing": {
+                "buccal": "hash7.png",
+                "lingual": "hash8.png",
+                "occlusal": "hash9.png"
+            },
+            "implant": {
+                "buccal": "hash10.png",
+                "lingual": "hash11.png",
+                "occlusal": "hash12.png"
+            }
+        },
+        "38": {
+            "withRoots": {
+                "buccal": "/assets/teeth/19/buccal.6.png",
+                "lingual": "/assets/teeth/19/lingual.10eb5e0c.png",
+                "occlusal": "/assets/teeth/38/incisal.12e2bec5.png"
+            },
+            "withoutRoots": {
+                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
+                "lingual": "hash5.png",
+                "occlusal": "hash6.png"
+            },
+            "missing": {
+                "buccal": "hash7.png",
+                "lingual": "hash8.png",
+                "occlusal": "hash9.png"
+            },
+            "implant": {
+                "buccal": "hash10.png",
+                "lingual": "hash11.png",
+                "occlusal": "hash12.png"
             }
         }
     },

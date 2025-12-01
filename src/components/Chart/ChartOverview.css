@@ -42,8 +42,7 @@ main[data-view=chart] .jaw-box {
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    background-color: #ffffff;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    /* background-color: #ffffff; */
     border-radius: 8px;
 }
 
@@ -108,7 +107,7 @@ main[data-view=chart] .jaw-box .jaw .tooth .number {
     margin-left: auto;
     margin-right: auto;
     color: inherit;
-    background-color: #f3f4f6;
+    background-color: #e3e4e6;
     font-weight: 600;
     text-align: center;
 }
@@ -122,13 +121,13 @@ main[data-view=chart] .jaw-box .jaw .tooth .number {
 
 /* View specific backgrounds */
 .view-buccal {
-    background-color: #fef3c7;
+    /* background-color: #fef3c7; */
     padding: 4px;
     border-radius: 4px;
 }
 
 .view-occlusal {
-    background-color: #dbeafe;
+    /* background-color: #dbeafe; */
     padding: 4px;
     border-radius: 4px;
 }

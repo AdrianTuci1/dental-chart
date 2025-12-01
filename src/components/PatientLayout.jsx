@@ -43,9 +43,17 @@ const PatientLayout = () => {
             <div className="patient-sidebar">
                 <div className="sidebar-header">
                     <button
-                        onClick={() => navigate('/patients')}
+                        onClick={() => {
+                            if (location.pathname.endsWith('/dashboard')) {
+                                navigate('/patients');
+                            } else if (location.pathname.includes('/chart') || location.pathname.includes('/report')) {
+                                navigate(`/patients/${patientId}/dashboard`);
+                            } else {
+                                navigate(-1);
+                            }
+                        }}
                         className="back-link"
-                        title="Back to Patient List"
+                        title="Back"
                     >
                         <ArrowLeft size={24} />
                     </button>

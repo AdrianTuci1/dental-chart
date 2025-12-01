@@ -1,79 +1,73 @@
 .oral-health-metrics {
-    background-color: var(--color-white);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--color-gray-200);
-    padding: var(--spacing-6);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-top: 0.5rem;
 }
 
-.metrics-title {
-    font-size: 1.125rem;
-    /* text-lg */
-    font-weight: 700;
-    color: var(--color-gray-900);
-    margin-bottom: var(--spacing-4);
+.metric-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-.metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-4);
-}
-
-.metric-card {
-    padding: var(--spacing-4);
-    border-radius: var(--radius-lg);
-    text-align: center;
-}
-
-.metric-card.blue {
-    background-color: #EFF6FF;
-    /* bg-blue-50 */
-}
-
-.metric-card.red {
-    background-color: #FEF2F2;
-    /* bg-red-50 */
-}
-
-.metric-label {
+.metric-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     font-size: 0.75rem;
-    /* text-xs */
-    color: var(--color-gray-500);
+    font-weight: 700;
+    color: #9ca3af; /* Gray-400/500 */
     text-transform: uppercase;
-    letter-spacing: 0.025em;
-    /* tracking-wide */
-    margin-bottom: var(--spacing-1);
 }
 
 .metric-value {
-    font-size: 1.5rem;
-    /* text-2xl */
+    color: #374151; /* Gray-700 */
     font-weight: 700;
 }
 
-.metric-value.blue {
-    color: #2563EB;
-    /* text-blue-600 */
+.simple-progress-bg {
+    width: 100%;
+    height: 6px;
+    background-color: #e5e7eb; /* Gray-200 */
+    border-radius: 3px;
+    overflow: hidden;
 }
 
-.metric-value.red {
-    color: #DC2626;
-    /* text-red-600 */
+.simple-progress-fill {
+    height: 100%;
+    background-color: #d1d5db; /* Gray-300 - matching the subtle look in image */
+    /* For bleeding index, maybe a subtle green or just grey? 
+       The image shows Plaque as grey, Bleeding as grey, Halitosis as Green.
+       Wait, looking closer at the image crop 1:
+       Plaque Index: Light grey bar.
+       Bleeding Index: Light grey bar.
+       Halitosis: Green segments.
+       
+       Actually, let's look at the "Bleeding Index" bar in the image. It looks like it might have a slight color, but it's very desaturated. 
+       Let's stick to a neutral grey for the first two, and green for Halitosis.
+    */
+    background-color: #9ca3af; /* Gray-400 */
 }
 
-.metric-status {
-    font-size: 0.75rem;
-    /* text-xs */
-    margin-top: var(--spacing-1);
+/* Specific overrides if needed */
+.metric-row:nth-child(2) .simple-progress-fill {
+    /* Bleeding index fill */
+    background-color: #9ca3af;
 }
 
-.metric-status.blue {
-    color: #60A5FA;
-    /* text-blue-400 */
+.segmented-progress {
+    display: flex;
+    gap: 4px;
 }
 
-.metric-status.red {
-    color: #F87171;
-    /* text-red-400 */
+.segment {
+    flex: 1;
+    height: 6px;
+    background-color: #e5e7eb;
+    border-radius: 2px;
+}
+
+.segment.filled {
+    background-color: #84cc16; /* Lime-500 or similar green */
 }

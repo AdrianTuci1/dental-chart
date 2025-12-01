@@ -1,39 +1,70 @@
 import React from 'react';
-
-import './OralHealthMetrics.css';
-
 import './OralHealthMetrics.css';
 
 const OralHealthMetrics = ({ data }) => {
-    // Default values if data is missing
+    // Default values
     const plaqueIndex = data?.plaqueIndex || 0;
     const bleedingIndex = data?.bleedingIndex || 0;
-
-    // Helper to determine risk level (mock logic)
-    const getRiskLevel = (value) => {
-        if (value < 10) return { label: 'Low Risk', color: 'blue' };
-        if (value < 30) return { label: 'Moderate Risk', color: 'red' }; // Using red for moderate to match design
-        return { label: 'High Risk', color: 'red' };
-    };
-
-    const plaqueRisk = getRiskLevel(plaqueIndex);
-    const bleedingRisk = getRiskLevel(bleedingIndex);
+    // Mock halitosis value for visual if not present, or use a default
+    const halitosisValue = data?.halitosis || 2; // 1-5 scale? Or just visual. Design shows a segmented bar.
 
     return (
         <div className="oral-health-metrics">
-            <h3 className="metrics-title">Oral Health Metrics</h3>
-
-            <div className="metrics-grid">
-                <div className={`metric-card ${plaqueRisk.color === 'blue' ? 'blue' : 'red'}`}>
-                    <p className="metric-label">Plaque Index</p>
-                    <p className={`metric-value ${plaqueRisk.color === 'blue' ? 'blue' : 'red'}`}>{plaqueIndex}%</p>
-                    <p className={`metric-status ${plaqueRisk.color === 'blue' ? 'blue' : 'red'}`}>{plaqueRisk.label}</p>
+            {/* Plaque Index */}
+            <div className="metric-row">
+                <div className="metric-header-row">
+                    <span className="metric-label">PLAQUE INDEX</span>
+                    <span className="metric-value">{plaqueIndex}%</span>
                 </div>
+                <div className="progress-bar-container">
+                    <div
+                        className="progress-bar-fill"
+                        style={{ width: `${plaqueIndex}%`, backgroundColor: '#e0e0e0' }} // Grey base
+                    >
+                        <div className="progress-fill-active" style={{ width: '100%', backgroundColor: '#d1d5db' }}></div>
+                    </div>
+                    {/* The design shows a specific style: grey background line, and a fill. 
+                        Actually, looking closer at the image:
+                        Plaque Index: Grey bar, filled portion is slightly darker grey? Or maybe it's just a simple bar.
+                        Wait, the image shows:
+                        PLAQUE INDEX         17%
+                        [====================] (Light grey bar, with a darker grey fill for the 17%)
+                        
+                        BLEEDING INDEX       17%
+                        [====================] (Light grey bar, with a green fill? No, it looks like a light green or grey fill)
+                        
+                        HALITOSIS
+                        [=][=][ ][ ][ ] (Segmented green blocks)
+                    */}
+                    <div className="simple-progress-bg">
+                        <div className="simple-progress-fill" style={{ width: `${plaqueIndex}%` }}></div>
+                    </div>
+                </div>
+            </div>
 
-                <div className={`metric-card ${bleedingRisk.color === 'blue' ? 'blue' : 'red'}`}>
-                    <p className="metric-label">Bleeding Index</p>
-                    <p className={`metric-value ${bleedingRisk.color === 'blue' ? 'blue' : 'red'}`}>{bleedingIndex}%</p>
-                    <p className={`metric-status ${bleedingRisk.color === 'blue' ? 'blue' : 'red'}`}>{bleedingRisk.label}</p>
+            {/* Bleeding Index */}
+            <div className="metric-row">
+                <div className="metric-header-row">
+                    <span className="metric-label">BLEEDING INDEX</span>
+                    <span className="metric-value">{bleedingIndex}%</span>
+                </div>
+                <div className="simple-progress-bg">
+                    <div className="simple-progress-fill" style={{ width: `${bleedingIndex}%` }}></div>
+                </div>
+            </div>
+
+            {/* Halitosis */}
+            <div className="metric-row">
+                <div className="metric-header-row">
+                    <span className="metric-label">HALITOSIS</span>
+                </div>
+                <div className="segmented-progress">
+                    {[1, 2, 3, 4, 5].map((level) => (
+                        <div
+                            key={level}
+                            className={`segment ${level <= halitosisValue ? 'filled' : ''}`}
+                        ></div>
+                    ))}
                 </div>
             </div>
         </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import './DashboardDialog.css';
 
 const EditBPEDialog = ({ isOpen, onClose, data, onSave }) => {
     const [formData, setFormData] = useState({
@@ -29,13 +30,13 @@ const EditBPEDialog = ({ isOpen, onClose, data, onSave }) => {
     };
 
     const renderSelect = (name, label) => (
-        <div className="flex flex-col">
-            <label className="text-xs font-medium text-gray-500 mb-1 uppercase">{label}</label>
+        <div className="form-group">
+            <label className="form-label" style={{ textTransform: 'uppercase', fontSize: '0.75rem', color: '#6b7280' }}>{label}</label>
             <select
                 name={name}
                 value={formData[name]}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                className="form-select"
             >
                 {[0, 1, 2, 3, 4, '*'].map(val => (
                     <option key={val} value={val}>{val}</option>
@@ -45,17 +46,17 @@ const EditBPEDialog = ({ isOpen, onClose, data, onSave }) => {
     );
 
     return createPortal(
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9999]">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 overflow-hidden">
-                <div className="flex justify-between items-center p-4 border-b">
-                    <h3 className="text-lg font-semibold text-gray-800">Edit BPE Scores</h3>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+        <div className="dialog-backdrop">
+            <div className="dialog-container large">
+                <div className="dialog-header">
+                    <h3 className="dialog-title">Edit BPE Scores</h3>
+                    <button onClick={onClose} className="dialog-close-btn">
                         <X size={20} />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6">
-                    <div className="grid grid-cols-3 gap-4 mb-6">
+                <form onSubmit={handleSubmit} className="dialog-body">
+                    <div className="grid-cols-3" style={{ marginBottom: '1.5rem' }}>
                         {renderSelect('upperRight', 'Upper Right')}
                         {renderSelect('upperAnterior', 'Upper Anterior')}
                         {renderSelect('upperLeft', 'Upper Left')}
@@ -65,17 +66,17 @@ const EditBPEDialog = ({ isOpen, onClose, data, onSave }) => {
                         {renderSelect('lowerLeft', 'Lower Left')}
                     </div>
 
-                    <div className="flex justify-end space-x-3 pt-4 border-t">
+                    <div className="dialog-footer">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md"
+                            className="btn btn-cancel"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                            className="btn btn-save"
                         >
                             Save Changes
                         </button>

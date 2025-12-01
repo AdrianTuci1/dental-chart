@@ -112,7 +112,7 @@ const PatientDashboardPage = () => {
                     )}
                     {activeTab === 'softTissue' && (
                         <div className="empty-state">
-                            <p>No soft tissue records found.</p>
+                            <p>Currently there are no treatments pending</p>
                         </div>
                     )}
                 </div>
