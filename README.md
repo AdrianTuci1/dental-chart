@@ -22,7 +22,7 @@ A modern web application for managing dental charts, treatment planning, and ora
 
 ### 📊 Dental Charting
 
-![Chart Overview](./public/overview/chart-overview.png)
+![Chart Overview](./public/overview/upper-jaw.png)
 
 #### Multiple Views
 - **Chart Overview** - Complete visualization with 4 rows:
