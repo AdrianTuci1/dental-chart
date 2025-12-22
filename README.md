@@ -263,28 +263,27 @@ dchart-oneshot/
 - [ ] Calendar & appointment integration
 - [ ] External API integrations
 
-## 🎯 Roadmap 2024-2025
+## 🎯 Roadmap 2025-2026
 
-**Q4 2024**
+**2025**
 - ✅ Core charting functionality
 - ✅ Tooth detail views
-- 🚧 Advanced charting features
 
-**Q1 2025**
+**Q1 2026**
+- 🚧 Advanced charting features
 - 🚧 Report generation
 - 📋 Dashboard completion
 - 📋 Export functionality
-
-**Q2 2025**
 - 📋 Performance optimization
 - 📋 Testing suite
 - 📋 User documentation
 
-**Q3 2025**
+**Q2 2026**
 - 🔮 Advanced features
 - 🔮 Mobile app
-- 🔮 Cloud integration
-
+- 🔮 Machine learning for caries detection
+- 🔮 Calendar & appointment integration
+- 🔮 External API integrations
 
 **Version**: 1.0.0-beta  
 **Last updated**: December 22, 2024
