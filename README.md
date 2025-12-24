@@ -28,7 +28,7 @@ A modern web application for managing dental charts, treatment planning, and ora
 - **Chart Overview** - Complete visualization with 4 rows:
   - Upper Buccal (18-11, 21-28)
   - Upper Occlusal
-  - Lower Occlusal  
+  - Lower Occlusal 
   - Lower Buccal (48-41, 31-38)
 - **Quick Select** - Rapid charting interface
 - **Periodontal Probing** - Full-screen interface for periodontal measurements
@@ -190,6 +190,12 @@ dchart-oneshot/
 │   │   ├── Tooth/          # Tooth visualization components
 │   │   ├── Chart/          # Chart components
 │   │   └── ...
+│   ├── models/             # Data models
+│   │   ├── DentalModels.js # Barrel file (exports all models)
+│   │   ├── Enums.js        # Constants & Enums
+│   │   ├── ToothModels.js  # Tooth related classes
+│   │   ├── ChartModels.js  # Chart related classes
+│   │   └── PatientModels.js # Patient related classes
 │   ├── pages/
 │   │   ├── HomePage.jsx
 │   │   ├── PatientsListPage.jsx
