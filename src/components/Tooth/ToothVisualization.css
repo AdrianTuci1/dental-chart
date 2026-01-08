@@ -32,8 +32,8 @@
     /* Calculate height to fit ~32 teeth in viewport */
     /* Assuming typical viewport height ~800px, with padding we have ~792px */
     /* 792px / 32 = ~24.75px per tooth, let's use 26px for comfort */
-    height: 26px;
-    min-height: 26px;
+    height: 24.5px;
+    min-height: 24.5px;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -67,13 +67,19 @@
     align-items: center;
     justify-content: center;
     background-color: #fff;
+    height: 100%;
+    outline: 2px solid red;
+    /* DEBUG */
 }
 
 /* Override jaw-box for single tooth display */
 .visualization-column .jaw-box {
-    padding: 20px;
     margin: 0;
     gap: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Override jaw for vertical single tooth */
@@ -81,54 +87,66 @@
     flex-direction: column;
     padding: 0;
     margin: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
 }
 
 /* Tooth in visualization column should take full space */
 .visualization-column .tooth {
     width: 100%;
+    height: 100%;
     gap: 8px;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Constrain view heights to prevent overlapping */
+/* IMAGINILE DE SUS SI DE JOS */
 .visualization-column .view-buccal,
 .visualization-column .view-lingual {
-    height: 160px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Upper jaw buccal (frontal) - align to bottom */
-.visualization-column[data-view="upper-jaw"] .view-buccal {
-    align-items: flex-end;
-}
-
-/* Lower jaw buccal (frontal) - align to top */
-.visualization-column[data-view="lower-jaw"] .view-buccal {
-    align-items: flex-start;
-}
-
-/* Occlusal view - constrain size */
-.visualization-column .view-occlusal {
+    flex-grow: 1;
+    /* Allow these to grow */
     height: auto;
-    max-height: 120px;
+    /* Remove fixed height */
+    min-height: 0;
+    /* Important for flex items to shrink */
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    padding: 30px;
+    outline: 1px dashed blue;
+    /* DEBUG */
 }
 
-/* Constrain tooth SVG sizes to prevent overlapping */
+/* Occlusal view - fixed or smaller proportion */
+.visualization-column .view-occlusal {
+    height: 120px;
+    /* Keep fixed height for occlusal as it's the middle piece */
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    outline: 1px dashed blue;
+    /* DEBUG */
+}
+
+/* Constrain tooth SVG sizes to fit container */
 .visualization-column .view-buccal svg,
 .visualization-column .view-lingual svg {
-    max-height: 100px;
-    max-width: 100px;
+    max-height: 90%;
+    max-width: 90%;
     width: auto;
     height: auto;
+    display: block;
 }
 
 .visualization-column .view-occlusal svg {
-    max-height: 80px;
-    max-width: 80px;
+    max-height: 90%;
+    max-width: 90%;
     width: auto;
     height: auto;
+    display: block;
 }

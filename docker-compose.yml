@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: dchart_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dental_chart
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./server/src/models/schema.sql:/docker-entrypoint-initdb.d/init.sql
+
+  api:
+    build: ./server
+    container_name: dchart_api
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DATABASE_URL=postgres://user:password@db:5432/dental_chart
+      - ML_SERVICE_URL=http://ml:8000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
+  ml:
+    build: ./ml_service
+    container_name: dchart_ml
+    # ports: - "8000:8000" # Worker doesn't need to expose port (unless we keep API for health)
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    volumes:
+      - ./ml_service:/app
+
+  redis:
+    image: redis:alpine
+    container_name: dchart_redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:

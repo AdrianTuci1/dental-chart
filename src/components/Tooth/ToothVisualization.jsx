@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import ToothRenderer from '../Chart/ToothRenderer';
 import '../Chart/ChartOverview.css';
 import './ToothVisualization.css';
+import WaveInteractiveView from './WaveInteractiveView';
 
 const ToothVisualization = ({ toothNumber, conditions, onSelectTooth }) => {
     const currentTooth = parseInt(toothNumber);
@@ -56,14 +57,39 @@ const ToothVisualization = ({ toothNumber, conditions, onSelectTooth }) => {
                 <div className="jaw-box">
                     <ol className="jaw" data-type={isUpperJaw ? 'upper' : 'lower'}>
                         <li className="tooth" data-number={currentTooth}>
-                            {views.map((view) => {
+                            {views.map((view, index) => {
                                 const isBuccal = view === 'frontal';
                                 const isLingual = view === 'lingual';
+                                const isOcclusal = !isBuccal && !isLingual;
 
-                                return (
+                                // We want to wrap the top and bottom views (index 0 and 2) with the Wave Interactive View
+                                const shouldShowWave = index === 0 || index === 2;
+
+                                // Determine image orientation:
+                                // "Tip fixed towards center"
+                                // Index 0 (Top): Should have Crown Down.
+                                // Index 2 (Bottom): Should have Crown Up.
+                                //
+                                // Upper Jaw: [Frontal, TopView, Lingual]
+                                // - Frontal (0): Root Up / Crown Down. Matches.
+                                // - Lingual (2): Root Up / Crown Down. NEEDS FLIP -> Crown Up.
+                                //
+                                // Lower Jaw: [Lingual, TopView, Frontal]
+                                // - Lingual (0): Root Down / Crown Up. NEEDS FLIP -> Crown Down.
+                                // - Frontal (2): Root Down / Crown Up. Matches.
+
+                                const needsRotation = isLingual && index === 2;
+
+                                // Wave Direction:
+                                // Index 0 (Top): Wave Peak towards Center (Down).
+                                // Index 2 (Bottom): Wave Peak towards Center (Up).
+                                const waveDirection = index === 0 ? 'down' : 'up';
+
+                                const content = (
                                     <div
                                         key={view}
                                         className={`trigger visualization ${isBuccal ? 'view-buccal' : isLingual ? 'view-lingual' : 'view-occlusal'}`}
+                                        style={needsRotation ? { transform: 'rotate(180deg)' } : {}}
                                     >
                                         <ToothRenderer
                                             toothNumber={toothNumber}
@@ -73,6 +99,16 @@ const ToothVisualization = ({ toothNumber, conditions, onSelectTooth }) => {
                                         />
                                     </div>
                                 );
+
+                                if (shouldShowWave) {
+                                    return (
+                                        <WaveInteractiveView key={view} viewType={view} direction={waveDirection}>
+                                            {content}
+                                        </WaveInteractiveView>
+                                    );
+                                }
+
+                                return content;
                             })}
                         </li>
                     </ol>

@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-multipart
+numpy
+pandas
+pydantic
+redis
+requests
+
+torch
+torchvision
+opencv-python-headless
+pillow

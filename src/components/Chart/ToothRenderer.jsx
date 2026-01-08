@@ -79,9 +79,9 @@ const ToothRenderer = ({
     const jawClass = isUpperJaw ? 'upper-jaw' : 'lower-jaw';
 
     // Determine image scale
-    // Default scale is 1.1
+    // Default scale is 0.9 to ensure it fits well
     // For lower jaw anterior/premolars (31-35, 41-45) in occlusal/incisal view, use 1.5
-    let imageScale = 1.1;
+    let imageScale = 0.9;
     const isLowerAnteriorOrPremolar = (tNum >= 31 && tNum <= 35) || (tNum >= 41 && tNum <= 45);
     const isOcclusalView = view === 'topview' || view === 'occlusal' || view === 'incisal';
 
