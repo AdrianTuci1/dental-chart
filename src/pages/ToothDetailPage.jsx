@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
-import { Outlet, useParams, useNavigate, useMatch } from 'react-router-dom';
+import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import useChartStore from '../store/chartStore';
 import ToothVisualization from '../components/Tooth/ToothVisualization';
 import { mapToothDataToConditions } from '../utils/toothUtils';
-import { RefreshCw, XCircle, PlusCircle, ChevronLeft } from 'lucide-react';
 
 import './ToothDetailPage.css';
 
@@ -12,9 +11,7 @@ const ToothDetailPage = () => {
     const navigate = useNavigate();
     const { teeth, selectTooth } = useChartStore();
 
-    // Check if we are at the exact tooth route (no sub-routes like /periodontal)
-    // The path pattern must match the one in App.jsx
-    const isExactToothRoute = useMatch('/patients/:patientId/chart/tooth/:toothNumber');
+
 
     const tooth = teeth[toothNumber];
 
