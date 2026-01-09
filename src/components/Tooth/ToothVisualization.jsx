@@ -8,6 +8,7 @@ const ToothVisualization = ({ toothNumber, conditions, onSelectTooth }) => {
     const currentTooth = parseInt(toothNumber);
     const scrollRef = useRef(null);
 
+
     // Generate full list of teeth for the selector
     // Standard FDI order: Q1 (18-11), Q2 (21-28), Q3 (38-31), Q4 (41-48)
     const allTeeth = [
@@ -39,7 +40,7 @@ const ToothVisualization = ({ toothNumber, conditions, onSelectTooth }) => {
 
     return (
         <div className="tooth-visualization-container">
-            {/* Left Tooth Selector */}
+
             <div className="tooth-selector-column" ref={scrollRef}>
                 {allTeeth.map((num) => (
                     <div

@@ -150,3 +150,30 @@
     height: auto;
     display: block;
 }
+
+
+/* ==========================================================================
+   EXEMPLE DE AJUSTARE FINĂ PENTRU DINȚI SPECIFICI (CUSTOM TWEAKS)
+   ========================================================================== */
+
+/* Exemplu 1: Modificare padding/poziție doar pentru Dintele 11, imaginea de sus (Buccal) */
+/* 
+.tooth[data-number="11"] .view-buccal {
+    padding: 15px !important; 
+    transform: translateY(5px); 
+} 
+*/
+
+/* Exemplu 2: Modificare zoom doar pentru Dintele 26, imaginea din centru (Occlusal) */
+/*
+.tooth[data-number="26"] .view-occlusal {
+    transform: scale(1.1);
+}
+*/
+
+/* Exemplu 3: Ajustare imaginea de jos (Lingual) pentru toți molarii de sus (ex. 16) */
+/*
+.tooth[data-number="16"] .view-lingual {
+    padding-bottom: 0px !important;
+}
+*/
