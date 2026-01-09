@@ -3,17 +3,18 @@ import './WaveInteractiveView.css';
 import { WaveRenderer } from './WaveRenderer';
 import { WaveInteractionModel } from '../../models/WaveInteractionModel';
 
-const WaveInteractiveView = ({ children, viewType, direction = 'down', alignment = 'center' }) => {
+const WaveInteractiveView = ({ children, viewType, direction = 'down', alignment = 'center', model: externalModel }) => {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const rendererRef = useRef(new WaveRenderer());
 
-    // Create the interaction model.
-    // Use useState lazy initializer to create it once.
-    const [model] = useState(() => new WaveInteractionModel({
+    // Use external model if provided, otherwise create a default internal one (fallback)
+    const [internalModel] = useState(() => new WaveInteractionModel({
         gm: [3, 3, 3], // Red Line (Gingival Margin)
         pd: [5, 5, 5]  // Blue Line (Probing Depth)
     }));
+
+    const model = externalModel || internalModel;
 
     // Sync React state with Model state
     const values = useSyncExternalStore(model.subscribe, model.getSnapshot);

@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { X, Volume2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import useChartStore from '../../store/chartStore';
+import { WaveInteractionModel } from '../../models/WaveInteractionModel';
 import './ToothPeriodontal.css';
 
 const ToothPeriodontal = () => {
@@ -62,6 +63,97 @@ const ToothPeriodontal = () => {
         });
     };
 
+    // --- Wave Interaction Logic ---
+
+    // Determine if we are on Buccal or Lingual side
+    const isBuccal = ['disto-buccal', 'buccal', 'mesio-buccal'].includes(currentSiteKey);
+    const viewSide = isBuccal ? 'buccal' : 'lingual';
+
+    // Define the 3 sites for the current view side (Order matters for visual L->R or R->L?)
+    // Assuming standard chart order: Mesial -> Central -> Distal
+    // But visual might depend on quadrant/jaw. For now, let's map consistently:
+    // [Mesial, Central, Distal]
+    const relevantKeys = isBuccal
+        ? ['mesioBuccal', 'buccal', 'distoBuccal']
+        : ['mesioLingual', 'lingual', 'distoLingual'];
+
+    // Get current values for the model
+    const getWaveValues = () => {
+        const pd = [];
+        const gm = [];
+        const OFFSETS = [1, 2, 1];
+        relevantKeys.forEach((key, index) => {
+            const data = getSiteData(key);
+            const offset = OFFSETS[index];
+            pd.push((data.probingDepth || 0) + offset);
+            gm.push(Math.abs(data.gingivalMargin || 0) + offset);
+        });
+        return { pd, gm };
+    };
+
+    // Create the model instance. Re-create only if the side changes (Buccal <-> Lingual).
+    const waveModel = useMemo(() => {
+        return new WaveInteractionModel(getWaveValues());
+    }, [viewSide]); // Re-init primarily on side switch
+
+    // Sync Store -> Model
+    // When `tooth` data changes (e.g. from Keypad or external), update visual model
+    useEffect(() => {
+        const currentVals = getWaveValues();
+        // We could implement a deep equality check here to avoid unnecessary updates if needed
+        waveModel.setValues(currentVals);
+    }, [tooth, viewSide]); // Dependencies: tooth data or side switch
+
+    // Sync Model -> Store
+    useEffect(() => {
+        // Subscribe to model changes driven by interaction
+        const unsubscribe = waveModel.subscribe(() => {
+            if (!tooth?.periodontal?.sites) return;
+
+            const snapshot = waveModel.getSnapshot();
+            // snapshot has { pd: [3,4,5], gm: [1,2,3] } matching relevantKeys order
+
+            const newSites = { ...tooth.periodontal.sites };
+            let hasChanges = false;
+
+            relevantKeys.forEach((key, index) => {
+                const offset = [1, 2, 1][index];
+
+                // Convert Visual to Stored
+                let newPD = snapshot.pd[index] - offset;
+                if (newPD < 0) newPD = 0;
+
+                // For GM: Visual = Abs(Stored) + Offset
+                let visualGMBase = snapshot.gm[index] - offset;
+                if (visualGMBase < 0) visualGMBase = 0;
+
+                const newGM = visualGMBase === 0 ? 0 : -visualGMBase;
+                const current = newSites[key] || {};
+
+                if (current.probingDepth !== newPD || current.gingivalMargin !== newGM) {
+                    newSites[key] = {
+                        ...current,
+                        probingDepth: newPD,
+                        gingivalMargin: newGM
+                    };
+                    hasChanges = true;
+                }
+            });
+
+            if (hasChanges) {
+                updateTooth(tooth.toothNumber, {
+                    periodontal: {
+                        ...tooth.periodontal,
+                        sites: newSites
+                    }
+                });
+            }
+        });
+
+        return unsubscribe;
+    }, [waveModel, tooth]); // Re-sub if model or tooth identity changes (though tooth ID shouldn't change)
+
+
     const handleMobilityChange = (cls) => {
         updateTooth(tooth.toothNumber, {
             periodontal: {
@@ -100,7 +192,7 @@ const ToothPeriodontal = () => {
         <div className="periodontal-container">
             {/* Header */}
             <div className="perio-header">
-                <h2 className="perio-title">Periodontal</h2>
+                <h2 className="perio-title">Periodontal - {isBuccal ? 'Buccal' : 'Lingual'} View</h2>
                 <div className="header-controls">
                     <Volume2 className="control-icon" size={20} />
                     <X className="control-icon" size={20} onClick={() => navigate('../')} />
@@ -108,6 +200,8 @@ const ToothPeriodontal = () => {
             </div>
 
             <div className="perio-content">
+
+
                 {/* Top Row: Site Selectors */}
                 <div className="site-selector-grid">
                     {Object.keys(siteMap).map((key) => {

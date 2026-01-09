@@ -165,32 +165,31 @@ export class WaveRenderer {
         this.ctx.fillStyle = 'rgba(0, 122, 255, 0.2)';
         this.ctx.fill();
 
-        // 3. Draw GM Line
-        this.ctx.strokeStyle = '#FF3B30';
-        this.ctx.lineWidth = 2;
-        this.drawSmoothLine(gmPoints);
-        this.ctx.stroke();
-
         // 4. Draw PD Line
         this.ctx.strokeStyle = '#007AFF';
         this.ctx.lineWidth = 2;
         this.drawSmoothLine(pdPoints);
         this.ctx.stroke();
 
-        // 5. Draw Control Points
-        this.ctx.fillStyle = '#FF3B30';
-        gmPoints.forEach(p => {
-            this.ctx.beginPath();
-            this.ctx.arc(p.x, p.y, this.topicRadius, 0, Math.PI * 2);
-            this.ctx.fill();
-        });
+        // 3. Draw GM Line
+        this.ctx.strokeStyle = '#FF3B30';
+        this.ctx.lineWidth = 2;
+        this.drawSmoothLine(gmPoints);
+        this.ctx.stroke();
 
-        this.ctx.fillStyle = '#007AFF';
-        pdPoints.forEach(p => {
-            this.ctx.beginPath();
-            this.ctx.arc(p.x, p.y, this.topicRadius, 0, Math.PI * 2);
-            this.ctx.fill();
-        });
+        // 5. Draw Control Points (REMOVED)
+        // this.ctx.fillStyle = '#FF3B30';
+        // gmPoints.forEach(p => {
+        //     this.ctx.beginPath();
+        //     this.ctx.arc(p.x, p.y, this.topicRadius, 0, Math.PI * 2);
+        //     this.ctx.fill();
+        // });
+        // this.ctx.fillStyle = '#007AFF';
+        // pdPoints.forEach(p => {
+        //     this.ctx.beginPath();
+        //     this.ctx.arc(p.x, p.y, this.topicRadius, 0, Math.PI * 2);
+        //     this.ctx.fill();
+        // });
     }
 
     getHit(x, y) {

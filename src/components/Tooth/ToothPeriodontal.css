@@ -301,3 +301,18 @@
 .save-btn:hover {
     opacity: 0.9;
 }
+
+/* Wave Visualization Section */
+.wave-section {
+    height: 12rem;
+    width: 100%;
+    background-color: #111827;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid #374151;
+    position: relative;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

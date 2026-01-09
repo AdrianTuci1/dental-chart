@@ -1,13 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useMemo } from 'react';
 import ToothRenderer from '../Chart/ToothRenderer';
 import '../Chart/ChartOverview.css';
 import './ToothVisualization.css';
 import WaveInteractiveView from './WaveInteractiveView';
+import useChartStore from '../../store/chartStore';
+import { WaveInteractionModel } from '../../models/WaveInteractionModel';
 
 const ToothVisualization = ({ toothNumber, conditions, onSelectTooth }) => {
     const currentTooth = parseInt(toothNumber);
     const scrollRef = useRef(null);
-
+    const toothData = useChartStore(state => state.teeth[currentTooth]);
 
     // Generate full list of teeth for the selector
     // Standard FDI order: Q1 (18-11), Q2 (21-28), Q3 (38-31), Q4 (41-48)
@@ -37,6 +39,56 @@ const ToothVisualization = ({ toothNumber, conditions, onSelectTooth }) => {
         : ['lingual', 'topview', 'frontal']; // Lower jaw order
 
     const dataView = isUpperJaw ? 'upper-jaw' : 'lower-jaw';
+
+    // Helper to get site data safely
+    const getSiteData = (data, key) => {
+        if (data && data.periodontal && data.periodontal.sites && data.periodontal.sites[key]) {
+            return data.periodontal.sites[key];
+        }
+        return { probingDepth: 0, gingivalMargin: 0 };
+    };
+
+    // Prepare models for Buccal and Lingual views
+    // We use useMemo but depend on the data values themselves so the model updates when data updates
+    // Actually, WaveInteractionModel is stateful.
+    // Ideally, we want the MODEL to be stable, but updated with values.
+    // However, here we are largely READ-ONLY or at least reflecting the store.
+    // If the store updates (from another component), we want the wave to update.
+    // The WaveInteractiveView subscribes to the model. We need to update the model when store changes.
+
+    const buccalKeys = ['mesioBuccal', 'buccal', 'distoBuccal'];
+    const lingualKeys = ['mesioLingual', 'lingual', 'distoLingual'];
+
+    // We can maintain two models ref/state that we update whenever toothData changes
+    // Or we can recreate them. Recreating is cheaper given they are lightweight classes.
+    // BUT WaveInteractiveView expects a stable model object to subscribe to.
+
+    // Let's use a ref to hold stable models and update them.
+    const buccalModel = useRef(new WaveInteractionModel()).current;
+    const lingualModel = useRef(new WaveInteractionModel()).current;
+
+    useEffect(() => {
+        if (!toothData) return;
+
+        const OFFSETS = [1, 2, 1];
+
+        const getDataValues = (keys) => {
+            const pd = [];
+            const gm = [];
+            keys.forEach((key, index) => {
+                const d = getSiteData(toothData, key);
+                const offset = OFFSETS[index];
+                pd.push((d.probingDepth || 0) + offset);
+                gm.push(Math.abs(d.gingivalMargin || 0) + offset);
+            });
+            return { pd, gm };
+        };
+
+        buccalModel.setValues(getDataValues(buccalKeys));
+        lingualModel.setValues(getDataValues(lingualKeys));
+
+    }, [toothData]); // Update models when toothData changes
+
 
     return (
         <div className="tooth-visualization-container">
@@ -86,6 +138,18 @@ const ToothVisualization = ({ toothNumber, conditions, onSelectTooth }) => {
                                 // Index 2 (Bottom): Wave Peak towards Center (Up).
                                 const waveDirection = index === 0 ? 'down' : 'up';
 
+                                // Determine which model to use
+                                // Upper Jaw: [Frontal (Buccal), Top, Lingual]
+                                // Lower Jaw: [Lingual, Top, Frontal (Buccal)]
+                                let modelToUse = null;
+                                if (isUpperJaw) {
+                                    if (index === 0) modelToUse = buccalModel; // Frontal
+                                    if (index === 2) modelToUse = lingualModel; // Lingual
+                                } else {
+                                    if (index === 0) modelToUse = lingualModel; // Lingual
+                                    if (index === 2) modelToUse = buccalModel; // Frontal
+                                }
+
                                 const content = (
                                     <div
                                         key={view}
@@ -103,7 +167,12 @@ const ToothVisualization = ({ toothNumber, conditions, onSelectTooth }) => {
 
                                 if (shouldShowWave) {
                                     return (
-                                        <WaveInteractiveView key={view} viewType={view} direction={waveDirection}>
+                                        <WaveInteractiveView
+                                            key={view}
+                                            viewType={view}
+                                            direction={waveDirection}
+                                            model={modelToUse}
+                                        >
                                             {content}
                                         </WaveInteractiveView>
                                     );
