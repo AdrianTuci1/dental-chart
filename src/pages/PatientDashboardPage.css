@@ -5,7 +5,7 @@
     height: 100%;
     gap: 2rem;
     padding: 2rem;
-    background-color: #fff;
+    background-color: var(--background-black);
 }
 
 .dashboard-content-left {
@@ -26,13 +26,13 @@
     font-size: 2rem;
     font-weight: 400;
     /* Thin/Regular as per design */
-    color: #374151;
+    color: var(--text-primary);
     margin-bottom: 0.25rem;
     line-height: 1.2;
 }
 
 .patient-meta {
-    color: #6b7280;
+    color: var(--text-secondary);
     font-size: 1rem;
     font-weight: 400;
 }
@@ -61,7 +61,7 @@
 .dashboard-tabs-nav {
     display: flex;
     gap: 2rem;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--border-color);
     margin-bottom: 2rem;
 }
 
@@ -69,7 +69,7 @@
     padding-bottom: 0.75rem;
     font-weight: 700;
     font-size: 0.85rem;
-    color: #9ca3af;
+    color: var(--text-tertiary);
     /* Inactive color */
     background: none;
     border: none;
@@ -94,7 +94,7 @@
 }
 
 .empty-state {
-    color: #9ca3af;
+    color: var(--text-tertiary);
     font-size: 1rem;
     padding-top: 1rem;
 }
@@ -106,7 +106,7 @@
     display: flex;
     flex-direction: column;
     gap: 2rem;
-    border-left: 1px solid #e5e7eb;
+    border-left: 1px solid var(--border-color);
     padding-left: 2rem;
 }
 
@@ -127,7 +127,7 @@
 .widget-header h3 {
     font-size: 1.25rem;
     font-weight: 400;
-    color: #4b5563;
+    color: var(--text-primary);
     /* Gray-600 */
     margin: 0;
 }

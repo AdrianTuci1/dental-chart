@@ -34,7 +34,7 @@ const PatientLayout = () => {
     }, [patientId, patients, selectedPatient, selectPatient, setPatients]);
 
     if (!selectedPatient) {
-        return <div className="p-8 text-center">Loading patient data...</div>;
+        return <div className="loading-state">Loading patient data...</div>;
     }
 
     return (

@@ -1,8 +1,8 @@
 .history-card {
-    background-color: var(--color-white);
+    background-color: var(--background-secondary);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
-    border: 1px solid var(--color-gray-200);
+    border: 1px solid var(--border-color);
     padding: var(--spacing-6);
 }
 
@@ -10,7 +10,7 @@
     font-size: 1.125rem;
     /* text-lg */
     font-weight: 700;
-    color: var(--color-gray-900);
+    color: var(--text-primary);
     margin-bottom: var(--spacing-4);
 }
 
@@ -22,7 +22,7 @@
 
 .history-item {
     padding-bottom: var(--spacing-4);
-    border-bottom: 1px solid var(--color-gray-100);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .history-item:last-child {
@@ -33,19 +33,19 @@
 .history-date {
     font-size: 0.75rem;
     /* text-xs */
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
     margin-bottom: var(--spacing-1);
 }
 
 .history-description {
     font-weight: 500;
-    color: var(--color-gray-900);
+    color: var(--text-primary);
     margin-bottom: var(--spacing-1);
 }
 
 .history-provider {
     font-size: 0.75rem;
     /* text-xs */
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
     font-style: italic;
 }

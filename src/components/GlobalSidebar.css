@@ -1,0 +1,87 @@
+.global-sidebar {
+    width: 54px;
+    background-color: var(--background-secondary);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: var(--spacing-4);
+    padding-bottom: var(--spacing-4);
+    color: var(--text-primary);
+    z-index: 50;
+    box-shadow: var(--shadow-lg);
+    border-right: 1px solid var(--border-color);
+}
+
+.sidebar-logo {
+    margin-bottom: var(--spacing-8);
+}
+
+.sidebar-logo-icon {
+    width: 2rem;
+    height: 2rem;
+    background-color: var(--color-primary);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-white);
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.sidebar-nav {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+    width: 100%;
+    align-items: center;
+}
+
+.sidebar-nav-link {
+    padding: var(--spacing-2);
+    border-radius: var(--radius-md);
+    transition: background-color 0.2s;
+    color: var(--text-primary);
+}
+
+.sidebar-nav-link:hover {
+    background-color: var(--background-tertiary);
+}
+
+.sidebar-nav-link.active {
+    background-color: var(--background-tertiary);
+    color: var(--color-primary);
+}
+
+.sidebar-settings-btn {
+    padding: var(--spacing-2);
+    border-radius: var(--radius-md);
+    transition: background-color 0.2s;
+    margin-top: auto;
+    color: var(--text-primary);
+}
+
+.sidebar-settings-btn:hover {
+    background-color: var(--background-tertiary);
+}
+
+.sidebar-footer {
+    margin-top: var(--spacing-4);
+}
+
+.sidebar-logout-btn {
+    padding: var(--spacing-2);
+    border-radius: var(--radius-md);
+    transition: all 0.2s;
+    color: #fca5a5;
+}
+
+.sidebar-logout-btn:hover {
+    background-color: var(--background-tertiary);
+    color: #fecaca;
+}

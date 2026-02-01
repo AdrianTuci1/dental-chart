@@ -4,10 +4,10 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    background-color: #ffffff;
+    background-color: var(--background-secondary);
     border-radius: 0.5rem;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    border: 1px solid #e5e7eb;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
     overflow: hidden;
 }
 
@@ -16,20 +16,20 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .perio-title {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-primary);
     margin: 0;
 }
 
 .header-controls {
     display: flex;
     gap: 0.5rem;
-    color: #9ca3af;
+    color: var(--text-secondary);
 }
 
 .control-icon {
@@ -38,7 +38,7 @@
 }
 
 .control-icon:hover {
-    color: #4b5563;
+    color: var(--text-primary);
 }
 
 .perio-content {
@@ -60,10 +60,10 @@
 .site-card {
     cursor: pointer;
     border-radius: 0.5rem;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     padding: 0.5rem;
     text-align: center;
-    background-color: #ffffff;
+    background-color: var(--background-tertiary);
     transition: all 0.2s;
 }
 
@@ -74,21 +74,21 @@
 .site-card.selected {
     border-color: #3b82f6;
     box-shadow: 0 0 0 1px #3b82f6;
-    background-color: #ffffff;
+    background-color: var(--background-elevated);
 }
 
 .site-value-large {
     font-size: 1.875rem;
     font-weight: 300;
-    color: #374151;
+    color: var(--text-primary);
     margin-bottom: 0.25rem;
     line-height: 1;
 }
 
 .site-value-small {
     font-size: 0.75rem;
-    color: #9ca3af;
-    border-top: 1px solid #f3f4f6;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border-color);
     padding-top: 0.25rem;
     width: 2rem;
     margin: 0 auto 0.25rem;
@@ -99,7 +99,7 @@
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #9ca3af;
+    color: var(--text-secondary);
 }
 
 .site-card.selected .site-label {
@@ -138,7 +138,7 @@
 .section-label {
     font-size: 0.75rem;
     font-weight: 700;
-    color: #6b7280;
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     margin-bottom: 0.75rem;
@@ -162,12 +162,12 @@
 
 .num-btn.default {
     color: #3b82f6;
-    background-color: #ffffff;
+    background-color: var(--background-tertiary);
     border-color: #dbeafe;
 }
 
 .num-btn.default:hover {
-    background-color: #eff6ff;
+    background-color: var(--background-elevated);
 }
 
 .num-btn.active {
@@ -201,18 +201,18 @@
 }
 
 .toggle-btn.inactive {
-    background-color: #f9fafb;
+    background-color: var(--background-tertiary);
     color: #60a5fa;
 }
 
 .toggle-btn.inactive:hover {
-    background-color: #f3f4f6;
+    background-color: var(--background-elevated);
 }
 
 .toggle-btn.active {
-    background-color: #f3f4f6;
-    color: #111827;
-    border: 1px solid #d1d5db;
+    background-color: var(--background-elevated);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
     box-shadow: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
 }
 
@@ -261,12 +261,12 @@
 }
 
 .mobility-btn.inactive {
-    background-color: #f9fafb;
+    background-color: var(--background-tertiary);
     color: #60a5fa;
 }
 
 .mobility-btn.inactive:hover {
-    background-color: #f3f4f6;
+    background-color: var(--background-elevated);
 }
 
 .mobility-btn.active {

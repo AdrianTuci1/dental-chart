@@ -3,8 +3,9 @@
     top: 0;
     bottom: 0;
     width: 400px;
-    background-color: #ffffff;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    background-color: var(--background-secondary);
+    box-shadow: var(--shadow-xl);
+    border-left: 1px solid var(--border-color);
     z-index: 1000;
     display: flex;
     flex-direction: column;
@@ -26,8 +27,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 16px;
-    border-bottom: 1px solid #e5e7eb;
-    background: #fff;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--background-secondary);
 }
 
 .drawer-nav {
@@ -43,13 +44,13 @@
 
 .tooth-title {
     font-weight: 600;
-    color: #4b5563;
+    color: var(--text-primary);
 }
 
 .drawer-actions {
     display: flex;
     gap: 16px;
-    color: #9ca3af;
+    color: var(--text-secondary);
 }
 
 .action-icon {
@@ -71,18 +72,18 @@
 
 .added-items-list {
     padding: 12px;
-    background-color: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
+    background-color: var(--background-tertiary);
+    border-bottom: 1px solid var(--border-color);
     max-height: 200px;
     overflow-y: auto;
 }
 
 .added-item {
     padding: 10px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
     margin-bottom: 8px;
-    background-color: white;
+    background-color: var(--background-elevated);
     cursor: pointer;
     font-size: 13px;
     display: flex;
@@ -95,12 +96,12 @@
 
 .added-item-text {
     font-weight: 600;
-    color: #374151;
+    color: var(--text-primary);
 }
 
 .added-item-details {
     font-size: 11px;
-    color: #6b7280;
+    color: var(--text-secondary);
     margin-top: 2px;
 }
 
@@ -113,18 +114,18 @@
 
 .type-btn {
     padding: 12px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
-    background: white;
+    background: var(--background-tertiary);
     cursor: pointer;
     font-weight: 500;
-    color: #4b5563;
+    color: var(--text-primary);
     text-align: center;
 }
 
 .type-btn:hover {
     border-color: #3b82f6;
-    background-color: #f3f4f6;
+    background-color: var(--background-elevated);
 }
 
 /* Configuration View Styles */
@@ -152,7 +153,7 @@
 
 .summary-label {
     font-weight: 700;
-    color: #9ca3af;
+    color: var(--text-tertiary);
     /* Gray-400 */
     margin-right: 8px;
     text-transform: uppercase;
@@ -174,7 +175,7 @@
 .step-label {
     font-size: 13px;
     font-weight: 700;
-    color: #9ca3af;
+    color: var(--text-tertiary);
     text-transform: uppercase;
 }
 
@@ -187,19 +188,19 @@
 .stack-btn {
     width: 100%;
     padding: 16px;
-    background-color: #f3f4f6;
+    background-color: var(--background-tertiary);
     border: none;
     border-radius: 8px;
     font-size: 14px;
     font-weight: 500;
-    color: #4b5563;
+    color: var(--text-primary);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .stack-btn:hover {
-    background-color: #e5e7eb;
-    color: #1f2937;
+    background-color: var(--background-elevated);
+    color: var(--text-primary);
 }
 
 .stack-btn.active {
@@ -227,8 +228,8 @@
 /* Fixed Footer for Save Button */
 .fixed-footer {
     padding: 16px;
-    border-top: 1px solid #e5e7eb;
-    background-color: white;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--background-secondary);
 }
 
 .save-full {

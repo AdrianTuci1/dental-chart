@@ -3,6 +3,7 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
+    background-color: var(--background-black);
 }
 
 /* Patient Name - Top Left (Absolute) */
@@ -12,7 +13,7 @@
     left: var(--spacing-6);
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--color-gray-900);
+    color: var(--text-primary);
     z-index: 10;
 }
 
@@ -27,9 +28,10 @@
 
 .chart-nav {
     display: flex;
-    background-color: var(--color-gray-100);
+    background-color: var(--background-secondary);
     padding: var(--spacing-1);
     border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
 }
 
 .chart-nav-link {
@@ -49,17 +51,17 @@
 }
 
 .chart-nav-link.active {
-    background-color: var(--color-white);
+    background-color: var(--background-tertiary);
     box-shadow: var(--shadow-sm);
     color: var(--color-primary);
 }
 
 .chart-nav-link:not(.active) {
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
 }
 
 .chart-nav-link:not(.active):hover {
-    color: var(--color-gray-700);
+    color: var(--text-primary);
 }
 
 /* Chart View Selector - Top Right Center (Absolute) */
@@ -69,11 +71,11 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    outline: 1px solid var(--color-gray-200);
+    outline: 1px solid var(--border-color);
     top: 40%;
     right: var(--spacing-6);
     gap: var(--spacing-2);
-    background-color: var(--color-gray-100);
+    background-color: var(--background-secondary);
     padding: var(--spacing-1);
     border-radius: var(--radius-lg);
     z-index: 10;
@@ -86,18 +88,18 @@
     border-radius: var(--radius-md);
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s;
     white-space: nowrap;
 }
 
 .view-button:hover {
-    color: var(--color-gray-700);
+    color: var(--text-primary);
 }
 
 .view-button.active {
-    background-color: var(--color-white);
+    background-color: var(--background-tertiary);
     box-shadow: var(--shadow-sm);
     color: var(--color-primary);
 }

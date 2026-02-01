@@ -9,6 +9,7 @@
     overflow: hidden;
     outline: 1px dashed green;
     /* DEBUG */
+    background-color: var(--background-secondary);
 }
 
 .wave-content {

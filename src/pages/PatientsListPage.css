@@ -18,11 +18,11 @@
     /* text-2xl */
     line-height: 2rem;
     font-weight: 700;
-    color: var(--color-gray-900);
+    color: var(--text-primary);
 }
 
 .page-subtitle {
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
 }
 
 .add-patient-btn {
@@ -46,16 +46,16 @@
 }
 
 .search-container {
-    background-color: var(--color-white);
+    background-color: var(--background-secondary);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--color-gray-200);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
     margin-bottom: var(--spacing-6);
 }
 
 .search-input-wrapper {
     padding: var(--spacing-4);
-    border-bottom: 1px solid var(--color-gray-200);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .search-input-inner {
@@ -79,8 +79,7 @@
     /* h-5 */
     width: 1.25rem;
     /* w-5 */
-    color: #9CA3AF;
-    /* text-gray-400 */
+    color: var(--text-tertiary);
 }
 
 .search-input {
@@ -93,17 +92,17 @@
     padding-top: 0.5rem;
     /* py-2 */
     padding-bottom: 0.5rem;
-    border: 1px solid var(--color-gray-300);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     line-height: 1.25rem;
     /* leading-5 */
-    background-color: var(--color-white);
-    color: var(--color-gray-900);
+    background-color: var(--background-tertiary);
+    color: var(--text-primary);
     outline: none;
 }
 
 .search-input::placeholder {
-    color: var(--color-gray-500);
+    color: var(--text-tertiary);
 }
 
 .search-input:focus {
@@ -121,16 +120,16 @@
 }
 
 .patients-table thead {
-    background-color: var(--color-gray-100);
+    background-color: var(--background-tertiary);
     /* bg-gray-50 equivalent */
 }
 
 .patients-table tbody {
-    background-color: var(--color-white);
+    background-color: var(--background-secondary);
 }
 
 .patients-table tr {
-    border-bottom: 1px solid var(--color-gray-200);
+    border-bottom: 1px solid var(--border-color);
     /* divide-y equivalent */
 }
 
@@ -149,7 +148,7 @@
     font-size: 0.75rem;
     /* text-xs */
     font-weight: 500;
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     /* tracking-wider */
@@ -161,7 +160,7 @@
 }
 
 .table-row:hover {
-    background-color: var(--color-gray-100);
+    background-color: var(--background-tertiary);
     /* bg-gray-50 equivalent */
 }
 
@@ -186,13 +185,13 @@
     /* h-10 */
     width: 2.5rem;
     /* w-10 */
-    background-color: var(--color-gray-200);
+    background-color: var(--background-tertiary);
     border-radius: 9999px;
     /* rounded-full */
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
 }
 
 .patient-details {
@@ -204,31 +203,31 @@
     font-size: 0.875rem;
     /* text-sm */
     font-weight: 500;
-    color: var(--color-gray-900);
+    color: var(--text-primary);
 }
 
 .patient-dob {
     font-size: 0.875rem;
     /* text-sm */
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
 }
 
 .contact-email {
     font-size: 0.875rem;
     /* text-sm */
-    color: var(--color-gray-900);
+    color: var(--text-primary);
 }
 
 .contact-phone {
     font-size: 0.875rem;
     /* text-sm */
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
 }
 
 .last-exam-date {
     font-size: 0.875rem;
     /* text-sm */
-    color: var(--color-gray-900);
+    color: var(--text-primary);
 }
 
 .status-badge {
@@ -243,10 +242,10 @@
     font-weight: 600;
     border-radius: 9999px;
     /* rounded-full */
-    background-color: #DCFCE7;
-    /* bg-green-100 */
-    color: #166534;
-    /* text-green-800 */
+    background-color: rgba(16, 185, 129, 0.2);
+    /* bg-green-100 dark variant */
+    color: #10b981;
+    /* text-green-400 */
 }
 
 .table-cell-right {
@@ -268,5 +267,5 @@
 .no-results {
     padding: var(--spacing-8);
     text-align: center;
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
 }

@@ -33,21 +33,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f8f9fa;
-    border: 2px solid #e5e7eb;
+    background: var(--background-tertiary);
+    border: 2px solid var(--border-color);
     border-radius: 8px;
     padding: 12px;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 13px;
     font-weight: 500;
-    color: #7a8599;
+    color: var(--text-secondary);
     text-align: center;
     user-select: none;
 }
 
 .zone-pad:hover {
-    background: #e5e7eb;
+    background: var(--background-elevated);
     border-color: #3b82f6;
 }
 
@@ -64,8 +64,8 @@
 }
 
 .zone-pad.inactive:hover {
-    background: #f8f9fa;
-    border-color: #e5e7eb;
+    background: var(--background-tertiary);
+    border-color: var(--border-color);
 }
 
 /* Responsive adjustments */

@@ -44,6 +44,7 @@
 }
 
 .application {
-  background-color: var(--color-gray-100);
+  background-color: var(--background-primary);
   width: 100%;
+  min-height: 100vh;
 }

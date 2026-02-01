@@ -19,7 +19,7 @@ main[data-view=chart] {
     flex-direction: column;
     min-width: 0;
     padding: 24px;
-    color: #4d5565;
+    color: var(--text-secondary);
     text-align: center;
 }
 
@@ -106,8 +106,8 @@ main[data-view=chart] .jaw-box .jaw .tooth .number {
     border-radius: 50%;
     margin-left: auto;
     margin-right: auto;
-    color: inherit;
-    background-color: #e3e4e6;
+    color: var(--text-primary);
+    background-color: var(--background-tertiary);
     font-weight: 600;
     text-align: center;
 }
@@ -218,21 +218,22 @@ main[data-view=chart] .jaw-box .jaw .tooth .number {
 }
 
 .quickselect-footer {
+    margin: -24px;
     display: flex;
     gap: 12px;
     padding: 16px;
-    background-color: #ffffff;
-    border-top: 1px solid #e5e7eb;
+    background-color: var(--background-secondary);
+    border-top: 1px solid var(--border-color);
     justify-content: center;
     flex-wrap: wrap;
 }
 
 .qs-btn {
     padding: 8px 16px;
-    border: 1px solid #d1d5db;
+    border: 1px solid var(--border-color);
     border-radius: 6px;
-    background-color: #ffffff;
-    color: #374151;
+    background-color: var(--background-tertiary);
+    color: var(--text-primary);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -240,12 +241,12 @@ main[data-view=chart] .jaw-box .jaw .tooth .number {
 }
 
 .qs-btn:hover {
-    background-color: #f3f4f6;
-    border-color: #9ca3af;
+    background-color: var(--background-elevated);
+    border-color: var(--border-color-light);
 }
 
 .qs-btn:active {
-    background-color: #e5e7eb;
+    background-color: var(--background-tertiary);
 }
 
 /* Selection Overlay */

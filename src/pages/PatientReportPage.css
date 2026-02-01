@@ -18,7 +18,7 @@
     /* text-2xl */
     line-height: 2rem;
     font-weight: 700;
-    color: var(--color-gray-900);
+    color: var(--text-primary);
 }
 
 .report-actions {
@@ -36,15 +36,15 @@
     padding-top: 0.5rem;
     /* py-2 */
     padding-bottom: 0.5rem;
-    border: 1px solid var(--color-gray-300);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    color: var(--color-gray-700);
-    background-color: transparent;
+    color: var(--text-primary);
+    background-color: var(--background-tertiary);
     transition: background-color 0.2s;
 }
 
 .action-btn:hover {
-    background-color: var(--color-gray-100);
+    background-color: var(--background-elevated);
     /* bg-gray-50 equivalent */
 }
 
@@ -69,11 +69,11 @@
 }
 
 .report-card {
-    background-color: var(--color-white);
+    background-color: var(--background-secondary);
     box-shadow: var(--shadow-lg);
     border-radius: var(--radius-lg);
     padding: var(--spacing-8);
-    border: 1px solid var(--color-gray-200);
+    border: 1px solid var(--border-color);
 }
 
 @media print {
@@ -93,7 +93,7 @@
 }
 
 .clinic-header {
-    border-bottom: 1px solid var(--color-gray-200);
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: var(--spacing-6);
     margin-bottom: var(--spacing-6);
     display: flex;
@@ -110,7 +110,7 @@
 }
 
 .clinic-info {
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
     margin-top: var(--spacing-1);
 }
 
@@ -123,11 +123,11 @@
     /* text-xl */
     line-height: 1.75rem;
     font-weight: 700;
-    color: var(--color-gray-900);
+    color: var(--text-primary);
 }
 
 .report-meta-date {
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
     margin-top: var(--spacing-1);
 }
 
@@ -139,7 +139,7 @@
     font-size: 0.875rem;
     /* text-sm */
     font-weight: 700;
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     /* tracking-wider */
@@ -155,7 +155,7 @@
 .detail-label {
     font-size: 0.875rem;
     /* text-sm */
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
 }
 
 .detail-value {
@@ -173,7 +173,7 @@
     font-size: 0.75rem;
     /* text-xs */
     font-weight: 500;
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
     text-transform: uppercase;
 }
 
@@ -182,14 +182,14 @@
 }
 
 .report-table tbody tr {
-    border-top: 1px solid var(--color-gray-200);
+    border-top: 1px solid var(--border-color);
 }
 
 .report-table td {
     padding: var(--spacing-2) var(--spacing-3);
     font-size: 0.875rem;
     /* text-sm */
-    color: var(--color-gray-900);
+    color: var(--text-primary);
 }
 
 .report-table td.text-right {
@@ -197,7 +197,7 @@
 }
 
 .report-table tfoot tr {
-    border-top: 1px solid var(--color-gray-200);
+    border-top: 1px solid var(--border-color);
 }
 
 .report-table tfoot td {
@@ -212,18 +212,18 @@
 .notes-content {
     font-size: 0.875rem;
     /* text-sm */
-    color: var(--color-gray-700);
-    background-color: var(--color-gray-100);
+    color: var(--text-primary);
+    background-color: var(--background-tertiary);
     /* bg-gray-50 equivalent */
     padding: var(--spacing-4);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-gray-200);
+    border: 1px solid var(--border-color);
 }
 
 .report-footer {
     margin-top: var(--spacing-12);
     padding-top: var(--spacing-8);
-    border-top: 1px solid var(--color-gray-200);
+    border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
@@ -233,13 +233,13 @@
     font-size: 0.875rem;
     /* text-sm */
     font-weight: 700;
-    color: var(--color-gray-900);
+    color: var(--text-primary);
 }
 
 .doctor-license {
     font-size: 0.75rem;
     /* text-xs */
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
 }
 
 .signature-line {
@@ -247,7 +247,7 @@
     /* h-12 */
     width: 8rem;
     /* w-32 */
-    border-bottom: 1px solid #9CA3AF;
+    border-bottom: 1px solid var(--border-color-lighter);
     /* border-gray-400 */
     margin-bottom: var(--spacing-1);
 }
@@ -255,5 +255,5 @@
 .signature-label {
     font-size: 0.75rem;
     /* text-xs */
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
 }

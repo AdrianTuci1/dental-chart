@@ -9,7 +9,7 @@
 }
 
 .sextant-box {
-    border: 1px solid #f3f4f6;
+    border: 1px solid var(--border-color);
     /* Very light border */
     border-radius: 6px;
     padding: 1rem 0.5rem;
@@ -17,7 +17,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    background-color: #fff;
+    background-color: var(--background-secondary);
     /* Or transparent if the main bg is white */
 }
 
@@ -32,19 +32,19 @@
 
 .sextant-line {
     height: 1px;
-    background-color: #e5e7eb;
+    background-color: var(--border-color);
     flex: 1;
 }
 
 .sextant-circle {
     width: 40px;
     height: 40px;
-    border: 1px solid #e5e7eb;
+    border: 1px solid var(--border-color);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: #fff;
+    background-color: var(--background-tertiary);
     z-index: 1;
     margin: 0 4px;
 }
@@ -52,18 +52,18 @@
 .sextant-value {
     font-size: 1rem;
     font-weight: 500;
-    color: #d1d5db;
+    color: var(--text-tertiary);
     /* Light gray for N/A */
 }
 
 /* If value is a number, make it darker */
 .sextant-value:not(:contains("N/A")) {
-    color: #374151;
+    color: var(--text-primary);
 }
 
 .sextant-label {
     font-size: 0.65rem;
-    color: #6b7280;
+    color: var(--text-secondary);
     text-transform: uppercase;
     text-align: center;
     font-weight: 600;

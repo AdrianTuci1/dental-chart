@@ -16,13 +16,13 @@
 .plan-title {
     font-size: 1.125rem;
     font-weight: 700;
-    color: var(--color-gray-900);
+    color: var(--text-primary);
 }
 
 .plan-total {
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
 }
 
 .plan-list {
@@ -36,9 +36,9 @@
     align-items: center;
     justify-content: space-between;
     padding: var(--spacing-4);
-    background-color: var(--color-white);
+    background-color: var(--background-secondary);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-gray-200);
+    border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
     /* Added shadow for card effect */
 }
@@ -83,13 +83,13 @@
     font-weight: 500;
     font-size: 0.875rem;
     /* text-sm */
-    color: var(--color-gray-900);
+    color: var(--text-primary);
 }
 
 .item-status {
     font-size: 0.75rem;
     /* text-xs */
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
     text-transform: capitalize;
 }
 
@@ -98,23 +98,23 @@
     font-weight: 500;
     font-size: 0.875rem;
     /* text-sm */
-    color: var(--color-gray-900);
+    color: var(--text-primary);
 }
 
 .add-procedure-btn {
     width: 100%;
     margin-top: var(--spacing-4);
     padding: var(--spacing-2);
-    border: 1px dashed var(--color-gray-300);
+    border: 1px dashed var(--border-color);
     border-radius: var(--radius-md);
     font-size: 0.875rem;
     /* text-sm */
-    color: var(--color-gray-500);
+    color: var(--text-secondary);
     background-color: transparent;
     transition: background-color 0.2s;
     cursor: pointer;
 }
 
 .add-procedure-btn:hover {
-    background-color: var(--color-gray-50);
+    background-color: var(--background-tertiary);
 }
