@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { Outlet, NavLink, useParams, useNavigate, useLocation } from 'react-router-dom';
 import usePatientStore from '../store/patientStore';
 import { MOCK_PATIENTS } from '../utils/mockData';
-import { LayoutDashboard, FileText, Activity, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, FileText, Activity, ArrowLeft, Scan } from 'lucide-react';
 import useChartStore from '../store/chartStore';
 import { Layers, Eye, EyeOff } from 'lucide-react';
 import { LiaTeethSolid } from "react-icons/lia";
@@ -79,6 +79,16 @@ const PatientLayout = () => {
                         title="Dental Chart"
                     >
                         <LiaTeethSolid size={24} />
+                    </NavLink>
+
+                    <NavLink
+                        to={`/patients/${patientId}/scan`}
+                        className={({ isActive }) =>
+                            `sidebar-nav-link ${isActive ? 'active' : ''}`
+                        }
+                        title="Scan"
+                    >
+                        <Scan size={24} />
                     </NavLink>
 
                     <NavLink

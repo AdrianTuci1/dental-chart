@@ -7,6 +7,7 @@ import PatientDashboardPage from './pages/PatientDashboardPage';
 import PatientReportPage from './pages/PatientReportPage';
 import PatientChartPage from './pages/PatientChartPage';
 import ToothDetailPage from './pages/ToothDetailPage';
+import ScanPage from './pages/ScanPage';
 
 // Chart sub-components
 import ChartOverview from './components/Chart/ChartOverview';
@@ -56,6 +57,8 @@ function App() {
                 <Route path="pathology/:type?" element={<ToothPathology />} />
                 <Route path="restoration/:type?" element={<ToothRestoration />} />
               </Route>
+
+              <Route path="scan" element={<ScanPage />} />
             </Route>
           </Routes>
         </div>

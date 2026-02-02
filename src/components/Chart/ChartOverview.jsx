@@ -7,7 +7,6 @@ import './ChartOverview.css';
 import NormalView from './views/NormalView';
 import UpperJawView from './views/UpperJawView';
 import LowerJawView from './views/LowerJawView';
-import ScanView from './views/ScanView';
 
 const ChartOverview = () => {
     const { teeth, setTeeth, selectTooth } = useChartStore();
@@ -32,13 +31,6 @@ const ChartOverview = () => {
                 return <UpperJawView teeth={teeth} onToothClick={handleToothClick} />;
             case 'lower':
                 return <LowerJawView teeth={teeth} onToothClick={handleToothClick} />;
-            case 'scan':
-                return <ScanView
-                    teeth={teeth}
-                    onToothClick={handleToothClick}
-                    selectedTeeth={new Set()} // ScanView might not need selection, or pass through
-                    activeTooth={null}
-                />;
             default:
                 return <NormalView teeth={teeth} onToothClick={handleToothClick} />;
         }

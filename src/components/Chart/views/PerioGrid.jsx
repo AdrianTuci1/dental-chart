@@ -13,7 +13,7 @@ const PerioGrid = ({ sites }) => {
     ];
 
     return (
-        <div className="perio-grid">
+        <div className="perio-indicators-grid">
             {rows.map((row) => (
                 <div key={row.key} className="perio-row">
                     {/* Render 3 columns for Mesial, Central, Distal */}

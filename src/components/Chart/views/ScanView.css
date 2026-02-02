@@ -1,24 +1,53 @@
 .scan-view-container {
     display: flex;
     flex-direction: column;
+    /* Vertical stack: Main Area + Footer */
     height: 100%;
     width: 100%;
     position: relative;
     overflow: hidden;
 }
 
-.scan-area {
+.scan-view-main-layout {
     flex: 1;
+    display: flex;
+    flex-direction: row;
+    /* Horizontal stack: Content + Sidebar */
+    overflow: hidden;
+}
+
+.scan-view-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+.scan-view-sidebar {
+    width: 380px;
+    /* Match panel width */
+    height: 100%;
+    background-color: var(--background-secondary);
+    border-left: 1px solid var(--border-color);
+    box-sizing: border-box;
+    flex-shrink: 0;
+    z-index: 10;
+    /* Ensure it stays above if needed, though flux should handle it */
+}
+
+.scan-area {
+    flex: 2;
+    /* Equal or slightly less than chart if needed */
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: var(--background-secondary);
     border-bottom: 1px solid var(--border-color);
-    min-height: 40%;
-    max-height: 60%;
     position: relative;
     overflow: hidden;
-    padding: var(--spacing-4);
+    padding: 0;
 }
 
 .scan-placeholder {
@@ -26,46 +55,68 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-3);
-    padding: var(--spacing-8);
+    gap: var(--spacing-4);
+    padding: var(--spacing-12);
     border: 2px dashed var(--border-color);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-2xl);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     color: var(--text-secondary);
     width: 100%;
-    max-width: 400px;
+    max-width: 500px;
+    background-color: var(--background-secondary);
 }
 
 .scan-placeholder:hover {
     border-color: var(--color-primary);
     background-color: var(--background-tertiary);
-    color: var(--color-primary);
+    color: var(--text-primary);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.3);
+}
+
+.scan-placeholder.centered {
+    max-width: 600px;
+    padding: var(--spacing-16);
 }
 
 .scan-upload-icon-wrapper {
     width: 64px;
     height: 64px;
-    border-radius: 50%;
+    border-radius: var(--radius-xl);
     background-color: var(--background-tertiary);
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: var(--spacing-2);
+    color: var(--color-primary);
+}
+
+.scan-upload-icon-wrapper.large {
+    width: 80px;
+    height: 80px;
+    margin-bottom: var(--spacing-4);
 }
 
 .scan-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: inherit;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
     margin: 0;
 }
 
 .scan-subtitle {
-    font-size: 0.875rem;
+    font-size: 1rem;
     color: var(--text-tertiary);
     text-align: center;
     margin: 0;
+    line-height: 1.5;
+}
+
+.upload-btn {
+    margin-top: var(--spacing-6);
+    padding: 12px 32px;
+    font-size: 1rem;
 }
 
 .scan-image-container {
@@ -78,11 +129,10 @@
 }
 
 .scan-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-md);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* object-fit: contain with 100%/100% fills the container area fully while preserving ratio */
 }
 
 .scan-remove-btn {
@@ -101,6 +151,7 @@
     cursor: pointer;
     transition: all 0.2s;
     backdrop-filter: blur(4px);
+    z-index: 5;
 }
 
 .scan-remove-btn:hover {
@@ -109,7 +160,8 @@
 }
 
 .normal-view-container {
-    flex: 1;
+    flex: 1.5;
+    /* Give more room to the teeth as requested */
     position: relative;
     width: 100%;
     background-color: var(--background-black);
@@ -141,4 +193,198 @@
     position: relative !important;
     height: auto !important;
     overflow: visible !important;
+}
+
+/* Empty State centered */
+.scan-empty-state {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--background-black);
+    padding: var(--spacing-8);
+}
+
+/* Processing Overlay */
+.processing-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--background-black);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.processing-overlay.no-blur {
+    backdrop-filter: none;
+    background-color: rgba(0, 0, 0, 0.95);
+}
+
+.processing-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-6);
+    text-align: center;
+    max-width: 400px;
+}
+
+.processing-content h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.processing-content p {
+    color: var(--text-tertiary);
+    margin: 0;
+    margin-bottom: var(--spacing-4);
+}
+
+.progress-container {
+    width: 100%;
+    height: 8px;
+    background-color: var(--background-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--spacing-2);
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: var(--color-primary);
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease-out;
+    box-shadow: 0 0 12px var(--color-primary);
+}
+
+.progress-text {
+    font-size: 0.875rem;
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+/* Page wrapper for ScanPage */
+.scan-page-wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.scan-page-main {
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Footer Section */
+.scan-view-footer {
+    height: 64px;
+    background-color: var(--background-black);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--spacing-4);
+    flex-shrink: 0;
+}
+
+.footer-left {
+    flex: 0 0 200px;
+}
+
+.footer-right {
+    display: flex;
+    gap: var(--spacing-3);
+    flex: 0 0 auto;
+    justify-content: flex-end;
+}
+
+.footer-center {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    flex: 1;
+    justify-content: center;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.btn-text {
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: var(--spacing-2) var(--spacing-4);
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+    padding: var(--spacing-2) var(--spacing-6);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.875rem;
+}
+
+/* Filters */
+.filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    cursor: pointer;
+    user-select: none;
+}
+
+.filter-checkbox input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-primary);
+}
+
+.filter-divider {
+    width: 1px;
+    height: 24px;
+    background-color: var(--border-color);
+    margin: 0 var(--spacing-2);
+}
+
+.filter-switch {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    cursor: pointer;
+}
+
+.switch-track {
+    width: 44px;
+    height: 22px;
+    background-color: var(--color-primary);
+    border-radius: 11px;
+    position: relative;
+    transition: background-color 0.2s;
+}
+
+.switch-thumb {
+    width: 18px;
+    height: 18px;
+    background-color: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    transition: all 0.2s;
 }

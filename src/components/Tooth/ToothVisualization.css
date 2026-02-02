@@ -57,79 +57,75 @@
     font-size: 14px;
 }
 
-/* Visualization Column - now uses jaw view structure */
+/* Visualization Column - now a scrollable list */
 .visualization-column {
     flex-grow: 1;
     position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-snap-type: y mandatory;
+    height: 100%;
     background-color: var(--background-secondary);
-    height: 100%;
-    /* DEBUG */
+    scrollbar-width: none;
+    /* Hide scrollbar Firefox */
+    -ms-overflow-style: none;
+    /* Hide scrollbar IE/Edge */
 }
 
-/* Override jaw-box for single tooth display */
-.visualization-column .jaw-box {
-    margin: 0;
-    gap: 0;
-    width: 100%;
+.visualization-column::-webkit-scrollbar {
+    display: none;
+    /* Hide scrollbar Chrome/Safari */
+}
+
+.tooth-item-container {
     height: 100%;
+    width: 100%;
+    scroll-snap-align: start;
     display: flex;
     flex-direction: column;
+    flex-shrink: 0;
+    transition: background-color 0.3s ease;
 }
 
-/* Override jaw for vertical single tooth */
+/* Visualization column inner structure */
 .visualization-column .jaw {
+    display: flex;
     flex-direction: column;
     padding: 0;
     margin: 0;
     width: 100%;
     height: 100%;
-    display: flex;
 }
 
-/* Tooth in visualization column should take full space */
 .visualization-column .tooth {
     width: 100%;
     height: 100%;
-    gap: 8px;
     display: flex;
     flex-direction: column;
+    gap: 8px;
+    padding: 0;
 }
 
-/* Constrain view heights to prevent overlapping */
-/* IMAGINILE DE SUS SI DE JOS */
+/* Updated individual view styles to be more consistent */
 .visualization-column .view-buccal,
 .visualization-column .view-lingual {
-    flex-grow: 1;
-    /* Allow these to grow */
+    flex: 1;
     height: auto;
-    /* Remove fixed height */
     min-height: 0;
-    /* Important for flex items to shrink */
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
-    padding: 30px;
-    outline: 1px dashed blue;
-    /* DEBUG */
+    padding: 20px;
 }
 
-/* Occlusal view - fixed or smaller proportion */
 .visualization-column .view-occlusal {
     height: 120px;
-    /* Keep fixed height for occlusal as it's the middle piece */
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 30px;
-    outline: 1px dashed blue;
-    /* DEBUG */
+    padding: 20px;
 }
 
 /* Constrain tooth SVG sizes to fit container */

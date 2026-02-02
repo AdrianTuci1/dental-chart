@@ -1,11 +1,11 @@
 /* Enforce Flex Column for the Grid Container */
-div.perio-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 2px !important;
+div.perio-indicators-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
     margin-bottom: 8px;
     width: 100%;
-    align-items: center !important;
+    align-items: center;
     pointer-events: none;
     background: transparent;
 }

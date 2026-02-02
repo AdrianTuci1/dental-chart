@@ -19,8 +19,6 @@ const PatientChartPage = () => {
             setChartView('upper');
         } else if (path.endsWith('/lower-jaw')) {
             setChartView('lower');
-        } else if (path.endsWith('/scan')) {
-            setChartView('scan');
         } else if (!path.includes('/chart/') || path.endsWith('/chart') || path.endsWith('/chart/')) {
             // Only reset to normal if we're navigating away from chart entirely or to root chart
             setChartView('normal');
@@ -30,25 +28,16 @@ const PatientChartPage = () => {
     const handleViewChange = (view) => {
         setChartView(view);
 
-        const currentPath = location.pathname;
-        // Remove existing view suffix
-        let basePath = currentPath
-            .replace(/\/upper-jaw$/, '')
-            .replace(/\/lower-jaw$/, '')
-            .replace(/\/scan$/, '');
-
-        // Remove trailing slash if present
-        if (basePath.endsWith('/') && basePath.length > 1) {
-            basePath = basePath.slice(0, -1);
-        }
+        const patientId = selectedPatient?.id || location.pathname.split('/')[2];
+        const patientRoot = `/patients/${patientId}`;
+        const chartBase = `${patientRoot}/chart`;
 
         if (view === 'normal') {
-            navigate(basePath);
+            navigate(chartBase);
         } else if (view === 'upper' || view === 'lower') {
-            navigate(`${basePath}/${view}-jaw`);
+            navigate(`${chartBase}/${view}-jaw`);
         } else {
-            // For scan and potentially others
-            navigate(`${basePath}/${view}`);
+            navigate(`${chartBase}/${view}`);
         }
     };
 
@@ -62,15 +51,6 @@ const PatientChartPage = () => {
         return `${chartBase}/${basePath}`;
     };
 
-    // Toggle scan view
-    const toggleScanView = () => {
-        if (chartView === 'scan') {
-            handleViewChange('normal');
-        } else {
-            handleViewChange('scan');
-        }
-    };
-
     return (
         <main className="chart-page-container" data-view="chart">
             {/* Patient Name - Top Left (Absolute) */}
@@ -78,91 +58,79 @@ const PatientChartPage = () => {
                 {selectedPatient?.name || 'Patient'}
             </div>
 
-            {/* Chart Navigation - Top Center (Absolute) - Hidden in Scan Mode */}
-            {chartView !== 'scan' && (
-                <div className="chart-header">
-                    <div className="chart-nav">
-                        <NavLink
-                            to={getNavPath('')}
-                            end
-                            className={() => {
-                                const path = location.pathname;
-                                const isOverview = path.endsWith('/chart') ||
-                                    path.endsWith('/chart/') ||
-                                    path.endsWith('/chart/upper-jaw') ||
-                                    path.endsWith('/chart/lower-jaw');
-                                return `chart-nav-link ${isOverview ? 'active' : ''}`;
-                            }}
-                        >
-                            Overview
-                        </NavLink>
-                        <NavLink
-                            to={getNavPath('quickselect')}
-                            className={({ isActive }) =>
-                                `chart-nav-link ${isActive ? 'active' : ''}`
-                            }
-                        >
-                            Quickselect
-                        </NavLink>
-                        <NavLink
-                            to={getNavPath('periodontal-probing')}
-                            className={({ isActive }) =>
-                                `chart-nav-link ${isActive ? 'active' : ''}`
-                            }
-                        >
-                            Periodontal Probing
-                        </NavLink>
-                        <NavLink
-                            to={getNavPath('pathology')}
-                            className={({ isActive }) =>
-                                `chart-nav-link ${isActive ? 'active' : ''}`
-                            }
-                        >
-                            Pathology
-                        </NavLink>
-                        <NavLink
-                            to={getNavPath('restoration')}
-                            className={({ isActive }) =>
-                                `chart-nav-link ${isActive ? 'active' : ''}`
-                            }
-                        >
-                            Restoration
-                        </NavLink>
-                    </div>
+            {/* Chart Navigation - Top Center (Absolute) */}
+            <div className="chart-header">
+                <div className="chart-nav">
+                    <NavLink
+                        to={getNavPath('')}
+                        end
+                        className={() => {
+                            const path = location.pathname;
+                            const isOverview = path.endsWith('/chart') ||
+                                path.endsWith('/chart/') ||
+                                path.endsWith('/chart/upper-jaw') ||
+                                path.endsWith('/chart/lower-jaw');
+                            return `chart-nav-link ${isOverview ? 'active' : ''}`;
+                        }}
+                    >
+                        Overview
+                    </NavLink>
+                    <NavLink
+                        to={getNavPath('quickselect')}
+                        className={({ isActive }) =>
+                            `chart-nav-link ${isActive ? 'active' : ''}`
+                        }
+                    >
+                        Quickselect
+                    </NavLink>
+                    <NavLink
+                        to={getNavPath('periodontal-probing')}
+                        className={({ isActive }) =>
+                            `chart-nav-link ${isActive ? 'active' : ''}`
+                        }
+                    >
+                        Periodontal Probing
+                    </NavLink>
+                    <NavLink
+                        to={getNavPath('pathology')}
+                        className={({ isActive }) =>
+                            `chart-nav-link ${isActive ? 'active' : ''}`
+                        }
+                    >
+                        Pathology
+                    </NavLink>
+                    <NavLink
+                        to={getNavPath('restoration')}
+                        className={({ isActive }) =>
+                            `chart-nav-link ${isActive ? 'active' : ''}`
+                        }
+                    >
+                        Restoration
+                    </NavLink>
                 </div>
-            )}
+            </div>
 
-            {/* Chart View Navigation - Top Right Center (Absolute) - Hidden in Scan Mode */}
-            {chartView !== 'scan' && (
-                <div className="chart-view-selector">
-                    <button
-                        className={`view-button ${chartView === 'normal' ? 'active' : ''}`}
-                        onClick={() => handleViewChange('normal')}
-                    >
-                        Normal
-                    </button>
-                    <button
-                        className={`view-button ${chartView === 'upper' ? 'active' : ''}`}
-                        onClick={() => handleViewChange('upper')}
-                    >
-                        Upper Jaw
-                    </button>
-                    <button
-                        className={`view-button ${chartView === 'lower' ? 'active' : ''}`}
-                        onClick={() => handleViewChange('lower')}
-                    >
-                        Lower Jaw
-                    </button>
-                </div>
-            )}
-
-            {/* Scan Link - Top Right (Absolute) - Toggle */}
-            <button
-                onClick={toggleScanView}
-                className={`chart-scan-link ${chartView === 'scan' ? 'active' : ''}`}
-            >
-                Scan
-            </button>
+            {/* Chart View Navigation - Top Right Center (Absolute) */}
+            <div className="chart-view-selector">
+                <button
+                    className={`view-button ${chartView === 'normal' ? 'active' : ''}`}
+                    onClick={() => handleViewChange('normal')}
+                >
+                    Normal
+                </button>
+                <button
+                    className={`view-button ${chartView === 'upper' ? 'active' : ''}`}
+                    onClick={() => handleViewChange('upper')}
+                >
+                    Upper Jaw
+                </button>
+                <button
+                    className={`view-button ${chartView === 'lower' ? 'active' : ''}`}
+                    onClick={() => handleViewChange('lower')}
+                >
+                    Lower Jaw
+                </button>
+            </div>
 
             {/* Date Selector - Bottom Left (Absolute) */}
             <button className="chart-date-selector" title="Select Date">
