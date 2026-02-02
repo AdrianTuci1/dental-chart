@@ -161,6 +161,7 @@ const ToothVisualization = ({ toothNumber, conditions, onSelectTooth }) => {
                                             view={view}
                                             conditions={conditions}
                                             interactive={false}
+                                            className="no-scale"
                                         />
                                     </div>
                                 );

@@ -10,7 +10,8 @@ const ToothRenderer = ({
     interactive = false,
     onSurfaceClick,
     isSelected = false,
-    toothData = null // Optional tooth data to determine condition
+    toothData = null, // Optional tooth data to determine condition
+    className = ''
 }) => {
     const isMirrored = shouldMirror(toothNumber);
     const type = getToothType(toothNumber);
@@ -99,7 +100,7 @@ const ToothRenderer = ({
 
     return (
         <div
-            className={`tooth-renderer ${jawClass} ${isSelected ? 'selected' : ''}`}
+            className={`tooth-renderer ${jawClass} ${isSelected ? 'selected' : ''} ${className}`}
             style={{
                 transform: isMirrored ? 'scaleX(-1)' : 'none'
             }}

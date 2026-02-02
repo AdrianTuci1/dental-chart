@@ -79,5 +79,10 @@
 .tooth-inner {
     position: relative;
     width: 100%;
+    transform: scale(1.35);
     /* Let height be determined by content (image) */
+}
+
+.tooth-renderer.no-scale .tooth-inner {
+    transform: none;
 }
