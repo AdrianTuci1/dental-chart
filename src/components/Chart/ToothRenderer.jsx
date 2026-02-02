@@ -80,14 +80,14 @@ const ToothRenderer = ({
 
     // Determine image scale
     // Default scale is 0.9 to ensure it fits well
-    // For lower jaw anterior/premolars (31-35, 41-45) in occlusal/incisal view, use 1.5
+    // For lower jaw anterior/premolars (31-35, 41-45) in occlusal/incisal view, use 1.5 -> now normalized
     let imageScale = 0.9;
-    const isLowerAnteriorOrPremolar = (tNum >= 31 && tNum <= 35) || (tNum >= 41 && tNum <= 45);
-    const isOcclusalView = view === 'topview' || view === 'occlusal' || view === 'incisal';
+    // const isLowerAnteriorOrPremolar = (tNum >= 31 && tNum <= 35) || (tNum >= 41 && tNum <= 45);
+    // const isOcclusalView = view === 'topview' || view === 'occlusal' || view === 'incisal';
 
-    if (isLowerAnteriorOrPremolar && isOcclusalView) {
-        imageScale = 2.5;
-    }
+    // if (isLowerAnteriorOrPremolar && isOcclusalView) {
+    //     imageScale = 2.5;
+    // }
 
     // Determine image rotation for lower jaw buccal view
     let imageRotation = 'none';

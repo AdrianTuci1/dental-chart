@@ -39,9 +39,9 @@ export const getBaseToothNumber = (toothNumber) => {
     const index = n % 10;
 
     if (quadrant === 2) return 10 + index; // Upper left -> Upper right
-    if (quadrant === 4) return 30 + index; // Lower right -> Lower left
+    if (quadrant === 3) return 40 + index; // Lower left -> Lower right
     if (quadrant === 6) return 50 + index; // Deciduous upper left -> upper right
-    if (quadrant === 8) return 70 + index; // Deciduous lower right -> lower left
+    if (quadrant === 7) return 80 + index; // Deciduous lower left -> lower right
 
     return n;
 };
@@ -125,31 +125,28 @@ export const getToothImage = (toothNumber, condition = 'withRoots', view = 'bucc
     const toothNum = parseInt(toothNumber);
     const baseToothNum = getBaseToothNumber(toothNum);
 
-    // Get the image from the registry
-    const toothRegistry = toothImagesData.imageRegistry?.[baseToothNum.toString()];
-    if (!toothRegistry) {
-        console.warn(`No image registry found for tooth ${baseToothNum}`);
-        return null;
-    }
+    // Map view to convention (outside, inside, top)
+    let convView = 'outside';
+    if (view === 'buccal' || view === 'labial') convView = 'outside';
+    else if (view === 'lingual' || view === 'palatal') convView = 'inside';
+    else if (view === 'incisal' || view === 'occlusal') convView = 'top';
 
-    const conditionImages = toothRegistry[condition];
-    if (!conditionImages) {
-        console.warn(`No images found for condition '${condition}' on tooth ${baseToothNum}`);
-        return null;
-    }
+    // Map condition to convention
+    let convCondition = 'standard';
+    if (condition === 'missing') convCondition = 'missing';
+    else if (condition === 'implant') convCondition = 'implant';
+    else if (condition === 'crown') convCondition = 'crown';
+    // condition 'withRoots' maps to 'standard'
 
-    const imagePath = conditionImages[view];
-    if (!imagePath) {
-        console.warn(`No image found for view '${view}' on tooth ${baseToothNum}, condition '${condition}'`);
-        return null;
-    }
+    const pattern = toothImagesData.convention?.namingPattern || '{toothNumber}_{view}_{condition}.png';
+    const baseUrl = toothImagesData.convention?.baseDirectory || '/assets/teeth/';
 
-    // If it's a placeholder hash, return null
-    if (imagePath.startsWith('hash')) {
-        return null;
-    }
+    const filename = pattern
+        .replace('{toothNumber}', baseToothNum)
+        .replace('{view}', convView)
+        .replace('{condition}', convCondition);
 
-    return imagePath;
+    return `${baseUrl}${filename}`;
 };
 
 /**
@@ -158,22 +155,39 @@ export const getToothImage = (toothNumber, condition = 'withRoots', view = 'bucc
  * @param {number} toothNumber - ISO tooth number
  * @returns {string} - JSON view name: 'buccal', 'lingual', 'incisal', 'occlusal'
  */
-export const mapViewToImageView = (view, toothNumber) => {
-    const toothType = toothImagesData.toothTypes?.[toothNumber.toString()];
+export const getToothType = (toothNumber) => {
+    const n = parseInt(toothNumber);
+    const index = n % 10;
 
+    if (index >= 1 && index <= 2) return 'incisor';
+    if (index === 3) return 'canine';
+    if (index >= 4 && index <= 5) {
+        // Deciduous molars are 4 and 5
+        if (n >= 51) return 'molar';
+        return 'premolar';
+    }
+    if (index >= 6 && index <= 8) return 'molar';
+    return 'unknown';
+};
+
+export const mapViewToImageView = (view, toothNumber) => {
     if (view === 'frontal') {
         return 'buccal';
     } else if (view === 'lingual') {
         return 'lingual';
     } else if (view === 'topview') {
-        // Incisors and canines use 'incisal', premolars and molars use 'occlusal'
-        if (toothType === 'incisor' || toothType === 'canine') {
+        // Our simplified convention maps both incisal and occlusal to 'top', 
+        // but we return the specific terms for the code to map to 'top' in getToothImage if needed,
+        // or we can just return 'occlusal'/'incisal' to keep compatibility with other parts.
+        // The getToothImage function above handles both 'incisal' and 'occlusal' -> 'top'.
+
+        const type = getToothType(toothNumber);
+        if (type === 'incisor' || type === 'canine') {
             return 'incisal';
         } else {
             return 'occlusal';
         }
     }
-
     return 'buccal'; // Default
 };
 
@@ -187,6 +201,7 @@ export const getToothCondition = (tooth) => {
 
     if (tooth.status === 'missing') return 'missing';
     if (tooth.restoration?.type === 'implant') return 'implant';
+    if (tooth.restoration?.type === 'crown') return 'crown';
 
     // Default to withRoots for now
     // You can add more logic here based on your data model

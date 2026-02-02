@@ -5,6 +5,7 @@ import { MOCK_PATIENTS } from '../utils/mockData';
 import { LayoutDashboard, FileText, Activity, ArrowLeft } from 'lucide-react';
 import useChartStore from '../store/chartStore';
 import { Layers, Eye, EyeOff } from 'lucide-react';
+import { LiaTeethSolid } from "react-icons/lia";
 
 import './PatientLayout.css';
 
@@ -77,7 +78,7 @@ const PatientLayout = () => {
                         }
                         title="Dental Chart"
                     >
-                        <Activity size={24} />
+                        <LiaTeethSolid size={24} />
                     </NavLink>
 
                     <NavLink

@@ -1,564 +1,108 @@
 {
-    "description": "Tooth image configurations using ISO numbering with hash-based filenames organized in subfolders",
-    "imageStructure": {
+    "description": "Simplified tooth image configurations using convention-based filenames. Images are resolved dynamically based on tooth number, view, and condition.",
+    "convention": {
+        "namingPattern": "{toothNumber}_{view}_{condition}.png",
         "baseDirectory": "/assets/teeth/",
-        "folderStructure": "{toothNumber}/{condition}/{view}/",
-        "fileNaming": "hash-based (e.g., abc123.png)",
-        "fullPathExample": "/assets/teeth/11/withRoots/buccal/abc123.png"
-    },
-    "mirroringRules": {
-        "upperLeft": {
-            "range": "21-28",
-            "mirrors": "11-18",
-            "description": "Upper left teeth (21-28) use mirrored images from upper right teeth (11-18)"
+        "views": {
+            "outside": "buccal/labial view",
+            "top": "incisal/occlusal view",
+            "inside": "lingual/palatal view"
         },
-        "lowerRight": {
-            "range": "41-48",
-            "mirrors": "31-38",
-            "description": "Lower right teeth (41-48) use mirrored images from lower left teeth (31-38)"
+        "conditions": {
+            "standard": "Normal tooth",
+            "missing": "Missing tooth",
+            "crown": "Crown restoration",
+            "implant": "Implant"
         }
     },
-    "physicalImages": {
+    "mappingRules": {
         "permanent": {
-            "upperRight": {
-                "teeth": [
-                    11,
-                    12,
-                    13,
-                    14,
-                    15,
-                    16,
-                    17,
-                    18
-                ],
-                "description": "Physical images for upper right permanent teeth"
-            },
-            "lowerLeft": {
-                "teeth": [
-                    31,
-                    32,
-                    33,
-                    34,
-                    35,
-                    36,
-                    37,
-                    38
-                ],
-                "description": "Physical images for lower left permanent teeth"
-            }
+            "sources": [
+                {
+                    "range": [
+                        11,
+                        18
+                    ],
+                    "description": "Upper Right (Source for Upper Arch)"
+                },
+                {
+                    "range": [
+                        41,
+                        48
+                    ],
+                    "description": "Lower Right (Source for Lower Arch)"
+                }
+            ],
+            "mirrors": [
+                {
+                    "targetRange": [
+                        21,
+                        28
+                    ],
+                    "sourceRange": [
+                        11,
+                        18
+                    ],
+                    "flip": true,
+                    "description": "Upper Left mirrors Upper Right"
+                },
+                {
+                    "targetRange": [
+                        31,
+                        38
+                    ],
+                    "sourceRange": [
+                        41,
+                        48
+                    ],
+                    "flip": true,
+                    "description": "Lower Left mirrors Lower Right"
+                }
+            ]
         },
         "deciduous": {
-            "upperRight": {
-                "teeth": [
-                    51,
-                    52,
-                    53,
-                    54,
-                    55
-                ],
-                "description": "Physical images for upper right deciduous teeth"
-            },
-            "upperLeft": {
-                "teeth": [
-                    61,
-                    62,
-                    63,
-                    64,
-                    65
-                ],
-                "description": "Physical images for upper left deciduous teeth"
-            },
-            "lowerLeft": {
-                "teeth": [
-                    71,
-                    72,
-                    73,
-                    74,
-                    75
-                ],
-                "description": "Physical images for lower left deciduous teeth"
-            },
-            "lowerRight": {
-                "teeth": [
-                    81,
-                    82,
-                    83,
-                    84,
-                    85
-                ],
-                "description": "Physical images for lower right deciduous teeth"
-            }
+            "sources": [
+                {
+                    "range": [
+                        51,
+                        55
+                    ],
+                    "description": "Upper Right Baby Teeth (Source for Upper Arch)"
+                },
+                {
+                    "range": [
+                        81,
+                        85
+                    ],
+                    "description": "Lower Right Baby Teeth (Source for Lower Arch)"
+                }
+            ],
+            "mirrors": [
+                {
+                    "targetRange": [
+                        61,
+                        65
+                    ],
+                    "sourceRange": [
+                        51,
+                        55
+                    ],
+                    "flip": true,
+                    "description": "Upper Left Baby Teeth mirrors Upper Right"
+                },
+                {
+                    "targetRange": [
+                        71,
+                        75
+                    ],
+                    "sourceRange": [
+                        81,
+                        85
+                    ],
+                    "flip": true,
+                    "description": "Lower Left Baby Teeth mirrors Lower Right"
+                }
+            ]
         }
-    },
-    "conditions": [
-        "withRoots",
-        "withoutRoots",
-        "missing",
-        "implant"
-    ],
-    "views": {
-        "anterior": [
-            "buccal",
-            "lingual",
-            "incisal"
-        ],
-        "posterior": [
-            "buccal",
-            "lingual",
-            "occlusal"
-        ]
-    },
-    "toothTypes": {
-        "11": "incisor",
-        "12": "incisor",
-        "13": "canine",
-        "14": "premolar",
-        "15": "premolar",
-        "16": "molar",
-        "17": "molar",
-        "18": "molar",
-        "21": "incisor",
-        "22": "incisor",
-        "23": "canine",
-        "24": "premolar",
-        "25": "premolar",
-        "26": "molar",
-        "27": "molar",
-        "28": "molar",
-        "31": "incisor",
-        "32": "incisor",
-        "33": "canine",
-        "34": "premolar",
-        "35": "premolar",
-        "36": "molar",
-        "37": "molar",
-        "38": "molar",
-        "41": "incisor",
-        "42": "incisor",
-        "43": "canine",
-        "44": "premolar",
-        "45": "premolar",
-        "46": "molar",
-        "47": "molar",
-        "48": "molar",
-        "51": "incisor",
-        "52": "incisor",
-        "53": "canine",
-        "54": "molar",
-        "55": "molar",
-        "61": "incisor",
-        "62": "incisor",
-        "63": "canine",
-        "64": "molar",
-        "65": "molar",
-        "71": "incisor",
-        "72": "incisor",
-        "73": "canine",
-        "74": "molar",
-        "75": "molar",
-        "81": "incisor",
-        "82": "incisor",
-        "83": "canine",
-        "84": "molar",
-        "85": "molar"
-    },
-    "imageRegistry": {
-        "11": {
-            "withRoots": {
-                "buccal": "/assets/teeth/11/buccal.437abd72.png",
-                "lingual": "/assets/teeth/11/download (18).png",
-                "incisal": "/assets/teeth/11/incisal.de514430.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/11/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "incisal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "incisal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "incisal": "hash12.png"
-            }
-        },
-        "12": {
-            "withRoots": {
-                "buccal": "/assets/teeth/12/buccal.5d5c5ba6.png",
-                "lingual": "/assets/teeth/12/download (19).png",
-                "incisal": "/assets/teeth/12/incisal.6f4e0b80.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/12/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "incisal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "incisal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "incisal": "hash12.png"
-            }
-        },
-        "13": {
-            "withRoots": {
-                "buccal": "/assets/teeth/13/buccal.0a90f9ad.png",
-                "lingual": "/assets/teeth/13/download (20).png",
-                "incisal": "/assets/teeth/13/incisal.d4d16623.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/13/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "incisal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "incisal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "incisal": "hash12.png"
-            }
-        },
-        "14": {
-            "withRoots": {
-                "buccal": "/assets/teeth/14/buccal.44448644.png",
-                "lingual": "/assets/teeth/14/download (21).png",
-                "occlusal": "/assets/teeth/14/incisal.8256b7e9.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/14/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "occlusal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "occlusal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "occlusal": "hash12.png"
-            }
-        },
-        "15": {
-            "withRoots": {
-                "buccal": "/assets/teeth/15/buccal.ac700dc8.png",
-                "lingual": "/assets/teeth/15/download (22).png",
-                "occlusal": "/assets/teeth/15/incisal.7b3347df.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/15/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "occlusal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "occlusal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "occlusal": "hash12.png"
-            }
-        },
-        "16": {
-            "withRoots": {
-                "buccal": "/assets/teeth/16/buccal.ec87257c.png",
-                "lingual": "/assets/teeth/16/download (23).png",
-                "occlusal": "/assets/teeth/16/incisal.b34c9ae0.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/16/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "occlusal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "occlusal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "occlusal": "hash12.png"
-            }
-        },
-        "17": {
-            "withRoots": {
-                "buccal": "/assets/teeth/17/buccal.64e7f029.png",
-                "lingual": "/assets/teeth/17/download (24).png",
-                "occlusal": "/assets/teeth/17/incisal.f2adec2f.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/17/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "occlusal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "occlusal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "occlusal": "hash12.png"
-            }
-        },
-        "18": {
-            "withRoots": {
-                "buccal": "/assets/teeth/18/buccal.7a52a5b5.png",
-                "lingual": "/assets/teeth/18/download (25).png",
-                "occlusal": "/assets/teeth/18/incisal.4022eb01.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/18/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "occlusal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "occlusal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "occlusal": "hash12.png"
-            }
-        },
-        "31": {
-            "withRoots": {
-                "buccal": "/assets/teeth/31/download (17).png",
-                "lingual": "/assets/teeth/31/download (27).png",
-                "incisal": "/assets/teeth/31/incisal.31.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "incisal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "incisal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "incisal": "hash12.png"
-            }
-        },
-        "32": {
-            "withRoots": {
-                "buccal": "/assets/teeth/32/download (16).png",
-                "lingual": "/assets/teeth/32/download (28).png",
-                "incisal": "/assets/teeth/32/incisal.32.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "incisal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "incisal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "incisal": "hash12.png"
-            }
-        },
-        "33": {
-            "withRoots": {
-                "buccal": "/assets/teeth/33/download (15).png",
-                "lingual": "/assets/teeth/33/download (29).png",
-                "incisal": "/assets/teeth/33/incisal.33.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "incisal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "incisal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "incisal": "hash12.png"
-            }
-        },
-        "34": {
-            "withRoots": {
-                "buccal": "/assets/teeth/34/download (14).png",
-                "lingual": "/assets/teeth/34/download (30).png",
-                "occlusal": "/assets/teeth/34/incisal.34.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "occlusal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "occlusal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "occlusal": "hash12.png"
-            }
-        },
-        "35": {
-            "withRoots": {
-                "buccal": "/assets/teeth/35/download (13).png",
-                "lingual": "/assets/teeth/35/download (31).png",
-                "occlusal": "/assets/teeth/35/incisal.35.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "occlusal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "occlusal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "occlusal": "hash12.png"
-            }
-        },
-        "36": {
-            "withRoots": {
-                "buccal": "/assets/teeth/36/download (12).png",
-                "lingual": "/assets/teeth/36/download (32).png",
-                "occlusal": "/assets/teeth/36/incisal.b713ba6c.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "occlusal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "occlusal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "occlusal": "hash12.png"
-            }
-        },
-        "37": {
-            "withRoots": {
-                "buccal": "/assets/teeth/37/download (11).png",
-                "lingual": "/assets/teeth/37/download (33).png",
-                "occlusal": "/assets/teeth/37/incisal.935c2e39.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "occlusal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "occlusal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "occlusal": "hash12.png"
-            }
-        },
-        "38": {
-            "withRoots": {
-                "buccal": "/assets/teeth/38/download (10).png",
-                "lingual": "/assets/teeth/38/download (34).png",
-                "occlusal": "/assets/teeth/38/incisal.12e2bec5.png"
-            },
-            "withoutRoots": {
-                "buccal": "/assets/teeth/19/buccal.5d5c5ba6.png",
-                "lingual": "hash5.png",
-                "occlusal": "hash6.png"
-            },
-            "missing": {
-                "buccal": "hash7.png",
-                "lingual": "hash8.png",
-                "occlusal": "hash9.png"
-            },
-            "implant": {
-                "buccal": "hash10.png",
-                "lingual": "hash11.png",
-                "occlusal": "hash12.png"
-            }
-        }
-    },
-    "examples": [
-        {
-            "tooth": 11,
-            "condition": "withRoots",
-            "view": "buccal",
-            "folder": "/assets/teeth/11/withRoots/buccal/",
-            "filename": "hash1.png",
-            "fullPath": "/assets/teeth/11/withRoots/buccal/hash1.png",
-            "description": "Upper right central incisor with roots, buccal view"
-        },
-        {
-            "tooth": 21,
-            "condition": "withRoots",
-            "view": "buccal",
-            "folder": "/assets/teeth/11/withRoots/buccal/",
-            "filename": "hash1.png",
-            "fullPath": "/assets/teeth/11/withRoots/buccal/hash1.png",
-            "mirrored": true,
-            "description": "Upper left central incisor (uses mirrored image from tooth 11)"
-        },
-        {
-            "tooth": 36,
-            "condition": "implant",
-            "view": "occlusal",
-            "folder": "/assets/teeth/36/implant/occlusal/",
-            "filename": "hash_example.png",
-            "fullPath": "/assets/teeth/36/implant/occlusal/hash_example.png",
-            "description": "Lower left first molar implant, occlusal view"
-        }
-    ],
-    "notes": {
-        "totalPhysicalImages": "26 teeth × 4 conditions × 3 views = 312 images needed",
-        "breakdown": {
-            "permanentUpperRight": "8 teeth (11-18)",
-            "permanentLowerLeft": "8 teeth (31-38)",
-            "deciduousAll": "10 teeth (51-55, 61-65, 71-75, 81-85)"
-        },
-        "viewsByToothType": {
-            "incisors": "buccal, lingual, incisal",
-            "canines": "buccal, lingual, incisal",
-            "premolars": "buccal, lingual, occlusal",
-            "molars": "buccal, lingual, occlusal"
-        },
-        "usage": "Images are organized in subfolders by tooth number, condition, and view. The imageRegistry maps each tooth/condition/view combination to its hash filename. You can add actual hash values when uploading images."
     }
 }
