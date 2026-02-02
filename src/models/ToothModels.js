@@ -36,11 +36,14 @@ export class Tooth {
 
         // Helper to map ToothZone to surface code
         const mapZoneToSurface = (zone) => {
-            if (zone.includes('Buccal')) return 'B';
-            if (zone.includes('Occlusal')) return 'O';
-            if (zone.includes('Distal')) return 'D';
-            if (zone.includes('Mesial')) return 'M';
-            if (zone.includes('Palatal') || zone.includes('Lingual')) return 'L';
+            if (zone === 'Class 4 Mesial') return 'class4_mesial';
+            if (zone === 'Class 4 Distal') return 'class4_distal';
+            if (zone.includes('Buccal')) return 'buccal';
+            if (zone.includes('Occlusal')) return 'occlusal';
+            if (zone.includes('Distal')) return 'distal';
+            if (zone.includes('Mesial')) return 'mesial';
+            if (zone.includes('Palatal') || zone.includes('Lingual')) return 'palatal';
+            if (zone.includes('Apical')) return 'root';
             return null;
         };
 
@@ -52,6 +55,7 @@ export class Tooth {
                     if (surface) {
                         conditions.push({
                             surface: surface,
+                            zone: zone,
                             color: '#FF4444', // Red for decay
                             type: 'decay'
                         });
@@ -71,6 +75,7 @@ export class Tooth {
                             if (surface) {
                                 conditions.push({
                                     surface: surface,
+                                    zone: zone,
                                     color: '#3B82F6', // Blue for restorations
                                     type: 'restoration'
                                 });
@@ -82,9 +87,10 @@ export class Tooth {
 
             // Crowns (cover all surfaces)
             if (this.restoration.crowns && this.restoration.crowns.length > 0) {
-                ['B', 'O', 'M', 'D', 'L'].forEach(surface => {
+                ['buccal', 'occlusal', 'mesial', 'distal', 'palatal'].forEach(surface => {
                     conditions.push({
                         surface: surface,
+                        zone: 'Crown', // Generic zone for crown covering all
                         color: '#F59E0B', // Amber/Gold for crowns
                         type: 'crown',
                         opacity: 0.5
@@ -95,9 +101,10 @@ export class Tooth {
 
         // Missing / To Be Extracted
         if (this.isMissing) {
-            ['B', 'O', 'M', 'D', 'L'].forEach(surface => {
+            ['buccal', 'occlusal', 'mesial', 'distal', 'palatal'].forEach(surface => {
                 conditions.push({
                     surface: surface,
+                    zone: 'Missing',
                     color: '#E5E7EB', // Gray
                     opacity: 0.9,
                     type: 'missing'

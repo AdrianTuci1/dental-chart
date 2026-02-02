@@ -418,6 +418,7 @@ const ToothPathology = () => {
                     selectedZones={selectedZones}
                     onChange={setSelectedZones}
                     inactive={selectedPathologyType !== 'decay'}
+                    toothNumber={tooth?.toothNumber}
                 />
 
                 {/* Main Content - Right Column */}

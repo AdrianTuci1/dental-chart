@@ -340,6 +340,7 @@ const ToothRestoration = () => {
                     selectedZones={selectedZones}
                     onChange={setSelectedZones}
                     inactive={false}
+                    toothNumber={tooth?.toothNumber}
                 />
 
                 {/* Main Content - Right Column */}

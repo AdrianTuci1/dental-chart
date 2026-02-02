@@ -48,26 +48,41 @@ export const getBaseToothNumber = (toothNumber) => {
 
 // --- Mapping Utility for Tooth Model to Renderer ---
 import { ToothZone, Material } from '../models/DentalModels.js';
+import { getToothType } from './svgPaths';
 
 export const mapToothDataToConditions = (tooth) => {
     if (!tooth) return [];
+
+    // Determine tooth category (Anterior / Premolar / Molar)
+    const type = getToothType(tooth.number);
+    const isAnterior = type === 'anterior';
+
     const conditions = [];
 
+    // Base Zone Mapping
     const zoneMap = {
-        [ToothZone.OCCLUSAL]: 'occlusal',
+        [ToothZone.OCCLUSAL]: isAnterior ? 'incisal' : 'occlusal',
+        [ToothZone.INCISAL]: 'incisal',
         [ToothZone.MESIAL]: 'mesial',
         [ToothZone.DISTAL]: 'distal',
-        [ToothZone.BUCCAL]: 'buccal',
-        [ToothZone.PALATAL]: 'palatal',
-        [ToothZone.LINGUAL]: 'lingual', // Ensure LINGUAL maps if present in enum
+        // Map general buccal/palatal to 'surface' to trigger full-area highlighting
+        // Specific cusps (if provided in data) will override this if handled separately
+        [ToothZone.BUCCAL]: 'surface',
+        [ToothZone.PALATAL]: 'surface',
+        [ToothZone.LINGUAL]: 'surface',
+
         [ToothZone.CERVICAL_BUCCAL]: 'cervical buccal',
         [ToothZone.CERVICAL_PALATAL]: 'cervical palatal',
-        [ToothZone.MESIO_BUCCAL_CUSP]: 'buccal cusp', // Mapping cusp to specific zone
-        [ToothZone.DISTO_BUCCAL_CUSP]: 'buccal cusp', // Simplified mapping
-        [ToothZone.MESIO_PALATAL_CUSP]: 'palatal cusp',
-        [ToothZone.DISTO_PALATAL_CUSP]: 'palatal cusp',
-        'Buccal Surface': 'buccal surface', // Handle potential string inputs if any
-        'Palatal Surface': 'palatal surface'
+
+        // Molar specific cusps
+        [ToothZone.MESIO_BUCCAL_CUSP]: 'mesio-buccal cusp',
+        [ToothZone.DISTO_BUCCAL_CUSP]: 'disto-buccal cusp',
+        [ToothZone.MESIO_PALATAL_CUSP]: 'mesio-palatal cusp',
+        [ToothZone.DISTO_PALATAL_CUSP]: 'disto-palatal cusp',
+        [ToothZone.APICAL]: 'root',
+
+        'Class 4 Mesial': 'class4_mesial', // Future proofing
+        'Class 4 Distal': 'class4_distal'
     };
 
     const materialColorMap = {
@@ -77,15 +92,44 @@ export const mapToothDataToConditions = (tooth) => {
         [Material.NON_PRECIOUS]: '#4B5563' // Dark Gray
     };
 
+    // Specific colors for Anterior zones (requested by User)
+    const COLOR_RED_POINT = '#8C0D0D';
+    const COLOR_BLUE_CLASS4 = '#0D5B8C';
+    const COLOR_GREEN_INCISAL = '#259E00';
+    const COLOR_ORANGE_BODY = '#FF8F0F';
+
+    // Helper to determine color
+    const getColor = (zoneKey, baseColor) => {
+        if (!isAnterior) return baseColor; // Default for Molars
+
+        // Anterior specific overrides
+        if (zoneKey === 'mesial' || zoneKey === 'distal') return COLOR_RED_POINT;
+        if (zoneKey === 'incisal') return COLOR_GREEN_INCISAL;
+        if (zoneKey === 'class4_mesial' || zoneKey === 'class4_distal') return COLOR_BLUE_CLASS4;
+        if (zoneKey === 'surface') return COLOR_ORANGE_BODY; // Buccal/Palatal surface
+
+        return baseColor;
+    };
+
     // Map Restorations (Fillings)
     if (tooth.restoration && tooth.restoration.fillings) {
         tooth.restoration.fillings.forEach(filling => {
             filling.zones.forEach(zone => {
-                const surface = zoneMap[zone];
+                let surface = zoneMap[zone];
+                // Fallback for direct string matches if enum fails
+                if (!surface && typeof zone === 'string') {
+                    surface = zone.toLowerCase();
+                    // Basic normalization
+                    if (surface.includes('class 4') && surface.includes('mesial')) surface = 'class4_mesial';
+                    else if (surface.includes('class 4') && surface.includes('distal')) surface = 'class4_distal';
+                }
+
                 if (surface) {
+                    const baseColor = materialColorMap[filling.material] || '#3B82F6';
                     conditions.push({
                         surface: surface,
-                        color: materialColorMap[filling.material] || '#3B82F6',
+                        zone: zone, // Preserve original zone for filtering (e.g. Buccal vs Palatal)
+                        color: getColor(surface, baseColor),
                         opacity: 0.8
                     });
                 }
@@ -96,16 +140,26 @@ export const mapToothDataToConditions = (tooth) => {
     // Map Pathology (Decay)
     if (tooth.pathology && tooth.pathology.decay) {
         tooth.pathology.decay.forEach(decay => {
-            decay.zones.forEach(zone => {
-                const surface = zoneMap[zone];
-                if (surface) {
-                    conditions.push({
-                        surface: surface,
-                        color: '#EF4444', // Red
-                        opacity: 0.8
-                    });
-                }
-            });
+            if (decay.zones) {
+                decay.zones.forEach(zone => {
+                    // Normalize zone to string if it's an object (though usually strings here)
+                    const zoneKey = typeof zone === 'string' ? zone : (zone?.id || zone?.value || zone);
+                    const surface = zoneMap[zoneKey];
+                    if (surface) {
+                        const baseColor = '#EF4444'; // Standard Red
+                        // For Anterior decay points, we might want the Dark Red Point color too
+                        // or keep standard red to differentiate from the "marker"?
+                        // User said "punctele rosii mici: mesial si distal". Assuming this refers to the zone representation itself.
+
+                        conditions.push({
+                            surface: surface,
+                            zone: zone, // Preserve original zone
+                            color: getColor(surface, baseColor),
+                            opacity: 0.8
+                        });
+                    }
+                });
+            }
         });
     }
 
@@ -117,10 +171,6 @@ import toothImagesData from '../data/toothImages.json';
 
 /**
  * Get the tooth image path based on tooth number, condition, and view
- * @param {number|string} toothNumber - ISO tooth number (11-18, 21-28, etc.)
- * @param {string} condition - Tooth condition: 'withRoots', 'withoutRoots', 'missing', 'implant'
- * @param {string} view - View type: 'buccal', 'lingual', 'incisal', 'occlusal'
- * @returns {string|null} - Image path or null if not found
  */
 export const getToothImage = (toothNumber, condition = 'withRoots', view = 'buccal') => {
     const toothNum = parseInt(toothNumber);
@@ -139,6 +189,11 @@ export const getToothImage = (toothNumber, condition = 'withRoots', view = 'bucc
     else if (condition === 'crown') convCondition = 'crown';
     // condition 'withRoots' maps to 'standard'
 
+    // Special rule: Top view does not have crown/implant images, use standard
+    if (convView === 'top' && (convCondition === 'crown' || convCondition === 'implant')) {
+        convCondition = 'standard';
+    }
+
     const pattern = toothImagesData.convention?.namingPattern || '{toothNumber}_{view}_{condition}.png';
     const baseUrl = toothImagesData.convention?.baseDirectory || '/assets/teeth/';
 
@@ -152,24 +207,8 @@ export const getToothImage = (toothNumber, condition = 'withRoots', view = 'bucc
 
 /**
  * Map view names from component to JSON format
- * @param {string} view - Component view: 'frontal', 'lingual', 'topview'
- * @param {number} toothNumber - ISO tooth number
- * @returns {string} - JSON view name: 'buccal', 'lingual', 'incisal', 'occlusal'
  */
-export const getToothType = (toothNumber) => {
-    const n = parseInt(toothNumber);
-    const index = n % 10;
-
-    if (index >= 1 && index <= 2) return 'incisor';
-    if (index === 3) return 'canine';
-    if (index >= 4 && index <= 5) {
-        // Deciduous molars are 4 and 5
-        if (n >= 51) return 'molar';
-        return 'premolar';
-    }
-    if (index >= 6 && index <= 8) return 'molar';
-    return 'unknown';
-};
+export { getToothType }; // Export from here too for convenience if imported from utils
 
 export const mapViewToImageView = (view, toothNumber) => {
     if (view === 'frontal') {
@@ -177,13 +216,8 @@ export const mapViewToImageView = (view, toothNumber) => {
     } else if (view === 'lingual') {
         return 'lingual';
     } else if (view === 'topview') {
-        // Our simplified convention maps both incisal and occlusal to 'top', 
-        // but we return the specific terms for the code to map to 'top' in getToothImage if needed,
-        // or we can just return 'occlusal'/'incisal' to keep compatibility with other parts.
-        // The getToothImage function above handles both 'incisal' and 'occlusal' -> 'top'.
-
         const type = getToothType(toothNumber);
-        if (type === 'incisor' || type === 'canine') {
+        if (type === 'anterior') { // Changed from 'incisor'/'canine' to match new type system
             return 'incisal';
         } else {
             return 'occlusal';
@@ -194,17 +228,29 @@ export const mapViewToImageView = (view, toothNumber) => {
 
 /**
  * Get tooth condition from tooth data
- * @param {object} tooth - Tooth data object
- * @returns {string} - Condition: 'withRoots', 'withoutRoots', 'missing', 'implant'
  */
 export const getToothCondition = (tooth) => {
     if (!tooth) return 'withRoots';
 
-    if (tooth.status === 'missing') return 'missing';
-    if (tooth.restoration?.type === 'implant') return 'implant';
-    if (tooth.restoration?.type === 'crown') return 'crown';
+    // 1. Check for Missing
+    if (tooth.isMissing) return 'missing';
 
-    // Default to withRoots for now
-    // You can add more logic here based on your data model
+    // 2. Check for Restorations (Crowns)
+    if (tooth.restoration && tooth.restoration.crowns && tooth.restoration.crowns.length > 0) {
+        // Evaluate the most significant crown (usually the last one added or just the first one if multiple exist)
+        // For simplicity, we check if ANY crown matches the criteria
+        const crowns = tooth.restoration.crowns;
+
+        // Check for Implant supported crown
+        const hasImplant = crowns.some(c => c.base === 'Implant');
+        if (hasImplant) return 'implant';
+
+        // Check for Pontic with Natural base (or just any other crown)
+        // User specific request: "Daca avem pontic si natural la restoration ar trebui sa afisam imaginea cu _crown"
+        // This generally falls under generic crown
+        return 'crown';
+    }
+
     return 'withRoots';
 };
+

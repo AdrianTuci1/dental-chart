@@ -46,12 +46,39 @@ const ToothRenderer = ({
         canvas.height = height * scale;
         ctx.scale(scale, scale);
 
+        // Helper to check if condition is visible in current view
+        const isConditionVisible = (condition, currentView) => {
+            if (!condition.zone) return true; // Determine visibility by surface alone if zone missing
+
+            const zoneLower = String(condition.zone).toLowerCase();
+            const isFrontalView = currentView === 'frontal' || currentView === 'buccal' || currentView === 'labial';
+            const isLingualView = currentView === 'lingual' || currentView === 'palatal' || currentView === 'inside';
+
+            // Define side-specific keywords
+            const buccalKeywords = ['buccal', 'labial']; // Front side
+            const lingualKeywords = ['lingual', 'palatal']; // Back side
+
+            const isBuccalCondition = buccalKeywords.some(k => zoneLower.includes(k));
+            const isLingualCondition = lingualKeywords.some(k => zoneLower.includes(k));
+
+            if (isFrontalView) {
+                // In frontal view, hide lingual/palatal conditions
+                if (isLingualCondition) return false;
+            }
+            else if (isLingualView) {
+                // In lingual view, hide buccal/labial conditions
+                if (isBuccalCondition) return false;
+            }
+
+            return true;
+        };
+
         // Prepare conditions with tooth info for MaskEngine
         const conditionsWithInfo = conditions.map(cond => ({
             ...cond,
             toothNumber,
             view
-        })).filter(c => c.surface);
+        })).filter(c => c.surface && isConditionVisible(c, view));
 
         const maskImagePath = getToothImage(toothNumber, 'withRoots', imageView);
 

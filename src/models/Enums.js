@@ -20,7 +20,8 @@ export const ToothZone = Object.freeze({
     MESIO_BUCCAL_CUSP: 'Mesio Buccal Cusp',
     DISTO_BUCCAL_CUSP: 'Disto Buccal Cusp',
     MESIO_PALATAL_CUSP: 'Mesio Palatal Cusp',
-    DISTO_PALATAL_CUSP: 'Disto Palatal Cusp'
+    DISTO_PALATAL_CUSP: 'Disto Palatal Cusp',
+    APICAL: 'Apical'
 });
 
 export const Material = Object.freeze({

@@ -62,14 +62,26 @@
     <h2>Dental Zones Layout Reference (Canvas)</h2>
 
     <div class="container">
+        <!-- MOLARS -->
         <div class="section">
-            <div class="label">TopView (54×94)</div>
+            <div class="label">Molar TopView (54×94)</div>
             <canvas id="topview" width="54" height="94"></canvas>
         </div>
 
         <div class="section">
-            <div class="label">Frontal/Lingual (54×172)</div>
+            <div class="label">Molar Frontal/Lingual (54×172)</div>
             <canvas id="frontal" width="54" height="172"></canvas>
+        </div>
+
+        <!-- INCISORS / CANINES -->
+        <div class="section">
+            <div class="label">Incisor TopView (54×94)</div>
+            <canvas id="topview-incisor" width="54" height="94"></canvas>
+        </div>
+
+        <div class="section">
+            <div class="label">Incisor Frontal/Lingual (54×172)</div>
+            <canvas id="frontal-incisor" width="54" height="172"></canvas>
         </div>
     </div>
 
@@ -138,74 +150,159 @@
 
         // =====================
         // TOPVIEW (54x94)
-        // Center occlusal zone dimensions
+        // SVG-based paths scaled from 670x708 to 54x94
         // =====================
         const topCtx = document.getElementById('topview').getContext('2d');
 
-        // Define occlusal center bounds (zones wrap around this)
-        const occLeft = 10;
-        const occRight = 44;
-        const occTop = 32;
-        const occBottom = 62;
+        // Scale factors: SVG is 670x708, canvas is 54x94
+        const scaleX = 54 / 670;
+        const scaleY = 94 / 708;
 
-        // Occlusal - center with MORE elongated corners and curved top/bottom
+        // Helper to scale coordinates
+        const sx = (x) => x * scaleX;
+        const sy = (y) => y * scaleY;
+
+        // Helper to draw SVG path with bezier curves
+        function drawPath(ctx, pathData) {
+            ctx.beginPath();
+            // Parse and draw the path
+            const commands = pathData.match(/[MLCQZ][^MLCQZ]*/gi);
+            commands.forEach(cmd => {
+                const type = cmd[0].toUpperCase();
+                const coords = cmd.slice(1).trim().split(/[\s,]+/).map(Number);
+                switch (type) {
+                    case 'M':
+                        ctx.moveTo(sx(coords[0]), sy(coords[1]));
+                        break;
+                    case 'L':
+                        ctx.lineTo(sx(coords[0]), sy(coords[1]));
+                        break;
+                    case 'C':
+                        ctx.bezierCurveTo(
+                            sx(coords[0]), sy(coords[1]),
+                            sx(coords[2]), sy(coords[3]),
+                            sx(coords[4]), sy(coords[5])
+                        );
+                        break;
+                    case 'Q':
+                        ctx.quadraticCurveTo(
+                            sx(coords[0]), sy(coords[1]),
+                            sx(coords[2]), sy(coords[3])
+                        );
+                        break;
+                    case 'Z':
+                        ctx.closePath();
+                        break;
+                }
+            });
+        }
+
+        // Occlusal (center shape) - path 1
         topCtx.fillStyle = 'rgba(255,107,107,0.5)';
         topCtx.strokeStyle = '#ff6b6b';
         topCtx.lineWidth = 1;
         topCtx.beginPath();
-        // Start left-top corner (elongated)
-        topCtx.moveTo(occLeft, 47);
-        topCtx.lineTo(occLeft + 4, occTop + 6);
-        // Top curve (bulging up)
-        topCtx.quadraticCurveTo(27, occTop - 4, occRight - 4, occTop + 6);
-        topCtx.lineTo(occRight, 47);
-        // Right side
-        topCtx.lineTo(occRight - 4, occBottom - 6);
-        // Bottom curve (bulging down)
-        topCtx.quadraticCurveTo(27, occBottom + 4, occLeft + 4, occBottom - 6);
+        // M136.5 243.014 C136.5 243.014 199.473 280.71 271 300.014...
+        topCtx.moveTo(sx(136.5), sy(243.014));
+        topCtx.bezierCurveTo(sx(136.5), sy(243.014), sx(199.473), sy(280.71), sx(271), sy(300.014));
+        topCtx.bezierCurveTo(sx(294.521), sy(306.362), sx(315.208), sy(270.05), sx(338.5), sy(269.514));
+        topCtx.bezierCurveTo(sx(354.933), sy(269.136), sx(390.478), sy(304.115), sx(407), sy(300.014));
+        topCtx.bezierCurveTo(sx(479.017), sy(282.139), sx(530.5), sy(243.014), sx(530.5), sy(243.014));
+        topCtx.bezierCurveTo(sx(530.5), sy(243.014), sx(450.567), sy(303.558), sx(449.491), sy(348.014));
+        topCtx.bezierCurveTo(sx(448.379), sy(393.914), sx(530.5), sy(457.014), sx(530.5), sy(457.014));
+        topCtx.bezierCurveTo(sx(530.5), sy(457.014), sx(470.572), sy(433.384), sx(407), sy(420.743));
+        topCtx.bezierCurveTo(sx(385.243), sy(416.417), sx(358.854), sy(450.378), sx(338.5), sy(450.014));
+        topCtx.bezierCurveTo(sx(319.497), sy(449.674), sx(296.092), sy(417.517), sx(275.5), sy(420.743));
+        topCtx.bezierCurveTo(sx(202.39), sy(432.195), sx(136.5), sy(457.014), sx(136.5), sy(457.014));
+        topCtx.bezierCurveTo(sx(136.5), sy(457.014), sx(219.552), sy(393.988), sx(218.43), sy(348.014));
+        topCtx.bezierCurveTo(sx(217.343), sy(303.482), sx(136.5), sy(243.014), sx(136.5), sy(243.014));
         topCtx.closePath();
         topCtx.fill();
         topCtx.stroke();
 
-        // Mesial - left side, ends exactly at occLeft
-        topCtx.fillStyle = 'rgba(78,205,196,0.5)';
-        topCtx.strokeStyle = '#4ecdc4';
-        roundedRect(topCtx, 0, occTop, occLeft, occBottom - occTop, 2);
-        topCtx.fill();
-        topCtx.stroke();
-
-        // Distal - right side, starts exactly at occRight
+        // Distal (right side) - path 2
         topCtx.fillStyle = 'rgba(69,183,209,0.5)';
         topCtx.strokeStyle = '#45b7d1';
-        roundedRect(topCtx, occRight, occTop, 54 - occRight, occBottom - occTop, 2);
+        topCtx.beginPath();
+        topCtx.moveTo(sx(457), sy(349.514));
+        topCtx.bezierCurveTo(sx(457), sy(311.228), sx(503.344), sy(276.545), sx(531), sy(251.338));
+        topCtx.bezierCurveTo(sx(558.997), sy(225.82), sx(591.413), sy(158.514), sx(608.5), sy(158.514));
+        topCtx.bezierCurveTo(sx(642.466), sy(158.514), sx(670), sy(272.47), sx(670), sy(349.514));
+        topCtx.bezierCurveTo(sx(670), sy(426.557), sx(642.466), sy(531.514), sx(608.5), sy(531.514));
+        topCtx.bezierCurveTo(sx(591.413), sy(531.514), sx(558.997), sy(473.207), sx(531), sy(447.689));
+        topCtx.bezierCurveTo(sx(503.344), sy(422.482), sx(457), sy(387.799), sx(457), sy(349.514));
+        topCtx.closePath();
         topCtx.fill();
         topCtx.stroke();
 
-        // Mesio-Buccal Cusp - top left, ends exactly at occTop
+        // Mesial (left side) - path 3
+        topCtx.fillStyle = 'rgba(78,205,196,0.5)';
+        topCtx.strokeStyle = '#4ecdc4';
+        topCtx.beginPath();
+        topCtx.moveTo(sx(213), sy(349.014));
+        topCtx.bezierCurveTo(sx(213), sy(387.299), sx(166.656), sy(421.982), sx(139), sy(447.189));
+        topCtx.bezierCurveTo(sx(111.003), sy(472.707), sx(78.587), sy(540.014), sx(61.5), sy(540.014));
+        topCtx.bezierCurveTo(sx(27.5345), sy(540.014), sx(0), sy(426.057), sx(0), sy(349.014));
+        topCtx.bezierCurveTo(sx(0), sy(271.97), sx(27.5345), sy(167.014), sx(61.5), sy(167.014));
+        topCtx.bezierCurveTo(sx(78.587), sy(167.014), sx(111.003), sy(225.32), sx(139), sy(250.838));
+        topCtx.bezierCurveTo(sx(166.656), sy(276.045), sx(213), sy(310.728), sx(213), sy(349.014));
+        topCtx.closePath();
+        topCtx.fill();
+        topCtx.stroke();
+
+        // Mesio-Buccal Cusp (top left) - path 4
         topCtx.fillStyle = 'rgba(150,206,180,0.5)';
         topCtx.strokeStyle = '#96ceb4';
-        roundedRect(topCtx, 0, 0, 27, occTop, 4);
+        topCtx.beginPath();
+        topCtx.moveTo(sx(343.5), sy(9.51373));
+        topCtx.bezierCurveTo(sx(368.3), sy(28.0248), sx(317.169), sy(119.466), sx(326), sy(165.514));
+        topCtx.bezierCurveTo(sx(332.087), sy(197.252), sx(346.971), sy(218.515), sx(343.5), sy(243.014));
+        topCtx.bezierCurveTo(sx(339.47), sy(271.461), sx(312.031), sy(272.764), sx(305.5), sy(281.514));
+        topCtx.bezierCurveTo(sx(285.183), sy(308.733), sx(204.241), sy(281.098), sx(142.5), sy(235.014));
+        topCtx.bezierCurveTo(sx(80.7591), sy(188.929), sx(55.1832), sy(152.733), sx(75.5), sy(125.514));
+        topCtx.bezierCurveTo(sx(95.8168), sy(98.2946), sx(281.759), sy(-36.5708), sx(343.5), sy(9.51373));
+        topCtx.closePath();
         topCtx.fill();
         topCtx.stroke();
 
-        // Disto-Buccal Cusp - top right, ends exactly at occTop
-        topCtx.fillStyle = 'rgba(136,216,176,0.5)';
-        topCtx.strokeStyle = '#88d8b0';
-        roundedRect(topCtx, 27, 0, 27, occTop, 4);
-        topCtx.fill();
-        topCtx.stroke();
-
-        // Mesio-Palatal Cusp - bottom left, starts exactly at occBottom
+        // Mesio-Palatal Cusp (bottom left) - path 5
         topCtx.fillStyle = 'rgba(255,234,167,0.5)';
         topCtx.strokeStyle = '#ffeaa7';
-        roundedRect(topCtx, 0, occBottom, 27, 94 - occBottom, 4);
+        topCtx.beginPath();
+        topCtx.moveTo(sx(367), sy(689.014));
+        topCtx.bezierCurveTo(sx(353), sy(651.014), sx(337.67), sy(590.782), sx(341), sy(544.014));
+        topCtx.bezierCurveTo(sx(343.295), sy(511.779), sx(351.84), sy(493.93), sx(345.5), sy(470.014));
+        topCtx.bezierCurveTo(sx(333.5), sy(447.514), sx(305.019), sy(441.431), sx(297.5), sy(433.514));
+        topCtx.bezierCurveTo(sx(274.11), sy(408.885), sx(210), sy(439.014), sx(132.5), sy(465.014));
+        topCtx.bezierCurveTo(sx(76.6345), sy(518.068), sx(52.9134), sy(593.579), sx(76.303), sy(618.208));
+        topCtx.bezierCurveTo(sx(99.6926), sy(642.837), sx(383.5), sy(749.014), sx(367), sy(689.014));
+        topCtx.closePath();
         topCtx.fill();
         topCtx.stroke();
 
-        // Disto-Palatal Cusp - bottom right, starts exactly at occBottom
+        // Disto-Buccal Cusp (top right) - path 6
+        topCtx.fillStyle = 'rgba(136,216,176,0.5)';
+        topCtx.strokeStyle = '#88d8b0';
+        topCtx.beginPath();
+        topCtx.moveTo(sx(588), sy(155.514));
+        topCtx.bezierCurveTo(sx(570.647), sy(229.792), sx(428.576), sy(296.24), sx(395.501), sy(288.513));
+        topCtx.bezierCurveTo(sx(362.426), sy(280.787), sx(318.771), sy(179.901), sx(336.124), sy(105.623));
+        topCtx.bezierCurveTo(sx(353.477), sy(31.345), sx(386.925), sy(8.78685), sx(420), sy(16.5137));
+        topCtx.bezierCurveTo(sx(453.075), sy(24.2406), sx(605.353), sy(81.2359), sx(588), sy(155.514));
+        topCtx.closePath();
+        topCtx.fill();
+        topCtx.stroke();
+
+        // Disto-Palatal Cusp (bottom right) - path 7
         topCtx.fillStyle = 'rgba(223,230,233,0.5)';
         topCtx.strokeStyle = '#dfe6e9';
-        roundedRect(topCtx, 27, occBottom, 27, 94 - occBottom, 4);
+        topCtx.beginPath();
+        topCtx.moveTo(sx(376.333), sy(672.841));
+        topCtx.bezierCurveTo(sx(324.753), sy(616.646), sx(349.928), sy(461.837), sx(374.95), sy(438.869));
+        topCtx.bezierCurveTo(sx(399.973), sy(415.901), sx(507.914), sy(436.695), sx(559.494), sy(492.889));
+        topCtx.bezierCurveTo(sx(611.074), sy(549.084), sx(610.858), sy(589.428), sx(585.835), sy(612.396));
+        topCtx.bezierCurveTo(sx(560.813), sy(635.363), sx(427.912), sy(729.036), sx(376.333), sy(672.841));
+        topCtx.closePath();
         topCtx.fill();
         topCtx.stroke();
 
@@ -251,14 +348,139 @@
         frontCtx.fill();
         frontCtx.stroke();
 
-        // Cervical - wavy line at 50px from bottom
+        // Cervical - curved band at 55px from bottom (SVG-based shape)
+        const cervicalY = bottomY - 70; // Position the cervical band
+        frontCtx.fillStyle = 'rgba(253,121,168,0.5)';
         frontCtx.strokeStyle = '#fd79a8';
-        frontCtx.lineWidth = 3;
+        frontCtx.lineWidth = 1;
         frontCtx.beginPath();
-        frontCtx.moveTo(2, bottomY - 50);
-        frontCtx.quadraticCurveTo(14, bottomY - 46, 27, bottomY - 50);
-        frontCtx.quadraticCurveTo(40, bottomY - 54, 52, bottomY - 50);
+        // Top edge of band (curves down at center)
+        frontCtx.moveTo(0, cervicalY + 1.90476);
+        frontCtx.bezierCurveTo(0, cervicalY + 1.90476, 16.4107, cervicalY, 27, cervicalY);
+        frontCtx.bezierCurveTo(37.5893, cervicalY, 54, cervicalY + 1.90476, 54, cervicalY + 1.90476);
+        // Right edge down
+        frontCtx.lineTo(54, cervicalY + 8);
+        // Bottom edge of band (curves up at center)
+        frontCtx.bezierCurveTo(54, cervicalY + 8, 37.5893, cervicalY + 6.09524, 27, cervicalY + 6.09524);
+        frontCtx.bezierCurveTo(16.4107, cervicalY + 6.09524, 0, cervicalY + 8, 0, cervicalY + 8);
+        // Left edge up to close
+        frontCtx.lineTo(0, cervicalY + 1.90476);
+        frontCtx.closePath();
+        frontCtx.fill();
         frontCtx.stroke();
+
+        // =====================
+        // INCISOR TOPVIEW (54x94) - Based on SVG design
+        // =====================
+        const incisorTopCtx = document.getElementById('topview-incisor').getContext('2d');
+        const incW = 54;
+        const incH = 94;
+
+        // Buccal/Palatal Surface - Orange main body (curved top)
+        incisorTopCtx.fillStyle = 'rgba(255,143,15,0.7)';  // #FF8F0F
+        incisorTopCtx.strokeStyle = '#FF8F0F';
+        incisorTopCtx.lineWidth = 1;
+        incisorTopCtx.beginPath();
+        incisorTopCtx.moveTo(0, 0);
+        incisorTopCtx.lineTo(incW, 0);
+        incisorTopCtx.lineTo(incW, 47);
+        incisorTopCtx.bezierCurveTo(incW, 47, 38.78, 37.65, 27.5, 37.5);
+        incisorTopCtx.bezierCurveTo(15.86, 37.35, 0, 47, 0, 47);
+        incisorTopCtx.lineTo(0, 0);
+        incisorTopCtx.closePath();
+        incisorTopCtx.fill();
+        incisorTopCtx.stroke();
+
+        // Class 4 Mesial - Blue ellipse (left)
+        incisorTopCtx.fillStyle = 'rgba(13,91,140,0.7)';  // #0D5B8C
+        incisorTopCtx.strokeStyle = '#0D5B8C';
+        incisorTopCtx.beginPath();
+        incisorTopCtx.ellipse(6, 46.5, 15, 9.5, 0, 0, Math.PI * 2);
+        incisorTopCtx.closePath();
+        incisorTopCtx.fill();
+        incisorTopCtx.stroke();
+
+        // Class 4 Distal - Blue ellipse (right)
+        incisorTopCtx.fillStyle = 'rgba(13,91,140,0.7)';  // #0D5B8C
+        incisorTopCtx.strokeStyle = '#0D5B8C';
+        incisorTopCtx.beginPath();
+        incisorTopCtx.ellipse(51, 46.5, 15, 9.5, 0, 0, Math.PI * 2);
+        incisorTopCtx.closePath();
+        incisorTopCtx.fill();
+        incisorTopCtx.stroke();
+
+        // Incisal - Green band at bottom
+        incisorTopCtx.fillStyle = 'rgba(37,158,0,0.7)';  // #259E00
+        incisorTopCtx.strokeStyle = '#259E00';
+        incisorTopCtx.fillRect(0, 37, incW, 19);
+        incisorTopCtx.strokeRect(0, 37, incW, 19);
+
+        // =====================
+        // INCISOR FRONTAL VIEW (54x172) - Based on SVG design
+        // =====================
+        const incisorFrontCtx = document.getElementById('frontal-incisor').getContext('2d');
+        const incBottomY = 172;
+
+        // Buccal/Palatal Surface - Orange main body (curved bottom shape)
+        incisorFrontCtx.fillStyle = 'rgba(255,143,15,0.7)';  // #FF8F0F
+        incisorFrontCtx.strokeStyle = '#FF8F0F';
+        incisorFrontCtx.lineWidth = 1;
+        incisorFrontCtx.beginPath();
+        incisorFrontCtx.moveTo(54, incBottomY);
+        incisorFrontCtx.lineTo(0, incBottomY);
+        incisorFrontCtx.lineTo(0, 106);
+        incisorFrontCtx.bezierCurveTo(0, 106, 16.22, 87.79, 27.5, 88);
+        incisorFrontCtx.bezierCurveTo(39.14, 88.22, 54, 106, 54, 106);
+        incisorFrontCtx.lineTo(54, incBottomY);
+        incisorFrontCtx.closePath();
+        incisorFrontCtx.fill();
+        incisorFrontCtx.stroke();
+
+        // Class 4 Mesial - Blue ellipse (left, rotated)
+        incisorFrontCtx.fillStyle = 'rgba(13,91,140,0.7)';  // #0D5B8C
+        incisorFrontCtx.strokeStyle = '#0D5B8C';
+        incisorFrontCtx.beginPath();
+        incisorFrontCtx.save();
+        incisorFrontCtx.translate(5.881, 147.201);
+        incisorFrontCtx.rotate(-10.39 * Math.PI / 180);
+        incisorFrontCtx.ellipse(0, 0, 18, 29.5, 0, 0, Math.PI * 2);
+        incisorFrontCtx.restore();
+        incisorFrontCtx.closePath();
+        incisorFrontCtx.fill();
+        incisorFrontCtx.stroke();
+
+        // Class 4 Distal - Blue ellipse (right, rotated)
+        incisorFrontCtx.fillStyle = 'rgba(13,91,140,0.7)';  // #0D5B8C
+        incisorFrontCtx.strokeStyle = '#0D5B8C';
+        incisorFrontCtx.beginPath();
+        incisorFrontCtx.save();
+        incisorFrontCtx.translate(46.655, 148.031);
+        incisorFrontCtx.rotate(8.77 * Math.PI / 180);
+        incisorFrontCtx.ellipse(0, 0, 16.84, 29.5, 0, 0, Math.PI * 2);
+        incisorFrontCtx.restore();
+        incisorFrontCtx.closePath();
+        incisorFrontCtx.fill();
+        incisorFrontCtx.stroke();
+
+        // Incisal - Green band at absolute bottom
+        incisorFrontCtx.fillStyle = 'rgba(37,158,0,0.7)';  // #259E00
+        incisorFrontCtx.strokeStyle = '#259E00';
+        incisorFrontCtx.fillRect(0, incBottomY - 13, incW, 13);
+        incisorFrontCtx.strokeRect(0, incBottomY - 13, incW, 13);
+
+        // Mesial Point - Red circle (left edge)
+        incisorFrontCtx.fillStyle = 'rgba(140,13,13,0.8)';  // #8C0D0D
+        incisorFrontCtx.strokeStyle = '#8C0D0D';
+        circle(incisorFrontCtx, 0, 142, 11);
+        incisorFrontCtx.fill();
+        incisorFrontCtx.stroke();
+
+        // Distal Point - Red circle (right edge)
+        incisorFrontCtx.fillStyle = 'rgba(140,13,13,0.8)';  // #8C0D0D
+        incisorFrontCtx.strokeStyle = '#8C0D0D';
+        circle(incisorFrontCtx, 53.5, 141.5, 11.5);
+        incisorFrontCtx.fill();
+        incisorFrontCtx.stroke();
     </script>
 </body>
 

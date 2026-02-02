@@ -38,6 +38,7 @@ const UpperJawView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
                                 toothNumber={toothNumber}
                                 view={view}
                                 conditions={mapToothDataToConditions(tooth)}
+                                toothData={tooth}
                                 interactive={true}
                                 onSurfaceClick={(surface) => console.log(`Clicked surface ${surface} on tooth ${toothNumber}`)}
                             />

@@ -41,28 +41,61 @@ export const generateMockTeeth = () => {
 
     allTeeth.forEach(num => {
         teeth[num] = new Tooth(num);
-
-        // Add varied mock conditions for demonstration
-        const rand = Math.random();
-
-        if (rand > 0.85) {
-            // Occlusal filling (topview)
-            teeth[num].restoration.addFilling([ToothZone.OCCLUSAL], Material.COMPOSITE, Quality.SUFFICIENT);
-        } else if (rand > 0.7) {
-            // Buccal filling (frontal view)
-            teeth[num].restoration.addFilling([ToothZone.BUCCAL], Material.COMPOSITE, Quality.GOOD);
-        } else if (rand > 0.55) {
-            // Mesial filling (shows on frontal & topview)
-            teeth[num].restoration.addFilling([ToothZone.MESIAL], Material.AMALGAM, Quality.SUFFICIENT);
-        } else if (rand > 0.4) {
-            // Distal filling (shows on frontal & topview)
-            teeth[num].restoration.addFilling([ToothZone.DISTAL], Material.COMPOSITE, Quality.GOOD);
-        } else if (rand > 0.3) {
-            // Multiple surfaces
-            teeth[num].restoration.addFilling([ToothZone.OCCLUSAL, ToothZone.MESIAL], Material.COMPOSITE, Quality.SUFFICIENT);
-        }
     });
+
+    // --- ANTERIOR TEST CASES ---
+
+    // 11 (Central Incisor)
+    // Verify: Mesial/Distal Red Points, Incisal Green Band, Cervical
+    teeth[11].pathology.addDecay([ToothZone.MESIAL]); // Red Point
+    teeth[11].pathology.addDecay([ToothZone.DISTAL]); // Red Point
+    teeth[11].restoration.addFilling([ToothZone.INCISAL], Material.COMPOSITE); // Green Band
+    teeth[11].restoration.addFilling([ToothZone.CERVICAL_BUCCAL], Material.CERAMIC); // Cervical Arc
+
+    // 12 (Lateral Incisor)
+    // Verify: Class 4 Ellipses (Blue), Palatal Body (Orange)
+    teeth[12].restoration.addFilling(['Class 4 Mesial'], Material.COMPOSITE); // Blue Ellipse
+    teeth[12].restoration.addFilling(['Class 4 Distal'], Material.COMPOSITE); // Blue Ellipse
+    teeth[12].restoration.addFilling([ToothZone.PALATAL], Material.GOLD); // Orange Body
+
+    // 13 (Canine)
+    teeth[13].restoration.addFilling([ToothZone.CERVICAL_PALATAL], Material.COMPOSITE);
+
+    // --- MOLAR TEST CASES ---
+
+    // 16 (First Molar)
+    // Verify: Complex SVG Occlusal, Individual Cusps
+    teeth[16].restoration.addFilling([ToothZone.OCCLUSAL], Material.AMALGAM);
+    teeth[16].restoration.addFilling([ToothZone.MESIO_BUCCAL_CUSP], Material.COMPOSITE);
+    teeth[16].restoration.addFilling([ToothZone.DISTO_BUCCAL_CUSP], Material.COMPOSITE);
+
+    // 17 (Second Molar)
+    // Verify: Palatal Cusps, Full Buccal Surface
+    teeth[17].restoration.addFilling([ToothZone.MESIO_PALATAL_CUSP], Material.GOLD);
+    teeth[17].restoration.addFilling([ToothZone.DISTO_PALATAL_CUSP], Material.GOLD);
+    teeth[17].restoration.addFilling([ToothZone.BUCCAL], Material.CERAMIC); // Full Surface Highlight
+
+    // 26 (Molar)
+    // Verify: Decay Surface (Red) + Cervical
+    teeth[26].pathology.addDecay([ToothZone.BUCCAL]); // Should be Red Surface
+    teeth[26].restoration.addFilling([ToothZone.CERVICAL_BUCCAL], Material.COMPOSITE);
+
+    // --- PREMOLAR TEST ---
+    // 14
+    teeth[14].restoration.addFilling([ToothZone.OCCLUSAL], Material.COMPOSITE);
+
+    // --- CONDITION TEST CASES ---
+
+    // 46: Missing Tooth
+    teeth[46].isMissing = true;
+
+    // 24: Crown (Natural Base)
+    // Verify: Crown Image
+    teeth[24].restoration.addCrown(Material.CERAMIC, 'Sufficient', 'Single Crown', 'Natural');
+
+    // 21: Implant
+    // Verify: Implant Image
+    teeth[21].restoration.addCrown(Material.CERAMIC, 'Sufficient', 'Single Crown', 'Implant');
 
     return teeth;
 };
-
