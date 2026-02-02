@@ -54,19 +54,20 @@ export const mapToothDataToConditions = (tooth) => {
     const conditions = [];
 
     const zoneMap = {
-        [ToothZone.OCCLUSAL]: 'O',
-        [ToothZone.MESIAL]: 'M',
-        [ToothZone.DISTAL]: 'D',
-        [ToothZone.BUCCAL]: 'B',
-        [ToothZone.PALATAL]: 'L',
-        [ToothZone.CERVICAL_BUCCAL]: 'B', // Map to Buccal for now
-        [ToothZone.CERVICAL_PALATAL]: 'L', // Map to Lingual
-        // Cusps map to Occlusal or specific areas if SVG supports it. 
-        // For now mapping cusps to Occlusal to ensure visibility
-        [ToothZone.MESIO_BUCCAL_CUSP]: 'O',
-        [ToothZone.DISTO_BUCCAL_CUSP]: 'O',
-        [ToothZone.MESIO_PALATAL_CUSP]: 'O',
-        [ToothZone.DISTO_PALATAL_CUSP]: 'O',
+        [ToothZone.OCCLUSAL]: 'occlusal',
+        [ToothZone.MESIAL]: 'mesial',
+        [ToothZone.DISTAL]: 'distal',
+        [ToothZone.BUCCAL]: 'buccal',
+        [ToothZone.PALATAL]: 'palatal',
+        [ToothZone.LINGUAL]: 'lingual', // Ensure LINGUAL maps if present in enum
+        [ToothZone.CERVICAL_BUCCAL]: 'cervical buccal',
+        [ToothZone.CERVICAL_PALATAL]: 'cervical palatal',
+        [ToothZone.MESIO_BUCCAL_CUSP]: 'buccal cusp', // Mapping cusp to specific zone
+        [ToothZone.DISTO_BUCCAL_CUSP]: 'buccal cusp', // Simplified mapping
+        [ToothZone.MESIO_PALATAL_CUSP]: 'palatal cusp',
+        [ToothZone.DISTO_PALATAL_CUSP]: 'palatal cusp',
+        'Buccal Surface': 'buccal surface', // Handle potential string inputs if any
+        'Palatal Surface': 'palatal surface'
     };
 
     const materialColorMap = {

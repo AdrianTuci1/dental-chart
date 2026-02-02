@@ -32,7 +32,6 @@ MOCK_PATIENTS[1].lastExamDate = '2024-11-15';
 
 export const generateMockTeeth = () => {
     const teeth = {};
-    // Generate standard 32 teeth using the Tooth class
     const allTeeth = [
         18, 17, 16, 15, 14, 13, 12, 11,
         21, 22, 23, 24, 25, 26, 27, 28,
@@ -43,9 +42,24 @@ export const generateMockTeeth = () => {
     allTeeth.forEach(num => {
         teeth[num] = new Tooth(num);
 
-        // Add some random data for demonstration
-        if (Math.random() > 0.8) {
+        // Add varied mock conditions for demonstration
+        const rand = Math.random();
+
+        if (rand > 0.85) {
+            // Occlusal filling (topview)
             teeth[num].restoration.addFilling([ToothZone.OCCLUSAL], Material.COMPOSITE, Quality.SUFFICIENT);
+        } else if (rand > 0.7) {
+            // Buccal filling (frontal view)
+            teeth[num].restoration.addFilling([ToothZone.BUCCAL], Material.COMPOSITE, Quality.GOOD);
+        } else if (rand > 0.55) {
+            // Mesial filling (shows on frontal & topview)
+            teeth[num].restoration.addFilling([ToothZone.MESIAL], Material.AMALGAM, Quality.SUFFICIENT);
+        } else if (rand > 0.4) {
+            // Distal filling (shows on frontal & topview)
+            teeth[num].restoration.addFilling([ToothZone.DISTAL], Material.COMPOSITE, Quality.GOOD);
+        } else if (rand > 0.3) {
+            // Multiple surfaces
+            teeth[num].restoration.addFilling([ToothZone.OCCLUSAL, ToothZone.MESIAL], Material.COMPOSITE, Quality.SUFFICIENT);
         }
     });
 

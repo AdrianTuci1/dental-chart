@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mask Layout Reference</title>
+    <style>
+        body {
+            background: #1a1a2e;
+            padding: 40px;
+            font-family: Arial, sans-serif;
+            color: #fff;
+        }
+
+        .container {
+            display: flex;
+            gap: 80px;
+            align-items: flex-start;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .label {
+            font-size: 14px;
+            color: #888;
+        }
+
+        canvas {
+            border: 1px solid #444;
+            background: #2a2a4a;
+        }
+
+        .legend {
+            margin-top: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Dental Zones Layout Reference (Canvas)</h2>
+
+    <div class="container">
+        <div class="section">
+            <div class="label">TopView (54×94)</div>
+            <canvas id="topview" width="54" height="94"></canvas>
+        </div>
+
+        <div class="section">
+            <div class="label">Frontal/Lingual (54×172)</div>
+            <canvas id="frontal" width="54" height="172"></canvas>
+        </div>
+    </div>
+
+    <!-- Legend -->
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(255,107,107,0.7);"></div>
+            <span>Occlusal (O)</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(78,205,196,0.7);"></div>
+            <span>Mesial (M) - 25%</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(69,183,209,0.7);"></div>
+            <span>Distal (D) - 25%</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(150,206,180,0.7);"></div>
+            <span>Mesio-Buccal (MB) - 50%</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(136,216,176,0.7);"></div>
+            <span>Disto-Buccal (DB) - 50%</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(255,234,167,0.7);"></div>
+            <span>Mesio-Palatal (MP) - 50%</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(223,230,233,0.7);"></div>
+            <span>Disto-Palatal (DP) - 50%</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(225,112,85,0.7); border-radius: 50%;"></div>
+            <span>Buccal/Palatal Point</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: rgba(253,121,168,0.7); height: 4px;"></div>
+            <span>Cervical Line</span>
+        </div>
+    </div>
+
+    <script>
+        // Helper: Draw rounded rectangle
+        function roundedRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        // Helper: Draw circle
+        function circle(ctx, cx, cy, radius) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.closePath();
+        }
+
+        // =====================
+        // TOPVIEW (54x94)
+        // Center occlusal zone dimensions
+        // =====================
+        const topCtx = document.getElementById('topview').getContext('2d');
+
+        // Define occlusal center bounds (zones wrap around this)
+        const occLeft = 10;
+        const occRight = 44;
+        const occTop = 32;
+        const occBottom = 62;
+
+        // Occlusal - center with MORE elongated corners and curved top/bottom
+        topCtx.fillStyle = 'rgba(255,107,107,0.5)';
+        topCtx.strokeStyle = '#ff6b6b';
+        topCtx.lineWidth = 1;
+        topCtx.beginPath();
+        // Start left-top corner (elongated)
+        topCtx.moveTo(occLeft, 47);
+        topCtx.lineTo(occLeft + 4, occTop + 6);
+        // Top curve (bulging up)
+        topCtx.quadraticCurveTo(27, occTop - 4, occRight - 4, occTop + 6);
+        topCtx.lineTo(occRight, 47);
+        // Right side
+        topCtx.lineTo(occRight - 4, occBottom - 6);
+        // Bottom curve (bulging down)
+        topCtx.quadraticCurveTo(27, occBottom + 4, occLeft + 4, occBottom - 6);
+        topCtx.closePath();
+        topCtx.fill();
+        topCtx.stroke();
+
+        // Mesial - left side, ends exactly at occLeft
+        topCtx.fillStyle = 'rgba(78,205,196,0.5)';
+        topCtx.strokeStyle = '#4ecdc4';
+        roundedRect(topCtx, 0, occTop, occLeft, occBottom - occTop, 2);
+        topCtx.fill();
+        topCtx.stroke();
+
+        // Distal - right side, starts exactly at occRight
+        topCtx.fillStyle = 'rgba(69,183,209,0.5)';
+        topCtx.strokeStyle = '#45b7d1';
+        roundedRect(topCtx, occRight, occTop, 54 - occRight, occBottom - occTop, 2);
+        topCtx.fill();
+        topCtx.stroke();
+
+        // Mesio-Buccal Cusp - top left, ends exactly at occTop
+        topCtx.fillStyle = 'rgba(150,206,180,0.5)';
+        topCtx.strokeStyle = '#96ceb4';
+        roundedRect(topCtx, 0, 0, 27, occTop, 4);
+        topCtx.fill();
+        topCtx.stroke();
+
+        // Disto-Buccal Cusp - top right, ends exactly at occTop
+        topCtx.fillStyle = 'rgba(136,216,176,0.5)';
+        topCtx.strokeStyle = '#88d8b0';
+        roundedRect(topCtx, 27, 0, 27, occTop, 4);
+        topCtx.fill();
+        topCtx.stroke();
+
+        // Mesio-Palatal Cusp - bottom left, starts exactly at occBottom
+        topCtx.fillStyle = 'rgba(255,234,167,0.5)';
+        topCtx.strokeStyle = '#ffeaa7';
+        roundedRect(topCtx, 0, occBottom, 27, 94 - occBottom, 4);
+        topCtx.fill();
+        topCtx.stroke();
+
+        // Disto-Palatal Cusp - bottom right, starts exactly at occBottom
+        topCtx.fillStyle = 'rgba(223,230,233,0.5)';
+        topCtx.strokeStyle = '#dfe6e9';
+        roundedRect(topCtx, 27, occBottom, 27, 94 - occBottom, 4);
+        topCtx.fill();
+        topCtx.stroke();
+
+        // =====================
+        // FRONTAL VIEW (54x172)
+        // All zones at absolute bottom
+        // =====================
+        const frontCtx = document.getElementById('frontal').getContext('2d');
+        const bottomY = 172; // canvas height
+
+        // Mesio-Buccal Cusp 50% - bottom left half (FIRST, behind mesial)
+        frontCtx.fillStyle = 'rgba(162,155,254,0.5)';
+        frontCtx.strokeStyle = '#a29bfe';
+        roundedRect(frontCtx, 0, bottomY - 60, 27, 60, 4);
+        frontCtx.fill();
+        frontCtx.stroke();
+
+        // Disto-Buccal Cusp 50% - bottom right half (FIRST, behind distal)
+        frontCtx.fillStyle = 'rgba(162,155,254,0.5)';
+        frontCtx.strokeStyle = '#a29bfe';
+        roundedRect(frontCtx, 27, bottomY - 60, 27, 60, 4);
+        frontCtx.fill();
+        frontCtx.stroke();
+
+        // Mesial 25% - absolute bottom left corner
+        frontCtx.fillStyle = 'rgba(78,205,196,0.5)';
+        frontCtx.strokeStyle = '#4ecdc4';
+        roundedRect(frontCtx, 0, bottomY - 35, 14, 35, 4);
+        frontCtx.fill();
+        frontCtx.stroke();
+
+        // Distal 25% - absolute bottom right corner
+        frontCtx.fillStyle = 'rgba(69,183,209,0.5)';
+        frontCtx.strokeStyle = '#45b7d1';
+        roundedRect(frontCtx, 40, bottomY - 35, 14, 35, 4);
+        frontCtx.fill();
+        frontCtx.stroke();
+
+        // Buccal/Palatal Point - center at bottom
+        frontCtx.fillStyle = 'rgba(225,112,85,0.7)';
+        frontCtx.strokeStyle = '#e17055';
+        circle(frontCtx, 27, bottomY - 25, 5);
+        frontCtx.fill();
+        frontCtx.stroke();
+
+        // Cervical - wavy line at 50px from bottom
+        frontCtx.strokeStyle = '#fd79a8';
+        frontCtx.lineWidth = 3;
+        frontCtx.beginPath();
+        frontCtx.moveTo(2, bottomY - 50);
+        frontCtx.quadraticCurveTo(14, bottomY - 46, 27, bottomY - 50);
+        frontCtx.quadraticCurveTo(40, bottomY - 54, 52, bottomY - 50);
+        frontCtx.stroke();
+    </script>
+</body>
+
+</html>
