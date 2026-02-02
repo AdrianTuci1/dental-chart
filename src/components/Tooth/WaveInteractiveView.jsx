@@ -3,7 +3,7 @@ import './WaveInteractiveView.css';
 import { WaveRenderer } from './WaveRenderer';
 import { WaveInteractionModel } from '../../models/WaveInteractionModel';
 
-const WaveInteractiveView = ({ children, viewType, direction = 'down', alignment = 'center', model: externalModel }) => {
+const WaveInteractiveView = ({ children, viewType, direction = 'down', alignment = 'center', model: externalModel, topOffset = 0, bottomOffset = 0, ...props }) => {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const rendererRef = useRef(new WaveRenderer());
@@ -31,7 +31,8 @@ const WaveInteractiveView = ({ children, viewType, direction = 'down', alignment
         const { width, height } = container.getBoundingClientRect();
 
         renderer.setCanvas(canvas);
-        renderer.update({ width, height, direction, values });
+        const verticalOffset = (topOffset || 0) + (bottomOffset || 0);
+        renderer.update({ width, height, direction, values, verticalOffset });
         renderer.draw();
     };
 
@@ -39,7 +40,7 @@ const WaveInteractiveView = ({ children, viewType, direction = 'down', alignment
         draw();
         window.addEventListener('resize', draw);
         return () => window.removeEventListener('resize', draw);
-    }, [values, direction]);
+    }, [values, direction, topOffset, bottomOffset]);
 
 
     // Interaction
@@ -75,7 +76,7 @@ const WaveInteractiveView = ({ children, viewType, direction = 'down', alignment
     };
 
     return (
-        <div className="wave-interactive-wrapper" ref={containerRef}>
+        <div className="wave-interactive-wrapper" ref={containerRef} {...props}>
             <div
                 className="wave-content"
                 style={{ alignItems: alignment }}

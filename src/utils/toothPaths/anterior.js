@@ -4,7 +4,7 @@ import { traceRoundedRect, traceCircle, DIMS } from './constants';
  * MASK CONFIGURATION
  * Adjust these values to fine-tune alignment
  */
-const SCALE = 0.96;
+const SCALE = 0.90;
 const OFFSET_X = 0; // + moves right, - moves left
 const OFFSET_Y = 0; // + moves down, - moves up
 

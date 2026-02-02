@@ -1,0 +1,1 @@
+https://www.kaggle.com/datasets/kvipularya/a-collection-of-dental-x-ray-images-for-analysis

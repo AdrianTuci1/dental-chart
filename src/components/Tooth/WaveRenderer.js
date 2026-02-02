@@ -18,11 +18,12 @@ export class WaveRenderer {
         this.ctx = canvas.getContext('2d');
     }
 
-    update({ width, height, direction, values }) {
+    update({ width, height, direction, values, verticalOffset = 0 }) {
         this.width = width;
         this.height = height;
         this.direction = direction;
         this.values = values;
+        this.verticalOffset = verticalOffset;
     }
 
     getVerticalConfigs() {
@@ -30,7 +31,7 @@ export class WaveRenderer {
         const totalPadding = this.height - contentHeight;
 
         // Invert offset for 'up' direction (Lower Jaw) to ensure symmetric separation/movement
-        const effectiveOffset = this.direction === 'up' ? -this.VERTICAL_OFFSET : this.VERTICAL_OFFSET;
+        const effectiveOffset = (this.direction === 'up' ? -this.VERTICAL_OFFSET : this.VERTICAL_OFFSET) + this.verticalOffset;
 
         // Center + Offset
         const paddingTop = (totalPadding / 2) + effectiveOffset;
@@ -122,7 +123,7 @@ export class WaveRenderer {
         this.ctx.clearRect(0, 0, this.width, this.height);
 
         // 1. Draw Grid
-        this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
+        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
         this.ctx.lineWidth = 1;
         this.ctx.setLineDash([2, 4]);
 

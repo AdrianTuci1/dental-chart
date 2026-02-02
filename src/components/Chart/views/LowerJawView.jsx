@@ -1,6 +1,5 @@
 import React from 'react';
-import ToothRenderer from '../ToothRenderer';
-import { mapToothDataToConditions } from '../../../utils/toothUtils';
+import JawTooth from './JawTooth';
 
 const LowerJawView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
     // Quadrants following standard dental notation
@@ -11,59 +10,23 @@ const LowerJawView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
 
     const lowerTeethNumbers = [...q4, ...q3];
 
-    const renderTooth = (toothNumber, views) => {
-        const tooth = teeth[toothNumber];
-        if (!tooth) return null;
-
-        const isSelected = selectedTeeth && selectedTeeth.has(toothNumber);
-        const isDimmed = activeTooth && activeTooth !== toothNumber;
-
-        return (
-            <li key={toothNumber} className={`tooth ${isSelected ? 'selected' : ''} ${isDimmed ? 'dimmed' : ''}`} data-number={toothNumber}>
-                {views.map((view, index) => {
-                    if (view === 'number') {
-                        return (
-                            <span key="number" className="number" onClick={() => onToothClick(toothNumber)}>
-                                {toothNumber}
-                            </span>
-                        );
-                    }
-
-                    const isBuccal = view === 'frontal';
-                    const isLingual = view === 'lingual';
-
-                    return (
-                        <div key={view} className={`trigger visualization ${isBuccal ? 'view-buccal' : isLingual ? 'view-lingual' : 'view-occlusal'}`} onClick={() => onToothClick(toothNumber)}>
-                            <ToothRenderer
-                                toothNumber={toothNumber}
-                                view={view}
-                                conditions={mapToothDataToConditions(tooth)}
-                                toothData={tooth}
-                                interactive={true}
-                                onSurfaceClick={(surface) => console.log(`Clicked surface ${surface} on tooth ${toothNumber}`)}
-                            />
-                            {isSelected && isBuccal && (
-                                <div className="selection-overlay">
-                                    <div className="checkmark-circle">
-                                        ✓
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
-            </li>
-        );
-    };
-
     return (
         <div className="chart-overview-container" data-view="lower-jaw">
             <div className="full-mouth jaw-box">
                 {/* Lower Jaw */}
                 <ol className="jaw" data-type="lower">
-                    {lowerTeethNumbers.map(number =>
-                        renderTooth(number, ['lingual', 'topview', 'frontal'])
-                    )}
+                    {lowerTeethNumbers.map(number => (
+                        <JawTooth
+                            key={number}
+                            toothNumber={number}
+                            toothData={teeth[number]}
+                            views={['lingual', 'topview', 'frontal']}
+                            onToothClick={onToothClick}
+                            isDimmed={activeTooth && activeTooth !== number}
+                            showPerioGrid={true}
+                            showNumberAtBottom={true}
+                        />
+                    ))}
                 </ol>
             </div>
         </div>

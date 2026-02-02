@@ -1,0 +1,144 @@
+.scan-view-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.scan-area {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--background-secondary);
+    border-bottom: 1px solid var(--border-color);
+    min-height: 40%;
+    max-height: 60%;
+    position: relative;
+    overflow: hidden;
+    padding: var(--spacing-4);
+}
+
+.scan-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-3);
+    padding: var(--spacing-8);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-secondary);
+    width: 100%;
+    max-width: 400px;
+}
+
+.scan-placeholder:hover {
+    border-color: var(--color-primary);
+    background-color: var(--background-tertiary);
+    color: var(--color-primary);
+}
+
+.scan-upload-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background-color: var(--background-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--spacing-2);
+}
+
+.scan-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: inherit;
+    margin: 0;
+}
+
+.scan-subtitle {
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+    text-align: center;
+    margin: 0;
+}
+
+.scan-image-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.scan-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+}
+
+.scan-remove-btn {
+    position: absolute;
+    top: var(--spacing-4);
+    right: var(--spacing-4);
+    background-color: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    backdrop-filter: blur(4px);
+}
+
+.scan-remove-btn:hover {
+    background-color: var(--color-danger);
+    transform: scale(1.1);
+}
+
+.normal-view-container {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    background-color: var(--background-black);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-4);
+}
+
+/* 
+ * Wrapper for dynamic scaling of content
+ */
+.normal-view-scaler {
+    /* Height will be auto or determined by content, centered by flex parent */
+    transform-origin: center center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Ensure child NormalView logic works */
+}
+
+/* 
+ * Apply overrides to NormalView internals when inside this specific container if needed.
+ * But we're relying on prop overrides for the structure mostly.
+ */
+.normal-view-scaler .chart-overview-container {
+    /* Remove full-screen assumptions if any */
+    position: relative !important;
+    height: auto !important;
+    overflow: visible !important;
+}

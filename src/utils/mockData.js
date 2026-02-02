@@ -97,5 +97,8 @@ export const generateMockTeeth = () => {
     // Verify: Implant Image
     teeth[21].restoration.addCrown(Material.CERAMIC, 'Sufficient', 'Single Crown', 'Implant');
 
+    teeth[35].isMissing = true;
+    teeth[36].restoration.addCrown(Material.CERAMIC, 'Sufficient', 'Single Crown', 'Implant');
+
     return teeth;
 };

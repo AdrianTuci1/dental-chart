@@ -1,0 +1,55 @@
+/* Enforce Flex Column for the Grid Container */
+div.perio-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    margin-bottom: 8px;
+    width: 100%;
+    align-items: center !important;
+    pointer-events: none;
+    background: transparent;
+}
+
+/* Enforce Flex Row for each row of circles */
+div.perio-row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    gap: 4px !important;
+    justify-content: center !important;
+    align-items: center !important;
+    width: auto !important;
+    height: auto !important;
+}
+
+/* Style the circles */
+div.perio-circle {
+    display: block !important;
+    width: 8px !important;
+    height: 8px !important;
+    min-width: 8px !important;
+    min-height: 8px !important;
+    border-radius: 50%;
+    border: 1px solid #9CA3AF !important;
+    background-color: var(--background-primary, #ffffff);
+    box-sizing: border-box !important;
+    flex-shrink: 0 !important;
+    flex-grow: 0 !important;
+    margin: 0 !important;
+}
+
+/* Specific Colors for active states */
+div.perio-circle.blue.active {
+    background-color: #3B82F6 !important;
+    border-color: #3B82F6 !important;
+}
+
+div.perio-circle.red.active {
+    background-color: #EF4444 !important;
+    border-color: #EF4444 !important;
+}
+
+div.perio-circle.yellow.active {
+    background-color: #F59E0B !important;
+    border-color: #F59E0B !important;
+}
