@@ -1,23 +1,14 @@
 import React, { useEffect } from 'react';
-import { Outlet, NavLink, useParams, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useParams, useLocation } from 'react-router-dom';
 import usePatientStore from '../store/patientStore';
 import { MOCK_PATIENTS } from '../utils/mockData';
-import { LayoutDashboard, FileText, Activity, ArrowLeft, Scan } from 'lucide-react';
-import useChartStore from '../store/chartStore';
-import { Layers, Eye, EyeOff } from 'lucide-react';
-import { LiaTeethSolid } from "react-icons/lia";
+import PatientSidebar from './PatientSidebar';
 
 import './PatientLayout.css';
 
 const PatientLayout = () => {
     const { patientId } = useParams();
-    const navigate = useNavigate();
-    const location = useLocation();
     const { selectedPatient, selectPatient, patients, setPatients } = usePatientStore();
-    const { showEndo, showPerio, showDental, toggleLayer } = useChartStore();
-
-    // Check if we're on a chart route
-    const isChartRoute = location.pathname.includes('/chart');
 
     useEffect(() => {
         // Ensure patients are loaded
@@ -40,102 +31,7 @@ const PatientLayout = () => {
 
     return (
         <div className="patient-layout-container">
-            {/* Patient Sidebar - Narrow Blue Strip */}
-            <div className="patient-sidebar">
-                <div className="sidebar-header">
-                    <button
-                        onClick={() => {
-                            if (location.pathname.endsWith('/dashboard')) {
-                                navigate('/patients');
-                            } else if (location.pathname.includes('/chart') || location.pathname.includes('/report')) {
-                                navigate(`/patients/${patientId}/dashboard`);
-                            } else {
-                                navigate(-1);
-                            }
-                        }}
-                        className="back-link"
-                        title="Back"
-                    >
-                        <ArrowLeft size={24} />
-                    </button>
-                </div>
-
-                <nav className="sidebar-nav">
-                    <NavLink
-                        to={`/patients/${patientId}/dashboard`}
-                        className={({ isActive }) =>
-                            `sidebar-nav-link ${isActive ? 'active' : ''}`
-                        }
-                        title="Dashboard"
-                    >
-                        <LayoutDashboard size={24} />
-                    </NavLink>
-
-                    <NavLink
-                        to={`/patients/${patientId}/chart`}
-                        className={({ isActive }) =>
-                            `sidebar-nav-link ${isActive ? 'active' : ''}`
-                        }
-                        title="Dental Chart"
-                    >
-                        <LiaTeethSolid size={24} />
-                    </NavLink>
-
-                    <NavLink
-                        to={`/patients/${patientId}/scan`}
-                        className={({ isActive }) =>
-                            `sidebar-nav-link ${isActive ? 'active' : ''}`
-                        }
-                        title="Scan"
-                    >
-                        <Scan size={24} />
-                    </NavLink>
-
-                    <NavLink
-                        to={`/patients/${patientId}/report`}
-                        className={({ isActive }) =>
-                            `sidebar-nav-link ${isActive ? 'active' : ''}`
-                        }
-                        title="Reports"
-                    >
-                        <FileText size={24} />
-                    </NavLink>
-                </nav>
-
-                {/* Layer Manager - Only visible on chart routes */}
-                {isChartRoute && (
-                    <div className="sidebar-footer">
-                        <div className="layer-controls">
-                            <button
-                                onClick={() => toggleLayer('dental')}
-                                className={`layer-button ${showDental ? 'active dental' : ''}`}
-                                title="Toggle Dental Layer"
-                            >
-                                {showDental ? <Eye size={16} /> : <EyeOff size={16} />}
-                                Dental
-                            </button>
-
-                            <button
-                                onClick={() => toggleLayer('perio')}
-                                className={`layer-button ${showPerio ? 'active perio' : ''}`}
-                                title="Toggle Perio Layer"
-                            >
-                                {showPerio ? <Eye size={16} /> : <EyeOff size={16} />}
-                                Perio
-                            </button>
-
-                            <button
-                                onClick={() => toggleLayer('endo')}
-                                className={`layer-button ${showEndo ? 'active endo' : ''}`}
-                                title="Toggle Endo Layer"
-                            >
-                                {showEndo ? <Eye size={16} /> : <EyeOff size={16} />}
-                                Endo
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </div>
+            <PatientSidebar />
 
             {/* Main Content Area */}
             <div className="layout-content" data-view="patient">

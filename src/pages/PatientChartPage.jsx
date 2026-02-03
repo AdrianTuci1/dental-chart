@@ -3,6 +3,7 @@ import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import usePatientStore from '../store/patientStore';
 import useChartStore from '../store/chartStore';
 import { Calendar } from 'lucide-react';
+import ToothIcon from '../components/UI/ToothIcon';
 
 import './PatientChartPage.css';
 
@@ -113,22 +114,22 @@ const PatientChartPage = () => {
             {/* Chart View Navigation - Top Right Center (Absolute) */}
             <div className="chart-view-selector">
                 <button
-                    className={`view-button ${chartView === 'normal' ? 'active' : ''}`}
-                    onClick={() => handleViewChange('normal')}
-                >
-                    Normal
-                </button>
-                <button
                     className={`view-button ${chartView === 'upper' ? 'active' : ''}`}
                     onClick={() => handleViewChange('upper')}
                 >
-                    Upper Jaw
+                    <ToothIcon type="upper" size={20} />
+                </button>
+                <button
+                    className={`view-button ${chartView === 'normal' ? 'active' : ''}`}
+                    onClick={() => handleViewChange('normal')}
+                >
+                    <ToothIcon type="full" size={20} />
                 </button>
                 <button
                     className={`view-button ${chartView === 'lower' ? 'active' : ''}`}
                     onClick={() => handleViewChange('lower')}
                 >
-                    Lower Jaw
+                    <ToothIcon type="lower" size={20} />
                 </button>
             </div>
 

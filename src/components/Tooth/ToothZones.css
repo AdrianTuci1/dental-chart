@@ -18,7 +18,7 @@
         "cervical2 cervical2 cervical2 cervical2 cervical2 cervical2"
         "cusp1 cusp1 cusp1 cusp2 cusp2 cusp2"
         "cusp3 cusp3 cusp3 cusp4 cusp4 cusp4";
-    box-shadow: 3px 0 6px 0 rgba(0, 0, 0, .08);
+    border-right: 1px solid var(--border-color);
 }
 
 .zones-list {

@@ -157,6 +157,14 @@ const ToothRenderer = ({
         let mouseX = (e.clientX - rect.left) * scaleX;
         let mouseY = (e.clientY - rect.top) * scaleY;
 
+        const isRotated = imageRotation !== 'none';
+
+        // Account for rotation (180 deg)
+        if (isRotated) {
+            mouseX = width - mouseX;
+            mouseY = height - mouseY;
+        }
+
         // Account for mirroring
         if (isMirrored) {
             mouseX = width - mouseX;
@@ -213,7 +221,11 @@ const ToothRenderer = ({
                             ref={canvasRef}
                             className="tooth-overlay-canvas"
                             onClick={handleCanvasClick}
-                            style={{ cursor: interactive ? 'pointer' : 'default' }}
+                            style={{
+                                cursor: interactive ? 'pointer' : 'default',
+                                scale: `${imageScale}`,
+                                transform: imageRotation
+                            }}
                         />
                     </>
                 ) : (

@@ -4,7 +4,6 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    background-color: var(--background-secondary);
     border-radius: 0.5rem;
     box-shadow: var(--shadow-sm);
     border: 1px solid var(--border-color);
@@ -156,7 +155,6 @@
     font-weight: 500;
     border-radius: 0.25rem;
     transition: colors 0.2s;
-    border: 1px solid transparent;
     cursor: pointer;
 }
 

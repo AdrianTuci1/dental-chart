@@ -81,7 +81,7 @@
 }
 
 .section-card {
-    background-color: var(--background-secondary);
+
     /* rounded-lg */
     box-shadow: var(--shadow-sm);
     /* shadow-sm */
