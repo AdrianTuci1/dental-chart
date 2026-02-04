@@ -54,9 +54,6 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
         <div className={`tooth-item-container ${isSelected ? 'active-tooth' : ''}`} data-number={toothNumber}>
             <ol className="jaw" data-type={isUpper ? 'upper' : 'lower'}>
                 <li className="tooth" data-number={toothNumber}>
-                    {/* Lower Jaw: Text above tooth */}
-                    {!isUpper && extractionText}
-
                     {views.map((view, index) => {
                         const isBuccal = view === 'frontal';
                         const isLingual = view === 'lingual';
@@ -74,7 +71,6 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
 
                         const content = (
                             <div
-                                key={view}
                                 className={`trigger visualization ${isBuccal ? 'view-buccal' : isLingual ? 'view-lingual' : 'view-occlusal'}`}
                                 style={transformStyle}
                                 onClick={() => onSelectTooth(toothNumber)}
@@ -89,27 +85,27 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
                             </div>
                         );
 
-                        if (shouldShowWave) {
-                            const waveTopOffset = index === 0 ? 10 : 0;
-                            const waveBottomOffset = index === 2 ? -10 : 0;
-                            return (
-                                <WaveInteractiveView
-                                    key={view}
-                                    viewType={view}
-                                    direction={waveDirection}
-                                    model={modelToUse}
-                                    topOffset={waveTopOffset}
-                                    bottomOffset={waveBottomOffset}
-                                >
-                                    {content}
-                                </WaveInteractiveView>
-                            );
-                        }
-                        return content;
-                    })}
+                        const viewContent = shouldShowWave ? (
+                            <WaveInteractiveView
+                                viewType={view}
+                                direction={waveDirection}
+                                model={modelToUse}
+                                topOffset={index === 0 ? 10 : 0}
+                                bottomOffset={index === 2 ? -10 : 0}
+                            >
+                                {content}
+                            </WaveInteractiveView>
+                        ) : content;
 
-                    {/* Upper Jaw: Text below tooth */}
-                    {isUpper && extractionText}
+                        return (
+                            <React.Fragment key={view}>
+                                {viewContent}
+                                {isExtractionPlanned && index < views.length - 1 && (
+                                    <div className="extraction-text">TO BE EXTRACTED</div>
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
                 </li>
             </ol>
         </div>
