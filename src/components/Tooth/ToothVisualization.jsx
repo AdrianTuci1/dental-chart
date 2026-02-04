@@ -4,14 +4,28 @@ import '../Chart/ChartOverview.css';
 import './ToothVisualization.css';
 import WaveInteractiveView from './WaveInteractiveView';
 import useChartStore from '../../store/chartStore';
+import usePatientStore from '../../store/patientStore';
 import { WaveInteractionModel } from '../../models/WaveInteractionModel';
 import { mapToothDataToConditions, isUpperJaw } from '../../utils/toothUtils';
 
 const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
     const isUpper = isUpperJaw(toothNumber);
+    const { selectedPatient } = usePatientStore();
+
     const views = isUpper
         ? ['frontal', 'topview', 'lingual']
         : ['lingual', 'topview', 'frontal'];
+
+    // Check for extraction
+    const isExtractionPlanned = selectedPatient?.treatmentPlan?.items?.some(
+        item => parseInt(item.tooth) === parseInt(toothNumber) &&
+            item.procedure === 'Extraction' &&
+            item.status === 'planned'
+    );
+
+    const extractionText = isExtractionPlanned ? (
+        <div className="extraction-text">TO BE EXTRACTED</div>
+    ) : null;
 
     const buccalModel = useRef(new WaveInteractionModel()).current;
     const lingualModel = useRef(new WaveInteractionModel()).current;
@@ -40,6 +54,9 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
         <div className={`tooth-item-container ${isSelected ? 'active-tooth' : ''}`} data-number={toothNumber}>
             <ol className="jaw" data-type={isUpper ? 'upper' : 'lower'}>
                 <li className="tooth" data-number={toothNumber}>
+                    {/* Lower Jaw: Text above tooth */}
+                    {!isUpper && extractionText}
+
                     {views.map((view, index) => {
                         const isBuccal = view === 'frontal';
                         const isLingual = view === 'lingual';
@@ -90,6 +107,9 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
                         }
                         return content;
                     })}
+
+                    {/* Upper Jaw: Text below tooth */}
+                    {isUpper && extractionText}
                 </li>
             </ol>
         </div>

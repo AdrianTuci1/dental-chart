@@ -1,8 +1,11 @@
 
 
+import { useNavigate, useParams } from 'react-router-dom';
 import './TreatmentPlan.css';
 
 const TreatmentPlan = ({ plan }) => {
+    const navigate = useNavigate();
+    const { patientId } = useParams();
     const treatments = plan?.items || [];
 
     const totalCost = treatments.reduce((sum, item) => item.status !== 'completed' ? sum + (item.cost || 0) : sum, 0);
@@ -18,33 +21,27 @@ const TreatmentPlan = ({ plan }) => {
 
     return (
         <div className="treatment-plan-card">
-            <div className="plan-header">
-                <h3 className="plan-title">Treatment Plan</h3>
-                <span className="plan-total">Total Proposed: ${totalCost}</span>
-            </div>
 
             <div className="plan-list">
                 {treatments.map((item) => (
-                    <div key={item.id} className="plan-item">
+                    <div
+                        key={item.id}
+                        className={`plan-item ${item.status}`}
+                        onClick={() => {
+                            if (item.tooth) {
+                                navigate(`/patients/${patientId}/tooth/${item.tooth}/restoration`);
+                            }
+                        }}
+                    >
                         <div className="item-details">
-                            <div className={`priority-indicator ${getPriorityClass(item.priority)}`} />
-                            <div>
-                                <p className="item-text">
-                                    {item.tooth ? `Tooth #${item.tooth} - ` : ''}{item.procedure}
-                                </p>
-                                <p className="item-status">{item.status}</p>
-                            </div>
-                        </div>
-                        <div className="item-cost">
-                            <p>${item.cost}</p>
+                            <p className="item-text">
+                                {item.procedure}
+                            </p>
                         </div>
                     </div>
                 ))}
             </div>
 
-            <button className="add-procedure-btn">
-                + Add Procedure
-            </button>
         </div>
     );
 };

@@ -39,3 +39,103 @@
 .view-buccal .tooth-renderer.lower-jaw {
     justify-content: flex-start;
 }
+
+.tooth-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.endo-labels-container {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    height: 38px;
+    align-items: flex-end;
+}
+
+[data-type="lower"] .endo-labels-container {
+    align-items: flex-start;
+}
+
+.endo-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.endo-icon-wrap.cycling {
+    animation: endoFadeIn 0.3s ease-out;
+}
+
+@keyframes endoFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(2px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.endo-icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.endo-line {
+    width: 1px;
+    height: 8px;
+    background-color: rgba(255, 255, 255, 0.4);
+}
+
+.endo-icon-cold {
+    color: #60a5fa;
+}
+
+.endo-icon-percussion {
+    color: #6b7280;
+}
+
+.endo-icon-palpation {
+    color: #fb923c;
+}
+
+.endo-icon-heat {
+    color: #ef4444;
+}
+
+.endo-icon-electricity {
+    color: #eab308;
+}
+
+.extraction-icon-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 2px 0;
+    height: 24px;
+    z-index: 10;
+}
+
+.extraction-icon {
+    background-color: #DC2626;
+    /* Red 600 */
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.extraction-icon svg {
+    width: 14px;
+    height: 14px;
+}

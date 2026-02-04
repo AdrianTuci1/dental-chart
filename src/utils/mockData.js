@@ -23,6 +23,56 @@ MOCK_PATIENTS[0].medicalIssues.other = ['Anxious about dental procedures'];
 MOCK_PATIENTS[0].email = 'john.doe@example.com'; // Add extra properties if needed by UI but not in constructor
 MOCK_PATIENTS[0].phone = '555-0123';
 MOCK_PATIENTS[0].lastExamDate = '2024-10-01';
+MOCK_PATIENTS[0].treatmentPlan.items = [
+    {
+        id: 'tp1',
+        procedure: 'Composite Filling',
+        tooth: 11,
+        priority: 'medium',
+        status: 'planned',
+        cost: 150
+    },
+    {
+        id: 'tp2',
+        procedure: 'Monitor Decay',
+        tooth: 14,
+        priority: 'low',
+        status: 'monitoring',
+        cost: 50
+    },
+    {
+        id: 'tp3',
+        procedure: 'Root Canal Treatment',
+        tooth: 16,
+        priority: 'urgent',
+        status: 'planned',
+        cost: 600
+    },
+    {
+        id: 'tp4',
+        procedure: 'Extraction',
+        tooth: 15,
+        priority: 'urgent',
+        status: 'planned',
+        cost: 100
+    }
+];
+MOCK_PATIENTS[0].history.completedItems = [
+    {
+        id: 'h1',
+        date: '2024-09-15',
+        description: 'Dental Checkup',
+        provider: 'Dr. Smith',
+        status: 'completed'
+    },
+    {
+        id: 'h2',
+        date: '2024-08-10',
+        description: 'Scale and Polish',
+        provider: 'Dr. Jones',
+        status: 'completed'
+    }
+];
 
 MOCK_PATIENTS[1].medicalIssues.other = ['No significant medical history'];
 MOCK_PATIENTS[1].email = 'jane.smith@example.com';
@@ -51,6 +101,8 @@ export const generateMockTeeth = () => {
     teeth[11].pathology.addDecay([ToothZone.DISTAL]); // Red Point
     teeth[11].restoration.addFilling([ToothZone.INCISAL], Material.COMPOSITE); // Green Band
     teeth[11].restoration.addFilling([ToothZone.CERVICAL_BUCCAL], Material.CERAMIC); // Cervical Arc
+    teeth[11].endodontic.cold = 'Positive';
+    teeth[11].endodontic.percussion = 'Normal';
 
     // 12 (Lateral Incisor)
     // Verify: Class 4 Ellipses (Blue), Palatal Body (Orange)
@@ -68,6 +120,8 @@ export const generateMockTeeth = () => {
     teeth[16].restoration.addFilling([ToothZone.OCCLUSAL], Material.AMALGAM);
     teeth[16].restoration.addFilling([ToothZone.MESIO_BUCCAL_CUSP], Material.COMPOSITE);
     teeth[16].restoration.addFilling([ToothZone.DISTO_BUCCAL_CUSP], Material.COMPOSITE);
+    teeth[16].endodontic.palpation = 'Sensitive';
+    teeth[16].endodontic.heat = 'Positive';
 
     // 17 (Second Molar)
     // Verify: Palatal Cusps, Full Buccal Surface
@@ -79,6 +133,7 @@ export const generateMockTeeth = () => {
     // Verify: Decay Surface (Red) + Cervical
     teeth[26].pathology.addDecay([ToothZone.BUCCAL]); // Should be Red Surface
     teeth[26].restoration.addFilling([ToothZone.CERVICAL_BUCCAL], Material.COMPOSITE);
+    teeth[26].endodontic.electricity = 'Non-responsive';
 
     // --- PREMOLAR TEST ---
     // 14
@@ -88,6 +143,7 @@ export const generateMockTeeth = () => {
 
     // 46: Missing Tooth
     teeth[46].isMissing = true;
+    teeth[46].endodontic.percussion = 'Sensitive';
 
     // 24: Crown (Natural Base)
     // Verify: Crown Image

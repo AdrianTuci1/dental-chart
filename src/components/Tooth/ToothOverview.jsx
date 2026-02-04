@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
-import { ChevronLeft, PlusCircle, RefreshCw, XCircle, Snowflake, Gavel, Hand, Flame, Zap } from 'lucide-react';
+import { ChevronLeft, PlusCircle, RefreshCw, XCircle, Snowflake, Gavel, Hand, Flame, Zap, CheckCircle } from 'lucide-react';
 import useChartStore from '../../store/chartStore';
+import usePatientStore from '../../store/patientStore';
 import ConfirmationModal from '../UI/ConfirmationModal';
 import './ToothOverview.css';
 
@@ -9,6 +10,7 @@ const ToothOverview = () => {
     const { tooth } = useOutletContext();
     const navigate = useNavigate();
     const updateTooth = useChartStore(state => state.updateTooth);
+    const { selectedPatient, completeTreatmentPlanItem } = usePatientStore();
 
     const [modalState, setModalState] = useState({
         isOpen: false,
@@ -52,6 +54,17 @@ const ToothOverview = () => {
         setModalState({ isOpen: false, action: null, title: '', message: '' });
     };
 
+    const handleDone = (itemId) => {
+        if (selectedPatient) {
+            completeTreatmentPlanItem(selectedPatient.id, itemId);
+        }
+    };
+
+    // Filter treatment plan items for this tooth
+    const toothTreatments = selectedPatient?.treatmentPlan?.items?.filter(
+        item => parseInt(item.tooth) === parseInt(tooth.isoNumber)
+    ) || [];
+
     const getIcon = (test) => {
         switch (test) {
             case 'Cold': return <Snowflake size={16} className="endo-icon text-blue-400" />;
@@ -88,7 +101,24 @@ const ToothOverview = () => {
                 </div>
 
                 <div className="status-message">
-                    Currently there are no treatments pending
+                    {toothTreatments.length > 0 ? (
+                        <div className="tooth-treatment-list">
+                            {toothTreatments.map(item => (
+                                <div key={item.id} className={`tooth-treatment-item ${item.status}`}>
+                                    <button className="done-btn" onClick={() => handleDone(item.id)}>
+                                        Done
+                                    </button>
+                                    <div className="treatment-info">
+                                        <span className="treatment-name">
+                                            {item.procedure}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        "Currently there are no treatments pending"
+                    )}
                 </div>
             </div>
 

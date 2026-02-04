@@ -37,9 +37,22 @@ const WaveInteractiveView = ({ children, viewType, direction = 'down', alignment
     };
 
     useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        // Draw initially
         draw();
-        window.addEventListener('resize', draw);
-        return () => window.removeEventListener('resize', draw);
+
+        // Use ResizeObserver to handle all layout changes (view switches, animations)
+        const resizeObserver = new ResizeObserver(() => {
+            draw();
+        });
+
+        resizeObserver.observe(container);
+
+        return () => {
+            resizeObserver.disconnect();
+        };
     }, [values, direction, topOffset, bottomOffset]);
 
 

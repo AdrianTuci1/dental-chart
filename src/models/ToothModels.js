@@ -120,7 +120,7 @@ export class Endodontic {
     constructor() {
         this.cold = null; // Options specific to test
         this.percussion = null;
-        this.palpitation = null;
+        this.palpation = null;
         this.heat = null;
         this.electricity = null;
     }

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { X, Volume2 } from 'lucide-react';
 import useChartStore from '../../store/chartStore';
+import usePatientStore from '../../store/patientStore';
 import ToothZones from './ToothZones';
 import './ToothPathology.css';
 
@@ -10,6 +11,7 @@ const ToothPathology = () => {
     const navigate = useNavigate();
     const { tooth } = useOutletContext();
     const { updateTooth } = useChartStore();
+    const { selectedPatient, addTreatmentPlanItem, addToHistory } = usePatientStore();
 
     // Track if a pathology type is selected (null means none selected)
     const [selectedPathologyType, setSelectedPathologyType] = useState(type || null);
@@ -76,11 +78,68 @@ const ToothPathology = () => {
         setDevelopmentDisorderPresent(null);
     };
 
-    const handleSave = () => {
+    const handleAction = (actionType) => {
+        if (!tooth || !selectedPatient) return;
+
+        const parts = [tooth.toothNumber];
+        const typeLabel = pathologyTypes.find(t => t.route === selectedPathologyType)?.label;
+        if (typeLabel) parts.push(typeLabel);
+
+        if (selectedPathologyType === 'decay') {
+            if (selectedZones.length > 0) parts.push(selectedZones.join(', '));
+            if (decayMaterial) parts.push(decayMaterial.charAt(0).toUpperCase() + decayMaterial.slice(1));
+            if (cavitation) parts.push(cavitation === 'no-cavitation' ? 'No Cavitation' : 'Cavitation');
+            if (cavitationLevel) parts.push(cavitationLevel);
+        } else if (selectedPathologyType === 'fracture') {
+            if (fractureLocation) parts.push(`${fractureLocation.charAt(0).toUpperCase() + fractureLocation.slice(1)} Fracture`);
+            if (fractureDirection) parts.push(fractureDirection.charAt(0).toUpperCase() + fractureDirection.slice(1));
+        } else if (selectedPathologyType === 'tooth-wear') {
+            if (toothWearType) parts.push(toothWearType.charAt(0).toUpperCase() + toothWearType.slice(1));
+            if (toothWearSurface) parts.push(toothWearSurface.charAt(0).toUpperCase() + toothWearSurface.slice(1));
+        } else if (selectedPathologyType === 'discoloration') {
+            if (discolorationColor) parts.push(discolorationColor.charAt(0).toUpperCase() + discolorationColor.slice(1));
+        } else if (selectedPathologyType === 'apical') {
+            if (apicalPresent !== null) parts.push(apicalPresent ? 'Present' : 'Not Present');
+        } else if (selectedPathologyType === 'development-disorder') {
+            if (developmentDisorderPresent !== null) parts.push(developmentDisorderPresent ? 'Present' : 'Not Present');
+        }
+
+        const procedure = parts.join(', ');
+        if (parts.length <= 1 && actionType !== 'save') return;
+
+        const baseItem = {
+            procedure,
+            tooth: tooth.toothNumber,
+            cost: actionType === 'monitor' ? 50 : 200,
+            priority: actionType === 'monitor' ? 'low' : 'medium'
+        };
+
+        if (actionType === 'monitor' || actionType === 'treat') {
+            addTreatmentPlanItem(selectedPatient.id, {
+                ...baseItem,
+                status: actionType === 'monitor' ? 'monitoring' : 'planned'
+            });
+            // Optional: Also update tooth state if you want it visible on chart as "planned"
+            // For now, let's keep it simple as requested.
+        } else if (actionType === 'save') {
+            // Save logic: update tooth state and add to history
+            handleSave(true); // silent save
+            addToHistory(selectedPatient.id, {
+                description: `Completed: ${procedure} on Tooth #${tooth.toothNumber}`,
+                provider: 'Dr. Current',
+                tooth: tooth.toothNumber
+            });
+        }
+
+        navigate('../');
+    };
+
+    const handleSave = (silent = false) => {
         if (!tooth) return;
 
         // Update tooth pathology based on current type
         const updatedPathology = { ...tooth.pathology };
+        let hasChanges = false;
 
         switch (selectedPathologyType) {
             case 'decay':
@@ -90,6 +149,7 @@ const ToothPathology = () => {
                         zones: selectedZones
                     };
                     updatedPathology.decay = [...(updatedPathology.decay || []), newDecay];
+                    hasChanges = true;
                 }
                 break;
             case 'fracture':
@@ -97,6 +157,7 @@ const ToothPathology = () => {
                     updatedPathology.fracture.crown = true;
                 } else if (fractureLocation === 'root' && fractureDirection) {
                     updatedPathology.fracture.root = fractureDirection === 'vertical' ? 'Vertical' : 'Horizontal';
+                    hasChanges = true;
                 }
                 break;
             case 'tooth-wear':
@@ -105,33 +166,41 @@ const ToothPathology = () => {
                         type: toothWearType === 'abrasion' ? 'Abrasion' : 'Erosion',
                         surface: toothWearSurface === 'buccal' ? 'Buccal' : 'Palatal'
                     };
+                    hasChanges = true;
                 }
                 break;
             case 'discoloration':
                 if (discolorationColor) {
                     updatedPathology.discoloration = discolorationColor.charAt(0).toUpperCase() + discolorationColor.slice(1);
+                    hasChanges = true;
                 }
                 break;
             case 'apical':
                 if (apicalPresent !== null) {
                     updatedPathology.apicalPathology = apicalPresent;
+                    hasChanges = true;
                 }
                 break;
             case 'development-disorder':
                 if (developmentDisorderPresent !== null) {
                     updatedPathology.developmentDisorder = developmentDisorderPresent;
+                    hasChanges = true;
                 }
                 break;
         }
 
-        updateTooth(tooth.toothNumber, { pathology: updatedPathology });
+        if (hasChanges) {
+            updateTooth(tooth.toothNumber, { pathology: updatedPathology });
+        }
 
         // Reset selections
         setSelectedZones([]);
         resetAllStates();
 
-        // Navigate back to overview
-        navigate('../');
+        // Navigate back to overview if not silent
+        if (!silent) {
+            navigate('../');
+        }
     };
 
     const renderDecayOptions = () => (
@@ -453,9 +522,9 @@ const ToothPathology = () => {
 
                     {/* Action Buttons */}
                     <div className="action-buttons">
-                        <button className="action-btn monitor">MONITOR</button>
-                        <button className="action-btn treat">TREAT</button>
-                        <button className="action-btn save" onClick={handleSave}>SAVE</button>
+                        <button className="action-btn monitor" onClick={() => handleAction('monitor')}>MONITOR</button>
+                        <button className="action-btn treat" onClick={() => handleAction('treat')}>TREAT</button>
+                        <button className="action-btn save" onClick={() => handleAction('save')}>SAVE</button>
                     </div>
                 </div>
             </div>

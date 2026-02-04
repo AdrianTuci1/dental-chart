@@ -34,71 +34,50 @@
 .plan-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: var(--spacing-4);
-    background-color: var(--background-secondary);
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-sm);
-    /* Added shadow for card effect */
+    background: var(--background-elevated);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-sm);
+    border-left: 4px solid transparent;
+    gap: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.plan-item:hover {
+    background-color: var(--background-tertiary);
+}
+
+.plan-item.monitoring {
+    border-left-color: var(--color-warning);
+}
+
+.plan-item.planned {
+    border-left-color: var(--color-error);
 }
 
 .item-details {
     display: flex;
     align-items: center;
-    gap: var(--spacing-3);
+    flex: 1;
 }
 
+/* Priority indicators handled inside plan-item classes now, or we remove them if using border color solely */
 .priority-indicator {
-    width: 0.5rem;
-    /* w-2 */
-    height: 0.5rem;
-    /* h-2 */
-    border-radius: 9999px;
-    /* rounded-full */
+    display: none;
 }
-
-.priority-urgent {
-    background-color: #EF4444;
-}
-
-/* bg-red-500 */
-.priority-high {
-    background-color: #F97316;
-}
-
-/* bg-orange-500 */
-.priority-medium {
-    background-color: #3B82F6;
-}
-
-/* bg-blue-500 */
-.priority-low {
-    background-color: #10B981;
-}
-
-/* bg-green-500 */
 
 .item-text {
-    font-weight: 500;
     font-size: 0.875rem;
-    /* text-sm */
-    color: var(--text-primary);
+    color: var(--text-secondary);
 }
 
 .item-status {
-    font-size: 0.75rem;
-    /* text-xs */
-    color: var(--text-secondary);
-    text-transform: capitalize;
+    display: none;
+    /* Hidden as per ToothOverview style which implies status by color/context ?? Or maybe keep it small */
 }
 
 .item-cost {
-    text-align: right;
-    font-weight: 500;
-    font-size: 0.875rem;
-    /* text-sm */
-    color: var(--text-primary);
+    display: none;
 }
 
 .add-procedure-btn {

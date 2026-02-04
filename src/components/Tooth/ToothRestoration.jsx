@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { X, Volume2 } from 'lucide-react';
 import useChartStore from '../../store/chartStore';
+import usePatientStore from '../../store/patientStore';
 import ToothZones from './ToothZones';
 import './ToothRestoration.css';
 
@@ -10,6 +11,7 @@ const ToothRestoration = () => {
     const navigate = useNavigate();
     const { tooth } = useOutletContext();
     const { updateTooth } = useChartStore();
+    const { selectedPatient, addTreatmentPlanItem, addToHistory } = usePatientStore();
 
     // Track if a restoration type is selected (null means none selected)
     const [selectedRestorationType, setSelectedRestorationType] = useState(type || null);
@@ -66,11 +68,62 @@ const ToothRestoration = () => {
         setImplantType(null);
     };
 
-    const handleSave = () => {
+    const handleAction = (actionType) => {
+        if (!tooth || !selectedPatient) return;
+
+        const parts = [tooth.toothNumber];
+        const typeLabel = restorationTypes.find(t => t.route === selectedRestorationType)?.label;
+        if (typeLabel) parts.push(typeLabel);
+
+        if (selectedRestorationType === 'filling') {
+            if (fillingMaterial) parts.push(fillingMaterial);
+            if (fillingQuality) parts.push(fillingQuality);
+            if (selectedZones.length > 0) parts.push(selectedZones.join(', '));
+        } else if (selectedRestorationType === 'veneer') {
+            if (veneerMaterial) parts.push(veneerMaterial);
+            if (veneerQuality) parts.push(veneerQuality);
+            if (veneerDetail) parts.push(veneerDetail);
+            if (selectedZones.length > 0) parts.push(selectedZones.join(', '));
+        } else if (selectedRestorationType === 'crown') {
+            if (crownMaterial) parts.push(crownMaterial);
+            if (crownType) parts.push(crownType);
+            if (crownBase) parts.push(crownBase);
+            if (implantType) parts.push(implantType);
+        }
+
+        const procedure = parts.join(', ');
+        if (parts.length <= 1 && actionType !== 'save') return;
+
+        const baseItem = {
+            procedure,
+            tooth: tooth.toothNumber,
+            cost: actionType === 'monitor' ? 100 : 400,
+            priority: actionType === 'monitor' ? 'low' : 'high'
+        };
+
+        if (actionType === 'monitor' || actionType === 'treat') {
+            addTreatmentPlanItem(selectedPatient.id, {
+                ...baseItem,
+                status: actionType === 'monitor' ? 'monitoring' : 'planned'
+            });
+        } else if (actionType === 'save') {
+            handleSave(true);
+            addToHistory(selectedPatient.id, {
+                description: `Completed: ${procedure} on Tooth #${tooth.toothNumber}`,
+                provider: 'Dr. Current',
+                tooth: tooth.toothNumber
+            });
+        }
+
+        navigate('../');
+    };
+
+    const handleSave = (silent = false) => {
         if (!tooth) return;
 
         // Update tooth restoration based on current type
         const updatedRestoration = { ...tooth.restoration };
+        let hasChanges = false;
 
         switch (selectedRestorationType) {
             case 'filling':
@@ -81,6 +134,7 @@ const ToothRestoration = () => {
                         quality: fillingQuality
                     };
                     updatedRestoration.fillings = [...(updatedRestoration.fillings || []), newFilling];
+                    hasChanges = true;
                 }
                 break;
             case 'veneer':
@@ -96,6 +150,7 @@ const ToothRestoration = () => {
                         updatedRestoration.veneers = [];
                     }
                     updatedRestoration.veneers = [...updatedRestoration.veneers, newVeneer];
+                    hasChanges = true;
                 }
                 break;
             case 'crown':
@@ -111,17 +166,22 @@ const ToothRestoration = () => {
                         newCrown.implantType = implantType;
                     }
                     updatedRestoration.crowns = [...(updatedRestoration.crowns || []), newCrown];
+                    hasChanges = true;
                 }
                 break;
         }
 
-        updateTooth(tooth.toothNumber, { restoration: updatedRestoration });
+        if (hasChanges) {
+            updateTooth(tooth.toothNumber, { restoration: updatedRestoration });
+        }
 
         // Reset selections
         resetAllStates();
 
-        // Navigate back to overview
-        navigate('../');
+        // Navigate back to overview if not silent
+        if (!silent) {
+            navigate('../');
+        }
     };
 
     const renderFillingOptions = () => (
@@ -375,9 +435,9 @@ const ToothRestoration = () => {
 
                     {/* Action Buttons */}
                     <div className="action-buttons">
-                        <button className="action-btn monitor">MONITOR</button>
-                        <button className="action-btn treat">TREAT</button>
-                        <button className="action-btn save" onClick={handleSave}>SAVE</button>
+                        <button className="action-btn monitor" onClick={() => handleAction('monitor')}>MONITOR</button>
+                        <button className="action-btn treat" onClick={() => handleAction('treat')}>TREAT</button>
+                        <button className="action-btn save" onClick={() => handleAction('save')}>SAVE</button>
                     </div>
                 </div>
             </div>

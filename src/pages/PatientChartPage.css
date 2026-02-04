@@ -129,7 +129,12 @@
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.2s;
-    z-index: 10;
+    z-index: 30;
+}
+
+.chart-date-selector.active {
+    background-color: var(--color-primary-dark, #003366);
+    transform: scale(0.95);
 }
 
 .chart-scan-link {
@@ -179,4 +184,81 @@
     right: 0;
     bottom: 0;
     overflow: auto;
+}
+
+/* Timeline Footer */
+.timeline-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 66px;
+    background: rgba(26, 26, 26, 1);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: var(--spacing-3) var(--spacing-6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    animation: slideUpFull 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.time-picker-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-8);
+}
+
+.time-picker-display {
+    text-align: center;
+    min-width: 150px;
+}
+
+.time-picker-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+}
+
+.time-picker-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.timeline-nav-button {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.timeline-nav-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+
+.timeline-nav-button:active {
+    transform: scale(0.9);
+}
+
+@keyframes slideUpFull {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
 }

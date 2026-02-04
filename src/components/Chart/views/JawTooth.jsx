@@ -1,9 +1,12 @@
 import React, { useRef, useEffect } from 'react';
+import { Hourglass } from 'lucide-react';
 import ToothRenderer from '../ToothRenderer';
 import WaveInteractiveView from '../../Tooth/WaveInteractiveView';
 import { WaveInteractionModel } from '../../../models/WaveInteractionModel';
 import { mapToothDataToConditions } from '../../../utils/toothUtils';
 import PerioGrid from './PerioGrid';
+import usePatientStore from '../../../store/patientStore';
+
 
 const JawTooth = ({
     toothNumber,
@@ -13,10 +16,25 @@ const JawTooth = ({
     isSelected,
     isDimmed,
     showPerioGrid = false,
-    showNumberAtBottom = false
+    showNumberAtBottom = false,
+    showWaves = true
 }) => {
     // Determine if tooth is in upper or lower jaw
     const isUpperJaw = toothNumber >= 11 && toothNumber <= 28;
+    const { selectedPatient } = usePatientStore();
+
+    // Determine status class
+    const treatments = selectedPatient?.treatmentPlan?.items?.filter(item => parseInt(item.tooth) === parseInt(toothNumber)) || [];
+    let statusClass = '';
+    if (treatments.some(t => t.status === 'planned')) {
+        statusClass = 'status-planned';
+    } else if (treatments.some(t => t.status === 'monitoring')) {
+        statusClass = 'status-monitoring';
+    }
+
+    const isExtractionPlanned = treatments.some(
+        item => item.procedure === 'Extraction' && item.status === 'planned'
+    );
 
     // Use refs to hold stable models
     const buccalModel = useRef(new WaveInteractionModel()).current;
@@ -72,51 +90,100 @@ const JawTooth = ({
 
     const perioGrid = showPerioGrid && <PerioGrid sites={perioSites} />;
 
-    return (
-        <li className={`tooth ${isSelected ? 'selected' : ''} ${isDimmed ? 'dimmed' : ''}`} data-number={toothNumber}>
-            {/* Perio Status Grid (Top) */}
-            {perioGrid}
+    const OverlapIcon = () => (
+        <div className="extraction-overlap-icon" style={{
+            height: 0,
+            width: '100%',
+            position: 'relative',
+            zIndex: 20,
+            display: 'flex',
+            justifyContent: 'center'
+        }}>
+            <div className="extraction-icon-container" style={{
+                margin: 0,
+                position: 'absolute',
+                top: 0,
+                transform: 'translateY(-50%)'
+            }}>
+                <div className="extraction-icon">
+                    <Hourglass />
+                </div>
+            </div>
+        </div>
+    );
 
-            {views.map((view, index) => {
-                if (view === 'number') {
-                    return (
-                        <span key="number" className="number" onClick={() => onToothClick(toothNumber)}>
-                            {toothNumber}
-                        </span>
-                    );
-                }
+    // Separate number view from others to handle wrapping
+    const numberView = views.find(v => v === 'number');
+    const visualViews = views.filter(v => v !== 'number');
 
+    const renderNumber = () => (
+        <span key="number" className={`number ${statusClass}`} onClick={() => onToothClick(toothNumber)}>
+            {toothNumber}
+        </span>
+    );
+
+    const renderVisuals = () => (
+        <div className="visuals-container">
+            {visualViews.map((view, index) => {
                 const isBuccal = view === 'frontal';
                 const isLingual = view === 'lingual';
                 const isOcclusal = view === 'topview';
 
-                // Determine if we should show the wave view
-                // We wrap the top (index 0) and bottom (index 2) views
-                const shouldShowWave = index === 0 || index === 2;
+                const shouldShowWave = index === 0 || index === 2; // Original logic based on full index?
+                // Visual views length is 2 or 3.
+                // We need to map `index` from visualViews to original context for Wave Logic?
+                // Wave Logic relies on index 0 (Top) and index 2 (Bottom).
+                // If we excluded 'number', the indices shift.
+                // Let's rely on View Type for Wave Logic instead of Index.
+                // Upper: Frontal (0), Top (1), Lingual (2). -> Wave on Frontal (down) and Lingual (up).
+                // Lower: Lingual (0), Top (1), Frontal (2). -> Wave on Lingual (down) and Frontal (up).
+                // Normal Upper: Frontal (0), Top (1). (Number was 2). -> Wave on Frontal (down). And... nothing on bottom?
+                // Normal View usually matches JawView logic but Number is inserted.
+                // Let's preserve `index` logic by checking `view` against original `views` array?
+                // Or:
+                // Frontal is always "Outside". Lingual is "Inside".
+                // If Upper: Frontal is Top (Wave Down). Lingual is Bottom (Wave Up).
+                // If Lower: Lingual is Top (Wave Down). Frontal is Bottom (Wave Up).
 
-                // Determine rotation:
-                // Matches ToothVisualization logic:
-                // Upper Lingual (Index 2) -> needs rotation (Crown Down to Crown Up)
-                const needsRotation = isLingual && index === 2;
-
-                // Wave Direction:
-                // Index 0 (Top) -> 'down'
-                // Index 2 (Bottom) -> 'up'
-                const waveDirection = index === 0 ? 'down' : 'up';
-
-                // Determine which model to use
                 let modelToUse = null;
+                let waveDirection = 'down';
+                let waveTopOffset = 0;
+                let waveBottomOffset = 0;
 
-                // Allow wave if it's strictly buccal or lingual
-                if (shouldShowWave) {
-                    if (isBuccal) modelToUse = buccalModel;
-                    if (isLingual) modelToUse = lingualModel;
+                // Recover wave logic based on view type + jaw
+                if (isUpperJaw) {
+                    if (view === 'frontal') { // Top
+                        modelToUse = buccalModel;
+                        waveDirection = 'down';
+                        waveTopOffset = 25;
+                    } else if (view === 'lingual') { // Bottom
+                        modelToUse = lingualModel;
+                        waveDirection = 'up';
+                        waveBottomOffset = -25;
+                    }
+                } else {
+                    if (view === 'lingual') { // Top
+                        modelToUse = lingualModel;
+                        waveDirection = 'down';
+                        waveTopOffset = 25;
+                    } else if (view === 'frontal') { // Bottom
+                        modelToUse = buccalModel;
+                        waveDirection = 'up';
+                        waveBottomOffset = -25;
+                    }
                 }
 
-                // Render Content
+                // Check if this view should have a wave
+                const hasWave = showWaves && modelToUse;
+
+                const needsRotation = isLingual && (isUpperJaw ? true : false); // Example based on observation
+                // Actually existing logic was: `isLingual && index === 2`.
+                // For Upper Jaw: Lingual is index 2. So yes.
+                // For Lower Jaw: Lingual is index 0. No rotation.
+                // So `isLingual && isUpperJaw` covers it.
+
                 const content = (
                     <div
-                        key={view}
                         className={`trigger visualization ${isBuccal ? 'view-buccal' : isLingual ? 'view-lingual' : 'view-occlusal'}`}
                         style={needsRotation ? { transform: 'rotate(180deg)' } : {}}
                         onClick={() => onToothClick(toothNumber)}
@@ -139,43 +206,62 @@ const JawTooth = ({
                     </div>
                 );
 
-                // Define independent offsets for top and bottom waves
-                // Index 0: Top View -> pushing down by 50px (example based on user intent)
-                // Index 2: Bottom View -> default 0px
-                const waveTopOffset = index === 0 ? 25 : 0;
-                const waveBottomOffset = index === 2 ? -25 : 0;
+                const wrappedContent = hasWave ? (
+                    <WaveInteractiveView
+                        viewType={view}
+                        direction={waveDirection}
+                        model={modelToUse}
+                        onClick={() => onToothClick(toothNumber)}
+                        topOffset={waveTopOffset}
+                        bottomOffset={waveBottomOffset}
+                    >
+                        {content}
+                    </WaveInteractiveView>
+                ) : content;
 
-                if (shouldShowWave && modelToUse) {
-                    return (
-                        <WaveInteractiveView
-                            key={view}
-                            viewType={view}
-                            direction={waveDirection}
-                            model={modelToUse}
-                            onClick={() => onToothClick(toothNumber)}
-                            topOffset={waveTopOffset}
-                            bottomOffset={waveBottomOffset}
-                        >
-                            {content}
-                        </WaveInteractiveView>
-                    );
-                }
-
-                return content;
+                return (
+                    <React.Fragment key={view}>
+                        <div className="view-stack">
+                            {wrappedContent}
+                            {isExtractionPlanned && <div className="extraction-frame-overlay" />}
+                        </div>
+                        {/* Render overlapping icon at the intersection */}
+                        {isExtractionPlanned && index < visualViews.length - 1 && (
+                            <OverlapIcon />
+                        )}
+                    </React.Fragment>
+                );
             })}
+        </div>
+    );
+
+    // Determine render order based on original views array presence
+    // Upper Normal: visual, number
+    // Lower Normal: number, visual
+    const numberIsLast = views[views.length - 1] === 'number';
+
+    return (
+        <div className={`tooth ${isSelected ? 'selected' : ''} ${isDimmed ? 'dimmed' : ''}`} data-number={toothNumber}>
+            {/* Perio Status Grid (Top - Visual only? usually outside visuals) */}
+            {perioGrid}
+
+            {!numberIsLast && numberView && renderNumber()}
+
+            {renderVisuals()}
+
+            {numberIsLast && numberView && renderNumber()}
 
             {/* Perio Status Grid (Bottom) */}
             {perioGrid}
 
-            {/* Tooth Number (Bottom) - Conditional */}
-            {showNumberAtBottom && (
-                <span className="number" onClick={() => onToothClick(toothNumber)}>
+            {/* Tooth Number (Bottom) - Conditional Prop */}
+            {showNumberAtBottom && !numberView && (
+                <span className={`number ${statusClass}`} onClick={() => onToothClick(toothNumber)}>
                     {toothNumber}
                 </span>
             )}
-        </li>
+        </div>
     );
 };
 
 export default JawTooth;
-

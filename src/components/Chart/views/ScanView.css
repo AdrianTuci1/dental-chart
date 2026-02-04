@@ -1,7 +1,6 @@
 .scan-view-container {
     display: flex;
     flex-direction: column;
-    /* Vertical stack: Main Area + Footer */
     height: 100%;
     width: 100%;
     position: relative;
@@ -12,7 +11,6 @@
     flex: 1;
     display: flex;
     flex-direction: row;
-    /* Horizontal stack: Content + Sidebar */
     overflow: hidden;
 }
 
@@ -27,96 +25,166 @@
 
 .scan-view-sidebar {
     width: 380px;
-    /* Match panel width */
     height: 100%;
     background-color: var(--background-secondary);
     border-left: 1px solid var(--border-color);
     box-sizing: border-box;
     flex-shrink: 0;
     z-index: 10;
-    /* Ensure it stays above if needed, though flux should handle it */
 }
 
-.scan-area {
-    flex: 2;
-    /* Equal or slightly less than chart if needed */
+/* Topbar Section */
+.scan-view-topbar {
+    height: 64px;
+    background-color: var(--background-black);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     align-items: center;
-    justify-content: center;
-    background-color: var(--background-secondary);
+    justify-content: space-between;
+    padding: 0 var(--spacing-6);
+    flex-shrink: 0;
+}
+
+.patient-info {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-6);
+}
+
+.info-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.info-group .label {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.info-group .value {
+    font-size: 0.9375rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.info-divider {
+    width: 1px;
+    height: 24px;
+    background-color: var(--border-color);
+}
+
+.scan-selection {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+}
+
+.scan-selection .label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.scan-date-select {
+    background-color: var(--background-tertiary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.scan-date-select:hover {
+    border-color: var(--border-color-light);
+    background-color: var(--background-elevated);
+}
+
+/* Integrated States in Scan Area */
+.scan-area {
+    flex: 3;
+    background-color: var(--background-black);
+    /* Darker context for X-rays */
     border-bottom: 1px solid var(--border-color);
     position: relative;
     overflow: hidden;
-    padding: 0;
-}
-
-.scan-placeholder {
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-4);
-    padding: var(--spacing-12);
-    border: 2px dashed var(--border-color);
-    border-radius: var(--radius-2xl);
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    color: var(--text-secondary);
-    width: 100%;
-    max-width: 500px;
-    background-color: var(--background-secondary);
 }
 
-.scan-placeholder:hover {
+.scan-upload-placeholder {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-6);
+    padding: var(--spacing-6) var(--spacing-8);
+    background-color: var(--background-secondary);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-xl);
+    cursor: pointer;
+    transition: all 0.2s;
+    max-width: 600px;
+}
+
+.scan-upload-placeholder:hover {
     border-color: var(--color-primary);
     background-color: var(--background-tertiary);
+}
+
+.upload-text h3 {
+    margin: 0;
+    font-size: 1.125rem;
     color: var(--text-primary);
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px -8px rgba(0, 0, 0, 0.3);
 }
 
-.scan-placeholder.centered {
-    max-width: 600px;
-    padding: var(--spacing-16);
+.upload-text p {
+    margin: 4px 0 0 0;
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
 }
 
-.scan-upload-icon-wrapper {
-    width: 64px;
-    height: 64px;
-    border-radius: var(--radius-xl);
-    background-color: var(--background-tertiary);
+.scan-processing-state {
+    width: 100%;
+    height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: var(--spacing-2);
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.scan-processing-state .processing-content {
+    width: 300px;
+}
+
+/* Reuse existing processing styles but scoped if needed */
+.progress-container {
+    width: 100%;
+    height: 6px;
+    background-color: var(--background-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin: var(--spacing-4) 0 var(--spacing-2) 0;
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: var(--color-primary);
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease-out;
+    box-shadow: 0 0 8px var(--color-primary);
+}
+
+.progress-text {
+    font-size: 0.75rem;
     color: var(--color-primary);
-}
-
-.scan-upload-icon-wrapper.large {
-    width: 80px;
-    height: 80px;
-    margin-bottom: var(--spacing-4);
-}
-
-.scan-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin: 0;
-}
-
-.scan-subtitle {
-    font-size: 1rem;
-    color: var(--text-tertiary);
-    text-align: center;
-    margin: 0;
-    line-height: 1.5;
-}
-
-.upload-btn {
-    margin-top: var(--spacing-6);
-    padding: 12px 32px;
-    font-size: 1rem;
+    font-weight: 600;
 }
 
 .scan-image-container {
@@ -132,7 +200,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* object-fit: contain with 100%/100% fills the container area fully while preserving ratio */
+    /* Changed to cover to occupy the entire container */
 }
 
 .scan-remove-btn {
@@ -160,8 +228,7 @@
 }
 
 .normal-view-container {
-    flex: 1.5;
-    /* Give more room to the teeth as requested */
+    flex: 2.2;
     position: relative;
     width: 100%;
     background-color: var(--background-black);
@@ -169,104 +236,21 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--spacing-4);
+    padding: 10px 10px;
+    /* Increased padding to give more room for numbers at edges */
 }
 
-/* 
- * Wrapper for dynamic scaling of content
- */
 .normal-view-scaler {
-    /* Height will be auto or determined by content, centered by flex parent */
     transform-origin: center center;
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Ensure child NormalView logic works */
 }
 
-/* 
- * Apply overrides to NormalView internals when inside this specific container if needed.
- * But we're relying on prop overrides for the structure mostly.
- */
 .normal-view-scaler .chart-overview-container {
-    /* Remove full-screen assumptions if any */
     position: relative !important;
     height: auto !important;
     overflow: visible !important;
-}
-
-/* Empty State centered */
-.scan-empty-state {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--background-black);
-    padding: var(--spacing-8);
-}
-
-/* Processing Overlay */
-.processing-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: var(--background-black);
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-}
-
-.processing-overlay.no-blur {
-    backdrop-filter: none;
-    background-color: rgba(0, 0, 0, 0.95);
-}
-
-.processing-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-6);
-    text-align: center;
-    max-width: 400px;
-}
-
-.processing-content h3 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0;
-}
-
-.processing-content p {
-    color: var(--text-tertiary);
-    margin: 0;
-    margin-bottom: var(--spacing-4);
-}
-
-.progress-container {
-    width: 100%;
-    height: 8px;
-    background-color: var(--background-tertiary);
-    border-radius: var(--radius-full);
-    overflow: hidden;
-    margin-bottom: var(--spacing-2);
-}
-
-.progress-bar {
-    height: 100%;
-    background-color: var(--color-primary);
-    border-radius: var(--radius-full);
-    transition: width 0.3s ease-out;
-    box-shadow: 0 0 12px var(--color-primary);
-}
-
-.progress-text {
-    font-size: 0.875rem;
-    color: var(--color-primary);
-    font-weight: 600;
 }
 
 /* Page wrapper for ScanPage */
