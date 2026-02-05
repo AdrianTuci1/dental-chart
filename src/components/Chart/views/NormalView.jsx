@@ -10,7 +10,8 @@ const NormalView = ({
     activeTooth,
     upperJawViews = ['frontal', 'topview', 'number'],
     lowerJawViews = ['number', 'topview', 'frontal'],
-    showWaves = true
+    showWaves = true,
+    showPerioGrid = false
 }) => {
     const [tick, setTick] = useState(0);
 
@@ -66,7 +67,7 @@ const NormalView = ({
             <div className="full-mouth jaw-box">
                 {/* Upper Jaw */}
                 <ol className="jaw" data-type="upper">
-                    {upperTeethNumbers.map(number => (
+                    {upperTeethNumbers.map((number, index) => (
                         <li key={number} className="tooth-container">
                             <div className="endo-labels-container">
                                 {getEndoIcons(teeth[number], 'upper')}
@@ -78,6 +79,8 @@ const NormalView = ({
                                 onToothClick={onToothClick}
                                 isSelected={selectedTeeth && selectedTeeth.has(number)}
                                 isDimmed={activeTooth && activeTooth !== number}
+                                showPerioGrid={showPerioGrid}
+                                showPerioLabels={index === 0}
                                 showWaves={showWaves}
                             />
                         </li>
@@ -86,7 +89,7 @@ const NormalView = ({
 
                 {/* Lower Jaw */}
                 <ol className="jaw" data-type="lower">
-                    {lowerTeethNumbers.map(number => (
+                    {lowerTeethNumbers.map((number, index) => (
                         <li key={number} className="tooth-container">
                             <JawTooth
                                 toothNumber={number}
@@ -95,6 +98,8 @@ const NormalView = ({
                                 onToothClick={onToothClick}
                                 isSelected={selectedTeeth && selectedTeeth.has(number)}
                                 isDimmed={activeTooth && activeTooth !== number}
+                                showPerioGrid={showPerioGrid}
+                                showPerioLabels={index === 0}
                                 showWaves={showWaves}
                             />
                             <div className="endo-labels-container">

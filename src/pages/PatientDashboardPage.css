@@ -35,10 +35,11 @@
     color: var(--text-secondary);
     font-size: 1rem;
     font-weight: 400;
+    text-align: left;
 }
 
 .chart-action-button {
-    background-color: #0ea5e9;
+    background-color: var(--color-primary);
     /* Sky-500/Blue */
     color: white;
     padding: 0.5rem 1rem;
@@ -55,7 +56,7 @@
 }
 
 .chart-action-button:hover {
-    background-color: #0284c7;
+    background-color: var(--color-primary-dark);
 }
 
 .dashboard-tabs-nav {

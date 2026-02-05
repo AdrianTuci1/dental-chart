@@ -15,7 +15,7 @@ const UpperJawView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
             <div className="full-mouth jaw-box">
                 {/* Upper Jaw */}
                 <ol className="jaw" data-type="upper">
-                    {upperTeethNumbers.map(number => (
+                    {upperTeethNumbers.map((number, index) => (
                         <JawTooth
                             key={number}
                             toothNumber={number}
@@ -25,6 +25,7 @@ const UpperJawView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
                             isSelected={selectedTeeth && selectedTeeth.has(number)}
                             isDimmed={activeTooth && activeTooth !== number}
                             showPerioGrid={true}
+                            showPerioLabels={index === 0}
                             showNumberAtBottom={true}
                         />
                     ))}

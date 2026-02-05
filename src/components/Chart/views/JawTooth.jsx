@@ -16,6 +16,7 @@ const JawTooth = ({
     isSelected,
     isDimmed,
     showPerioGrid = false,
+    showPerioLabels = false,
     showNumberAtBottom = false,
     showWaves = true
 }) => {
@@ -77,18 +78,45 @@ const JawTooth = ({
     // Extract site data for PerioGrid
     const getSite = (key) => toothData?.periodontal?.sites?.[key] || {};
 
-    // Choose sites based on the top-most view in the stack to match visual context
-    // Upper Jaw: Frontal (Buccal) is top.
-    // Lower Jaw: Lingual is top.
-    // However, for consistency we default to Buccal (outer) sites as the 'primary' status unless specified.
-    // Using Buccal for both for now.
-    const perioSites = [
+    const buccalSites = [
         getSite('mesioBuccal'),
         getSite('buccal'),
         getSite('distoBuccal')
     ];
 
-    const perioGrid = showPerioGrid && <PerioGrid sites={perioSites} />;
+    const lingualSites = [
+        getSite('mesioLingual'),
+        getSite('lingual'),
+        getSite('distoLingual')
+    ];
+
+    const renderPerioGrid = (sites) => {
+        if (!showPerioGrid) return null;
+
+        return (
+            <div style={{ position: 'relative', width: '100%' }}>
+                {showPerioLabels && (
+                    <div style={{
+                        position: 'absolute',
+                        left: '-45px', // Padding from edge
+                        top: 0,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '2px', // Matches PerioGrid.css gap
+                        zIndex: 10,
+                        pointerEvents: 'none',
+                        justifyContent: 'flex-start',
+                        textAlign: 'left'
+                    }}>
+                        <span style={{ fontSize: '7px', lineHeight: '8px', height: '8px', color: '#3B82F6', fontWeight: 700, fontFamily: 'sans-serif' }}>PLAQUE</span>
+                        <span style={{ fontSize: '7px', lineHeight: '8px', height: '8px', color: '#EF4444', fontWeight: 700, fontFamily: 'sans-serif' }}>BLEEDING</span>
+                        <span style={{ fontSize: '7px', lineHeight: '8px', height: '8px', color: '#F59E0B', fontWeight: 700, fontFamily: 'sans-serif' }}>PUS</span>
+                    </div>
+                )}
+                <PerioGrid sites={sites} />
+            </div>
+        );
+    };
 
     const OverlapIcon = () => (
         <div className="extraction-overlap-icon" style={{
@@ -242,8 +270,9 @@ const JawTooth = ({
 
     return (
         <div className={`tooth ${isSelected ? 'selected' : ''} ${isDimmed ? 'dimmed' : ''}`} data-number={toothNumber}>
-            {/* Perio Status Grid (Top - Visual only? usually outside visuals) */}
-            {perioGrid}
+            {/* Perio Status Grid (Top) */}
+            {/* Upper Jaw: Buccal, Lower Jaw: Lingual */}
+            {renderPerioGrid(isUpperJaw ? buccalSites : lingualSites)}
 
             {!numberIsLast && numberView && renderNumber()}
 
@@ -252,7 +281,8 @@ const JawTooth = ({
             {numberIsLast && numberView && renderNumber()}
 
             {/* Perio Status Grid (Bottom) */}
-            {perioGrid}
+            {/* Upper Jaw: Lingual, Lower Jaw: Buccal */}
+            {renderPerioGrid(isUpperJaw ? lingualSites : buccalSites)}
 
             {/* Tooth Number (Bottom) - Conditional Prop */}
             {showNumberAtBottom && !numberView && (

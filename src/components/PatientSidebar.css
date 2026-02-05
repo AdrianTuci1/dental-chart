@@ -74,6 +74,7 @@
 .layer-button {
     background: rgba(255, 255, 255, 0.1);
     border: none;
+    font-size: 10px;
     color: var(--color-white);
     opacity: 0.5;
     padding: var(--spacing-2);

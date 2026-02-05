@@ -12,6 +12,7 @@ import EditMedicalIssuesDialog from '../components/Dashboard/EditMedicalIssuesDi
 import { Activity } from 'lucide-react';
 
 import './PatientDashboardPage.css';
+import { RiToothLine } from 'react-icons/ri';
 
 const PatientDashboardPage = () => {
     const { selectedPatient, updatePatient } = usePatientStore();
@@ -77,7 +78,7 @@ const PatientDashboardPage = () => {
                         className="chart-action-button"
                         onClick={() => navigate(`/patients/${selectedPatient.id}/chart`)}
                     >
-                        <Activity size={18} className="mr-2" />
+                        <RiToothLine size={18} style={{ marginRight: '4px' }} />
                         CHART
                     </button>
                 </div>

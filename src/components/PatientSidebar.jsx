@@ -87,7 +87,7 @@ const PatientSidebar = () => {
                             className={`layer-button ${showDental ? 'active dental' : ''}`}
                             title="Toggle Dental Layer"
                         >
-                            {showDental ? <Eye size={16} /> : <EyeOff size={16} />}
+                            DENT
                         </button>
 
                         <button
@@ -95,7 +95,7 @@ const PatientSidebar = () => {
                             className={`layer-button ${showPerio ? 'active perio' : ''}`}
                             title="Toggle Perio Layer"
                         >
-                            {showPerio ? <Eye size={16} /> : <EyeOff size={16} />}
+                            PERIO
                         </button>
 
                         <button
@@ -103,7 +103,7 @@ const PatientSidebar = () => {
                             className={`layer-button ${showEndo ? 'active endo' : ''}`}
                             title="Toggle Endo Layer"
                         >
-                            {showEndo ? <Eye size={16} /> : <EyeOff size={16} />}
+                            ENDO
                         </button>
                     </div>
                 </div>

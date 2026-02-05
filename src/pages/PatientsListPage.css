@@ -1,28 +1,28 @@
 .patients-page-container {
-    padding: var(--spacing-8);
-    max-width: 80rem;
-    /* max-w-7xl */
     margin-left: auto;
     margin-right: auto;
 }
 
-.page-header {
+.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background-color: var(--background-secondary);
+    border-bottom: 1px solid var(--border-color);
+    padding: var(--spacing-4) var(--spacing-8);
+    margin-bottom: var(--spacing-6);
+}
+
+.sticky-header-content {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-8);
 }
 
-.page-title {
+.sticky-title {
     font-size: 1.5rem;
-    /* text-2xl */
-    line-height: 2rem;
     font-weight: 700;
     color: var(--text-primary);
-}
-
-.page-subtitle {
-    color: var(--text-secondary);
 }
 
 .add-patient-btn {
@@ -31,26 +31,66 @@
     gap: var(--spacing-2);
     background-color: var(--color-primary);
     color: var(--color-white);
-    padding-left: 1rem;
-    /* px-4 */
-    padding-right: 1rem;
-    padding-top: 0.5rem;
-    /* py-2 */
-    padding-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
     border-radius: var(--radius-md);
     transition: background-color 0.2s;
+    white-space: nowrap;
 }
 
 .add-patient-btn:hover {
     background-color: var(--color-primary-dark);
 }
 
-.search-container {
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-4);
+}
+
+.user-name {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.settings-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    transition: background-color 0.2s;
+}
+
+.settings-btn:hover {
+    background-color: var(--background-tertiary);
+    color: var(--text-primary);
+}
+
+.sub-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: 0 var(--spacing-8) var(--spacing-6);
+}
+
+.sub-header .search-input-inner {
+    flex-grow: 1;
+}
+
+.table-container-wrapper {
+    padding: 0 var(--spacing-8) var(--spacing-8);
+}
+
+.table-container {
     background-color: var(--background-secondary);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     border: 1px solid var(--border-color);
-    margin-bottom: var(--spacing-6);
+    overflow: hidden;
+    overflow-x: auto;
 }
 
 .search-input-wrapper {
@@ -110,9 +150,6 @@
     box-shadow: 0 0 0 1px var(--color-primary);
 }
 
-.table-container {
-    overflow-x: auto;
-}
 
 .patients-table {
     min-width: 100%;
@@ -138,20 +175,18 @@
 }
 
 .table-header-cell {
-    padding-left: 1.5rem;
-    /* px-6 */
-    padding-right: 1.5rem;
-    padding-top: 0.75rem;
-    /* py-3 */
-    padding-bottom: 0.75rem;
+    padding: 0.75rem 1.5rem;
     text-align: left;
     font-size: 0.75rem;
-    /* text-xs */
     font-weight: 500;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    /* tracking-wider */
+    vertical-align: middle;
+}
+
+.table-header-cell:last-child {
+    text-align: right;
 }
 
 .table-row {
@@ -165,13 +200,10 @@
 }
 
 .table-cell {
-    padding-left: 1.5rem;
-    /* px-6 */
-    padding-right: 1.5rem;
-    padding-top: 1rem;
-    /* py-4 */
-    padding-bottom: 1rem;
+    padding: 1rem 1.5rem;
     white-space: nowrap;
+    vertical-align: middle;
+    text-align: left;
 }
 
 .patient-info-wrapper {

@@ -15,15 +15,17 @@ const LowerJawView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
             <div className="full-mouth jaw-box">
                 {/* Lower Jaw */}
                 <ol className="jaw" data-type="lower">
-                    {lowerTeethNumbers.map(number => (
+                    {lowerTeethNumbers.map((number, index) => (
                         <JawTooth
                             key={number}
                             toothNumber={number}
                             toothData={teeth[number]}
                             views={['lingual', 'topview', 'frontal']}
                             onToothClick={onToothClick}
+                            isSelected={selectedTeeth && selectedTeeth.has(number)}
                             isDimmed={activeTooth && activeTooth !== number}
                             showPerioGrid={true}
+                            showPerioLabels={index === 0}
                             showNumberAtBottom={true}
                         />
                     ))}
