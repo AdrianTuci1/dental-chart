@@ -63,6 +63,14 @@ export const getOverlayPath = (toothNumber, zoneId) => {
         return file ? `${PATH_INCISORS}/${file}` : null;
     }
 
+    // Shared Cervical Overlays for Premolars and Molars (Use Incisor assets)
+    if (index >= 4 && index <= 8) {
+        if (zoneId === ToothZone.CERVICAL_BUCCAL || zoneId === ToothZone.CERVICAL_PALATAL) {
+            const file = INCISOR_MAP[zoneId];
+            return file ? `${PATH_INCISORS}/${file}` : null;
+        }
+    }
+
     // Premolars (4, 5)
     if (index === 4 || index === 5) {
         const file = PREMOLAR_MAP[zoneId];

@@ -66,8 +66,8 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
                             : (index === 0 ? lingualModel : (index === 2 ? buccalModel : null));
 
                         const transformStyle = needsRotation
-                            ? { transform: 'rotate(180deg) scale(0.8)' }
-                            : { transform: 'scale(0.8)' };
+                            ? { transform: 'rotate(180deg) scale(0.6)' }
+                            : { transform: 'scale(0.6)' };
 
                         const content = (
                             <div

@@ -157,11 +157,9 @@ export const mapToothDataToConditions = (tooth) => {
             filling.zones.forEach(zone => {
                 let surface = zoneMap[zone];
                 // Fallback for direct string matches if enum fails
+                // Fallback for direct string matches if enum fails
                 if (!surface && typeof zone === 'string') {
-                    surface = zone.toLowerCase();
-                    // Basic normalization
-                    if (surface.includes('class 4') && surface.includes('mesial')) surface = 'class4_mesial';
-                    else if (surface.includes('class 4') && surface.includes('distal')) surface = 'class4_distal';
+                    surface = zone;
                 }
 
                 if (surface) {
@@ -184,7 +182,13 @@ export const mapToothDataToConditions = (tooth) => {
                 decay.zones.forEach(zone => {
                     // Normalize zone to string if it's an object (though usually strings here)
                     const zoneKey = typeof zone === 'string' ? zone : (zone?.id || zone?.value || zone);
-                    const surface = zoneMap[zoneKey];
+                    let surface = zoneMap[zoneKey];
+
+                    // Fallback for dynamic zones (cusps, surfaces) that serve as direct keys
+                    if (!surface && typeof zoneKey === 'string') {
+                        surface = zoneKey;
+                    }
+
                     if (surface) {
                         const baseColor = '#EF4444'; // Standard Red
                         // For Anterior decay points, we might want the Dark Red Point color too

@@ -26,9 +26,31 @@ const ToothRenderer = ({
     const imageView = mapViewToImageView(view, toothNumber);
     const condition = toothData ? getToothCondition(toothData) : 'withRoots';
     const toothImagePath = getToothImage(toothNumber, condition, imageView);
+    const imageScale = 0.9;
 
 
-    // Draw conditions on overlay canvas (when image is available)
+    // Rotation Logic (Reverted for Lingual based on user feedback)
+    // Only Frontal/Buccal Lower Jaw are rotated 180 (Roots Up -> Roots Down).
+    const shouldRotateImage = isLower && (view === 'frontal' || view === 'buccal');
+    const shouldRotateCanvas = shouldRotateImage;
+
+    // User Logic:
+    // Right Side (11-18, 41-48): INSIDE (lingual) -> FLIP.
+    // Left Side (21-28, 31-38): OUTSIDE (frontal/buccal) -> FLIP.
+    // All others: NO FLIP.
+    const isRightSide = (tNum >= 11 && tNum <= 18) || (tNum >= 41 && tNum <= 48);
+    const isLeftSide = (tNum >= 21 && tNum <= 28) || (tNum >= 31 && tNum <= 38);
+
+    let shouldMirrorImage = false;
+    if (isRightSide && view === 'lingual') shouldMirrorImage = true;
+    if (isLeftSide && (view === 'frontal' || view === 'buccal')) shouldMirrorImage = true;
+
+    // Build container transform (incorporating the CSS scale)
+    let containerTransformParts = ['scale(1.35)']; // Base scale from CSS
+    if (shouldRotateImage) containerTransformParts.push('rotate(180deg)');
+    if (shouldMirrorImage) containerTransformParts.push('scaleX(-1)');
+    const containerTransform = containerTransformParts.join(' ');
+
     // Draw conditions on overlay canvas (when image is available)
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -49,15 +71,15 @@ const ToothRenderer = ({
         const drawConditions = async () => {
             if (!conditions || conditions.length === 0) return;
 
+            // Save context for safe restoration
+            ctx.save();
+
             // Load the base tooth image for masking
             let maskImg = null;
             try {
                 maskImg = await maskEngine.loadImage(toothImagePath);
             } catch (e) {
                 console.warn("Failed to load mask image", e);
-                // Continue without masking if failed, or abort? 
-                // Aborting might mean unclipped overlays, which is better than nothing?
-                // But user complained about masking not working.
             }
 
             // Offscreen canvas for individual condition coloring
@@ -69,15 +91,31 @@ const ToothRenderer = ({
 
             // For each condition, fetch overlay and draw
             for (const cond of conditions) {
-                if (!cond.zone) continue; // Skip if no zone ID
+                let zoneId = cond.zone;
 
-                const overlayPath = getOverlayPath(toothNumber, cond.zone);
+                // Handle missing zone, map surface
+                if (!zoneId && cond.surface) {
+                    if (cond.surface === 'Buccal') {
+                        zoneId = 'Buccal Surf';
+                    } else if (cond.surface === 'Lingual' || cond.surface === 'Palatal') {
+                        // Map based on tooth index
+                        const index = tNum % 10;
+                        if (index >= 1 && index <= 3) {
+                            zoneId = 'Palatal Surf';
+                        } else {
+                            zoneId = 'Lingual Surf';
+                        }
+                    }
+                }
+
+                if (!zoneId) continue; // Skip if no zone ID
+
+                const overlayPath = getOverlayPath(toothNumber, zoneId);
                 if (!overlayPath) continue;
 
                 // Determine slice from the SVG file
-                const slice = getOverlaySlice(view); // { y, h } (and h is source height)
+                const slice = getOverlaySlice(view);
 
-                // If slice.h is 0, this view isn't supported for overlays?
                 if (slice.h <= 0) continue;
 
                 try {
@@ -87,9 +125,34 @@ const ToothRenderer = ({
                     offCtx.clearRect(0, 0, width, height);
 
                     // 1. Draw the SVG slice
-                    // Source: SVG is 54px wide according to user. Slice defined in mapping.
-                    // Dest: Canvas is 100px wide. Stretch to fit.
                     offCtx.save();
+
+                    // Logic: Do we still need to flip overlays?
+                    // Previous logic: "Always Flip Overlays".
+                    // Since we are now operating in "Normal" space (no context flip),
+                    // but the CONTAINER is flipped if `shouldMirrorImage` is true, 
+                    // we need to decide if overlays start out "backwards" relative to the tooth image or not.
+                    // Usually overlays match the base image orientation.
+                    // If the base image is drawn normally, and the overlay is drawn normally, they match.
+                    // The Container flips BOTH.
+                    // HOWEVER, the previous code had:
+                    // `offCtx.scale(-1, 1)` (Universal Flip for Overlay) 
+                    // AND `if (shouldMirrorImage) ctx.scale(-1, 1)` (Context Flip)
+                    //
+                    // Case 1: Standard Tooth (No Mirror).
+                    // Prev: Context Normal. Overlay Flipped (-1, 1). 
+                    // Result: Overlay is flipped relative to standard? 
+                    // Why was Overlay Flipped Universally? 
+                    // "User Request: 'Contra rotim pe alea care erau bine' (Flip Normal ones)."
+                    // This suggests the SVG assets themselves might be mirrored relative to the PNGs?
+                    //
+                    // Let's preserve the "Universal Overlay Flip" inside offCtx if it exists for asset alignment reasons.
+                    // The context flip for `shouldMirrorImage` was REMOVED (now handled by container).
+                    // So we only look at the logic inside the loop.
+
+                    offCtx.translate(width, 0);
+                    offCtx.scale(-1, 1);
+
                     if (isUpperJaw && view === 'lingual') {
                         // Flip Vertical to correct Roots Down -> Roots Up mismatch for Upper Jaw
                         offCtx.translate(0, height);
@@ -97,8 +160,8 @@ const ToothRenderer = ({
                     }
                     offCtx.drawImage(
                         img,
-                        0, slice.y, img.width, slice.h, // Source (Uses actual img width, likely 54)
-                        0, 0, width, height      // Dest
+                        0, slice.y, img.width, slice.h,
+                        0, 0, width, height
                     );
                     offCtx.restore();
 
@@ -109,7 +172,7 @@ const ToothRenderer = ({
                     offCtx.fillRect(0, 0, width, height);
 
                     // 3. Draw offscreen to main
-                    offCtx.globalCompositeOperation = 'source-over'; // Reset for next use
+                    offCtx.globalCompositeOperation = 'source-over';
                     ctx.drawImage(offCanvas, 0, 0, width, height);
 
                 } catch (err) {
@@ -118,19 +181,18 @@ const ToothRenderer = ({
             }
 
             // Apply Masking (Clip to Tooth Shape)
-            // Apply Masking (Clip to Tooth Shape)
             if (maskImg) {
                 ctx.globalCompositeOperation = 'destination-in';
                 ctx.drawImage(maskImg, 0, 0, width, height);
                 ctx.globalCompositeOperation = 'source-over';
             }
+
+            ctx.restore(); // Restore context
         };
 
         drawConditions();
 
-    }, [conditions, toothNumber, view, imageView, toothImagePath]);
-
-
+    }, [conditions, toothNumber, view, imageView, toothImagePath, tNum, isUpperJaw, shouldMirrorImage]);
 
     // Handle interactive clicks on canvas
     const handleCanvasClick = async (e) => {
@@ -139,37 +201,23 @@ const ToothRenderer = ({
         const canvas = canvasRef.current;
         if (!canvas) return;
 
-        // Simplified hit detection for now:
-        // Since we removed geometric paths, we can't easily detect specific zones (M, D, B, L).
-        // For now, we consider a click on the tooth "surface" generally?
-        // Or disable interaction.
-        // User requested removing constants, which entails removing geometric hit detection.
-        // So we disable detailed zone clicking for now.
         console.warn("Detailed zone hit detection is disabled after removing geometry constants.");
-
         // Optionally pass a generic surface if needed, or do nothing.
-        // onSurfaceClick('surface'); 
     };
-
-    let imageScale = 0.9;
-
-    // Rotation Logic (Reverted for Lingual based on user feedback)
-    // Only Frontal/Buccal Lower Jaw are rotated 180 (Roots Up -> Roots Down).
-    // Lingual/Inside for Lower Jaw seems to stay Roots Up (Standard Orientation)?
-    const shouldRotateImage = isLower && (view === 'frontal' || view === 'buccal');
-    const shouldRotateCanvas = shouldRotateImage;
-
-    const imageRotation = shouldRotateImage ? 'rotate(180deg)' : 'none';
-    const canvasRotation = shouldRotateCanvas ? 'rotate(180deg)' : 'none';
 
     return (
         <div
             className={`tooth-renderer ${jawClass} ${isSelected ? 'selected' : ''} ${className}`}
             style={{
-                transform: isMirrored ? 'scaleX(-1)' : 'none'
+                transform: 'none'
             }}
         >
-            <div className="tooth-inner">
+            <div
+                className="tooth-inner"
+                style={{
+                    transform: containerTransform
+                }}
+            >
                 {toothImagePath ? (
                     <>
                         <img
@@ -177,8 +225,7 @@ const ToothRenderer = ({
                             alt={`Tooth ${toothNumber} - ${imageView} view`}
                             className="tooth-image"
                             style={{
-                                scale: `${imageScale}`,
-                                transform: imageRotation
+                                scale: `${imageScale}`
                             }}
                         />
                         <canvas
@@ -187,8 +234,7 @@ const ToothRenderer = ({
                             onClick={handleCanvasClick}
                             style={{
                                 cursor: interactive ? 'pointer' : 'default',
-                                scale: `${imageScale}`,
-                                transform: canvasRotation
+                                scale: `${imageScale}`
                             }}
                         />
                     </>
