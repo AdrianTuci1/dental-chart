@@ -77,6 +77,7 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
                             >
                                 <ToothRenderer
                                     toothNumber={toothNumber}
+                                    toothData={toothData}
                                     view={view}
                                     conditions={mapToothDataToConditions(toothData)}
                                     interactive={false}
