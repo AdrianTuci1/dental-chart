@@ -116,7 +116,6 @@ export const PathologyOptions = Object.freeze({
             {
                 id: 'direction',
                 label: 'Direction',
-                dependsOn: 'root', // Only show if 'root' is selected in previous step
                 options: [
                     { id: 'vertical', label: 'Vertical', value: 'vertical' },
                     { id: 'horizontal', label: 'Horizontal', value: 'horizontal' }

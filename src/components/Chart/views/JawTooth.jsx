@@ -204,7 +204,7 @@ const JawTooth = ({
                 // Check if this view should have a wave
                 const hasWave = showWaves && modelToUse;
 
-                const needsRotation = isLingual && (isUpperJaw ? true : false); // Example based on observation
+                // Rotation logic removed for lingual view
                 // Actually existing logic was: `isLingual && index === 2`.
                 // For Upper Jaw: Lingual is index 2. So yes.
                 // For Lower Jaw: Lingual is index 0. No rotation.
@@ -213,7 +213,7 @@ const JawTooth = ({
                 const content = (
                     <div
                         className={`trigger visualization ${isBuccal ? 'view-buccal' : isLingual ? 'view-lingual' : 'view-occlusal'}`}
-                        style={needsRotation ? { transform: 'rotate(180deg)' } : {}}
+                        style={{}}
                         onClick={() => onToothClick(toothNumber)}
                     >
                         <ToothRenderer

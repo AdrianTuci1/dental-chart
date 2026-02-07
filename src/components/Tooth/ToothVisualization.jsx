@@ -112,7 +112,7 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
     );
 };
 
-const ToothVisualization = ({ toothNumber, onSelectTooth }) => {
+const ToothVisualization = ({ toothNumber, onSelectTooth, overrideToothData }) => {
     const currentTooth = parseInt(toothNumber);
     const sidebarScrollRef = useRef(null);
     const vizScrollRef = useRef(null);
@@ -156,7 +156,7 @@ const ToothVisualization = ({ toothNumber, onSelectTooth }) => {
                     <ToothItem
                         key={num}
                         toothNumber={num}
-                        toothData={teeth[num]}
+                        toothData={num === currentTooth && overrideToothData ? overrideToothData : teeth[num]}
                         isSelected={num === currentTooth}
                         onSelectTooth={onSelectTooth}
                     />

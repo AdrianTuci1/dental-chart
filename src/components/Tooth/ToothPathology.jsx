@@ -65,6 +65,8 @@ const ToothPathology = () => {
         }
     };
 
+    const { setPreviewData } = useOutletContext(); // Get preview setter
+
     const resetAllStates = () => {
         setDecayMaterial(null);
         setCavitation(null);
@@ -77,6 +79,107 @@ const ToothPathology = () => {
         setApicalPresent(null);
         setDevelopmentDisorderPresent(null);
     };
+
+    // Effect for Real-time Preview
+    React.useEffect(() => {
+        if (!tooth || !setPreviewData) return;
+
+        // If no pathology type selected, clear preview
+        if (!selectedPathologyType) {
+            setPreviewData(null);
+            return;
+        }
+
+        // Construct preview pathology object based on current selections
+        const previewPathology = JSON.parse(JSON.stringify(tooth.pathology || {}));
+
+        // Helper to check if minimum requirements for preview are met
+        let isValidPreview = false;
+
+        switch (selectedPathologyType) {
+            case 'decay':
+                if (selectedZones.length > 0) {
+                    // Creating a temporary decay item for preview even if incomplete
+                    const newDecay = {
+                        type: `${decayMaterial || '?'}-${cavitation || '?'}-${cavitationLevel || '?'}`,
+                        zones: selectedZones
+                    };
+                    previewPathology.decay = [...(previewPathology.decay || []), newDecay];
+                    isValidPreview = true;
+                }
+                break;
+            case 'fracture':
+                if (fractureLocation === 'crown') {
+                    previewPathology.fracture.crown = true;
+                    isValidPreview = true;
+                } else if (fractureLocation === 'root' && fractureDirection) {
+                    previewPathology.fracture.root = fractureDirection === 'vertical' ? 'Vertical' : 'Horizontal';
+                    isValidPreview = true;
+                }
+                break;
+            case 'tooth-wear':
+                // For wear, we need type and surface to render properly? Or just mock it?
+                // Visualizer might need surface.
+                if (toothWearType && toothWearSurface) {
+                    previewPathology.toothWear = {
+                        type: toothWearType === 'abrasion' ? 'Abrasion' : 'Erosion',
+                        surface: toothWearSurface === 'buccal' ? 'Buccal' : 'Palatal'
+                    };
+                    isValidPreview = true;
+                }
+                break;
+            case 'discoloration':
+                if (discolorationColor) {
+                    previewPathology.discoloration = discolorationColor.charAt(0).toUpperCase() + discolorationColor.slice(1);
+                    isValidPreview = true;
+                }
+                break;
+            case 'apical':
+                if (apicalPresent !== null) {
+                    previewPathology.apicalPathology = apicalPresent;
+                    isValidPreview = true;
+                }
+                break;
+            case 'development-disorder':
+                if (developmentDisorderPresent !== null) {
+                    previewPathology.developmentDisorder = developmentDisorderPresent;
+                    isValidPreview = true;
+                }
+                break;
+        }
+
+        if (isValidPreview) {
+            setPreviewData({
+                ...tooth,
+                pathology: previewPathology
+            });
+        } else {
+            setPreviewData(null);
+        }
+
+    }, [
+        tooth,
+        selectedPathologyType,
+        selectedZones,
+        decayMaterial,
+        cavitation,
+        cavitationLevel,
+        fractureLocation,
+        fractureDirection,
+        toothWearType,
+        toothWearSurface,
+        discolorationColor,
+        apicalPresent,
+        developmentDisorderPresent,
+        setPreviewData
+    ]);
+
+    // Clear preview when unmounting
+    React.useEffect(() => {
+        return () => {
+            if (setPreviewData) setPreviewData(null);
+        }
+    }, [setPreviewData]);
 
     const handleAction = (actionType) => {
         if (!tooth || !selectedPatient) return;
@@ -488,6 +591,7 @@ const ToothPathology = () => {
                     onChange={setSelectedZones}
                     inactive={selectedPathologyType !== 'decay'}
                     toothNumber={tooth?.toothNumber}
+                    zoneColor="#EF4444" // Red-500 for pathology
                 />
 
                 {/* Main Content - Right Column */}

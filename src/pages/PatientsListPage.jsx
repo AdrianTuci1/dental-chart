@@ -3,12 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import usePatientStore from '../store/patientStore';
 import { MOCK_PATIENTS } from '../utils/mockData';
 import { Search, Plus, User, Settings } from 'lucide-react';
+import SettingsModal from '../components/UI/SettingsModal';
 
 import './PatientsListPage.css';
 
 const PatientsListPage = () => {
     const navigate = useNavigate();
     const { patients, setPatients, searchQuery, setSearchQuery, selectPatient } = usePatientStore();
+    const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
 
     useEffect(() => {
         // Initialize with mock data if empty
@@ -34,7 +36,7 @@ const PatientsListPage = () => {
                     <h1 className="sticky-title">Patients</h1>
                     <div className="user-profile">
                         <span className="user-name">Adrian Tuci</span>
-                        <button className="settings-btn">
+                        <button className="settings-btn" onClick={() => setIsSettingsOpen(true)}>
                             <Settings size={20} />
                         </button>
                     </div>
@@ -130,6 +132,11 @@ const PatientsListPage = () => {
                     </div>
                 )}
             </div>
+
+            <SettingsModal
+                isOpen={isSettingsOpen}
+                onClose={() => setIsSettingsOpen(false)}
+            />
         </div>
     );
 };

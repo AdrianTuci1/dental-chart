@@ -3,24 +3,34 @@ import { getToothType } from '../../utils/toothUtils';
 import { ToothZone } from '../../models/Enums';
 import './ToothZones.css';
 
-const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumber }) => {
+const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumber, zoneColor }) => {
 
-    // Determine last 4 zones based on tooth type
+    // Determine last 4 zones based on tooth index (last digit)
     const getDynamicZones = () => {
-        if (!toothNumber) return []; // Fallback or wait for data
+        if (!toothNumber) return [];
 
-        const type = getToothType(toothNumber);
+        const index = parseInt(toothNumber.toString().slice(-1), 10);
 
-        if (type === 'anterior') {
-            // Incisor/Canine Layout
+        // 1. Incisors (1, 2, 3)
+        if (index === 1 || index === 2 || index === 3) {
             return [
-                { id: 'Class 4 Mesial', label: 'Cls 4 M', area: 'cusp1' }, // Mapped ID
-                { id: 'Class 4 Distal', label: 'Cls 4 D', area: 'cusp2' }, // Mapped ID
-                { id: ToothZone.BUCCAL, label: 'Buccal Surf', area: 'cusp3' }, // Full Surface
-                { id: ToothZone.PALATAL, label: 'Palatal Surf', area: 'cusp4' }, // Full Surface
+                { id: 'Class 4 Mesial', label: 'Cls 4 M', area: 'cusp1' },
+                { id: 'Class 4 Distal', label: 'Cls 4 D', area: 'cusp2' },
+                { id: 'Buccal Surf', label: 'Buccal Surf', area: 'cusp3' },
+                { id: 'Palatal Surf', label: 'Palatal Surf', area: 'cusp4' },
             ];
-        } else {
-            // Molar/Premolar Layout (Standard Cusps)
+        }
+        // 2. Canines & Premolars (4, 5)
+        else if (index === 4 || index === 5) {
+            return [
+                { id: 'Buccal Cusp', label: 'Buccal Cusp', area: 'cusp1' },
+                { id: 'Lingual Cusp', label: 'Lingual Cusp', area: 'cusp2' }, // Lingual/Palatal Cusp
+                { id: 'Buccal Surf', label: 'Buccal Surf', area: 'cusp3' },
+                { id: 'Lingual Surf', label: 'Lingual Surf', area: 'cusp4' },
+            ];
+        }
+        // 3. Molars (6, 7, 8)
+        else {
             return [
                 { id: ToothZone.MESIO_BUCCAL_CUSP, label: 'MB Cusp', area: 'cusp1' },
                 { id: ToothZone.DISTO_BUCCAL_CUSP, label: 'DB Cusp', area: 'cusp2' },
@@ -57,17 +67,30 @@ const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumbe
     return (
         <div className="zones">
             <ul className="zones-list">
-                {zones.map(zone => (
-                    <li
-                        key={zone.id}
-                        className={`zone-pad ${selectedZones.includes(zone.id) ? 'selected' : ''} ${inactive ? 'inactive' : ''}`}
-                        style={{ gridArea: zone.area }}
-                        onClick={() => handleZoneClick(zone.id)}
-                    >
-                        {/* Don't show label text in inactive mode */}
-                        {!inactive && zone.label}
-                    </li>
-                ))}
+                {zones.map(zone => {
+                    const isSelected = selectedZones.includes(zone.id);
+                    const style = {
+                        gridArea: zone.area,
+                        // Apply dynamic color if selected, otherwise rely on CSS class
+                        ...(isSelected && zoneColor ? {
+                            backgroundColor: zoneColor,
+                            color: '#ffffff', // Ensure text is readable on colored background
+                            borderColor: zoneColor
+                        } : {})
+                    };
+
+                    return (
+                        <li
+                            key={zone.id}
+                            className={`zone-pad ${isSelected ? 'selected' : ''} ${inactive ? 'inactive' : ''}`}
+                            style={style}
+                            onClick={() => handleZoneClick(zone.id)}
+                        >
+                            {/* Don't show label text in inactive mode */}
+                            {!inactive && zone.label}
+                        </li>
+                    );
+                })}
             </ul>
         </div>
     );

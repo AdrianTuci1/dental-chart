@@ -1,5 +1,6 @@
 /**
- * Legacy entry point re-exporting from the new modular structure.
- * See src/utils/toothPaths/ for implementation details.
+ * Legacy entry point.
+ * drawToothSurface is deprecated/removed.
+ * getToothType is moved to toothUtils.
  */
-export * from './toothPaths/index';
+export { getToothType } from './toothUtils';

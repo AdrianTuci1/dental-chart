@@ -64,6 +64,37 @@ export class Tooth {
             });
         }
 
+        // Check for Implant or Pontic
+        const hasImplantOrPontic = this.restoration && this.restoration.crowns && this.restoration.crowns.some(c =>
+            c.base === 'Implant' || c.type === 'Pontic'
+        );
+
+        // Map Fractures (Only if natural tooth / not implant/pontic)
+        if (!hasImplantOrPontic && this.pathology && this.pathology.fracture) {
+            if (this.pathology.fracture.crown) {
+                conditions.push({
+                    surface: `fracture_crown_${this.pathology.fracture.crown.toLowerCase()}`,
+                    zone: 'Fracture Crown',
+                    color: 'transparent', // Don't fill the zigzag, just stroke
+                    type: 'fracture',
+                    stroke: '#FF0000',
+                    strokeWidth: 3,
+                    opacity: 1.0
+                });
+            }
+            if (this.pathology.fracture.root) {
+                conditions.push({
+                    surface: `fracture_root_${this.pathology.fracture.root.toLowerCase()}`,
+                    zone: 'Fracture Root',
+                    color: 'transparent',
+                    type: 'fracture',
+                    stroke: '#FF0000',
+                    strokeWidth: 3,
+                    opacity: 1.0
+                });
+            }
+        }
+
         // Map Restorations
         if (this.restoration) {
             const restorationTypes = ['fillings', 'inlays', 'onlays', 'partialCrowns'];
@@ -156,7 +187,7 @@ export class ProbingSite {
 export class Pathology {
     constructor() {
         this.fracture = {
-            crown: false,
+            crown: null, // 'Vertical', 'Horizontal', or null
             root: null // 'Vertical', 'Horizontal', or null
         };
         this.toothWear = {

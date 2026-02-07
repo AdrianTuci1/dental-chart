@@ -124,10 +124,16 @@ export const generateMockTeeth = () => {
     teeth[16].endodontic.heat = 'Positive';
 
     // 17 (Second Molar)
-    // Verify: Palatal Cusps, Full Buccal Surface
-    teeth[17].restoration.addFilling([ToothZone.MESIO_PALATAL_CUSP], Material.GOLD);
-    teeth[17].restoration.addFilling([ToothZone.DISTO_PALATAL_CUSP], Material.GOLD);
+    // Verify: Palatal Cusps (Bottom Cusp), Full Buccal Surface
+    teeth[17].restoration.addFilling([ToothZone.PALATAL_CUSP], Material.GOLD); // "Cusp-ul de jos"
     teeth[17].restoration.addFilling([ToothZone.BUCCAL], Material.CERAMIC); // Full Surface Highlight
+    teeth[17].restoration.addFilling([ToothZone.MESIAL], Material.COMPOSITE);
+    teeth[17].restoration.addFilling([ToothZone.DISTAL], Material.COMPOSITE);
+
+    // 27 (Molar)
+    // Verify: Palatal Surface
+    teeth[27].restoration.addFilling([ToothZone.PALATAL], Material.AMALGAM);
+    teeth[27].restoration.addFilling([ToothZone.BUCCAL_CUSP], Material.COMPOSITE);
 
     // 26 (Molar)
     // Verify: Decay Surface (Red) + Cervical
@@ -155,6 +161,25 @@ export const generateMockTeeth = () => {
 
     teeth[35].isMissing = true;
     teeth[36].restoration.addCrown(Material.CERAMIC, 'Sufficient', 'Single Crown', 'Implant');
+
+    // --- FRACTURE TEST CASES ---
+
+    teeth[41].pathology.fracture.crown = 'Vertical';
+
+    // 22 (Anterior): Root Vertical & Crown Horizontal
+    teeth[22].pathology.fracture.root = 'Vertical';
+
+    // 25 (Premolar - uses Molar logic): Root Horizontal
+    teeth[25].pathology.fracture.root = 'Horizontal';
+
+    // 47 (Molar): Crown Vertical
+    teeth[47].pathology.fracture.crown = 'Vertical';
+
+    // 48 (Molar): Crown Horizontal + Root Vertical
+    teeth[48].pathology.fracture.crown = 'Horizontal';
+    teeth[48].pathology.fracture.root = 'Vertical';
+
+    teeth[27].pathology.fracture.crown = 'Horizontal';
 
     return teeth;
 };

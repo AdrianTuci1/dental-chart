@@ -48,7 +48,16 @@ export const getBaseToothNumber = (toothNumber) => {
 
 // --- Mapping Utility for Tooth Model to Renderer ---
 import { ToothZone, Material } from '../models/DentalModels.js';
-import { getToothType } from './svgPaths';
+
+export const getToothType = (toothNumber) => {
+    const n = parseInt(toothNumber);
+    const index = n % 10;
+
+    if (index === 1 || index === 2 || index === 3) return 'anterior';
+    if (index === 4 || index === 5) return 'premolar';
+    if (index >= 6) return 'molar';
+    return 'molar';
+};
 
 export const mapToothDataToConditions = (tooth) => {
     if (!tooth) return [];
@@ -58,6 +67,37 @@ export const mapToothDataToConditions = (tooth) => {
     const isAnterior = type === 'anterior';
 
     const conditions = [];
+
+    // Check for Implant or Pontic (to exclude fractures)
+    const hasImplantOrPontic = tooth.restoration && tooth.restoration.crowns && tooth.restoration.crowns.some(c =>
+        c.base === 'Implant' || c.type === 'Pontic'
+    );
+
+    // Map Fractures (Only if natural tooth / not implant/pontic)
+    if (!hasImplantOrPontic && tooth.pathology && tooth.pathology.fracture) {
+        if (tooth.pathology.fracture.crown) {
+            conditions.push({
+                surface: `fracture_crown_${tooth.pathology.fracture.crown.toLowerCase()}`,
+                zone: 'Fracture Crown',
+                color: 'transparent',
+                type: 'fracture',
+                stroke: '#FF0000',
+                strokeWidth: 1.5,
+                opacity: 0.9
+            });
+        }
+        if (tooth.pathology.fracture.root) {
+            conditions.push({
+                surface: `fracture_root_${tooth.pathology.fracture.root.toLowerCase()}`,
+                zone: 'Fracture Root',
+                color: 'transparent',
+                type: 'fracture',
+                stroke: '#FF0000',
+                strokeWidth: 1.5,
+                opacity: 0.9
+            });
+        }
+    }
 
     // Base Zone Mapping
     const zoneMap = {
@@ -208,7 +248,7 @@ export const getToothImage = (toothNumber, condition = 'withRoots', view = 'bucc
 /**
  * Map view names from component to JSON format
  */
-export { getToothType }; // Export from here too for convenience if imported from utils
+
 
 export const mapViewToImageView = (view, toothNumber) => {
     if (view === 'frontal') {

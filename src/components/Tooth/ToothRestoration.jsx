@@ -55,6 +55,8 @@ const ToothRestoration = () => {
         }
     };
 
+    const { setPreviewData } = useOutletContext();
+
     const resetAllStates = () => {
         setSelectedZones([]);
         setFillingMaterial(null);
@@ -67,6 +69,92 @@ const ToothRestoration = () => {
         setCrownBase(null);
         setImplantType(null);
     };
+
+    // Effect for Real-time Preview
+    React.useEffect(() => {
+        if (!tooth || !setPreviewData) return;
+
+        if (!selectedRestorationType) {
+            setPreviewData(null);
+            return;
+        }
+
+        const previewRestoration = JSON.parse(JSON.stringify(tooth.restoration || {}));
+        let isValidPreview = false;
+
+        switch (selectedRestorationType) {
+            case 'filling':
+                if (fillingMaterial || selectedZones.length > 0) {
+                    const newFilling = {
+                        zones: selectedZones,
+                        material: fillingMaterial || 'Unknown',
+                        quality: fillingQuality || 'Sufficient'
+                    };
+                    previewRestoration.fillings = [...(previewRestoration.fillings || []), newFilling];
+                    isValidPreview = true;
+                }
+                break;
+            case 'veneer':
+                if (veneerMaterial || selectedZones.length > 0) {
+                    const newVeneer = {
+                        zones: selectedZones,
+                        material: veneerMaterial || 'Unknown',
+                        quality: veneerQuality || 'Sufficient',
+                        detail: veneerDetail || 'Flush'
+                    };
+                    if (!previewRestoration.veneers) previewRestoration.veneers = [];
+                    previewRestoration.veneers = [...previewRestoration.veneers, newVeneer];
+                    isValidPreview = true;
+                }
+                break;
+            case 'crown':
+                if (crownMaterial) {
+                    const newCrown = {
+                        material: crownMaterial,
+                        quality: 'Sufficient',
+                        type: crownType || 'Single Crown',
+                        base: crownBase || 'Natural'
+                    };
+                    if (crownBase === 'Implant' && implantType) {
+                        newCrown.implantType = implantType;
+                    }
+                    previewRestoration.crowns = [...(previewRestoration.crowns || []), newCrown];
+                    isValidPreview = true;
+                }
+                break;
+        }
+
+        if (isValidPreview) {
+            setPreviewData({
+                ...tooth,
+                restoration: previewRestoration
+            });
+        } else {
+            setPreviewData(null);
+        }
+
+    }, [
+        tooth,
+        selectedRestorationType,
+        selectedZones,
+        fillingMaterial,
+        fillingQuality,
+        veneerMaterial,
+        veneerQuality,
+        veneerDetail,
+        crownMaterial,
+        crownType,
+        crownBase,
+        implantType,
+        setPreviewData
+    ]);
+
+    // Cleanup preview
+    React.useEffect(() => {
+        return () => {
+            if (setPreviewData) setPreviewData(null);
+        };
+    }, [setPreviewData]);
 
     const handleAction = (actionType) => {
         if (!tooth || !selectedPatient) return;
@@ -396,11 +484,23 @@ const ToothRestoration = () => {
         <div className="restoration-container" data-view="restoration">
             <div className="restoration-content">
                 {/* Tooth Zones - Left Column - Only for veneer */}
+                {/* Tooth Zones - Left Column - Only for veneer */}
                 <ToothZones
                     selectedZones={selectedZones}
                     onChange={setSelectedZones}
                     inactive={false}
                     toothNumber={tooth?.toothNumber}
+                    zoneColor={(() => {
+                        const material = fillingMaterial || veneerMaterial || crownMaterial;
+                        switch (material) {
+                            case 'Gold': return '#FFD700'; // Gold
+                            case 'Amalgam': return '#9CA3AF'; // Gray-400
+                            case 'Non-Precious Metal': return '#9CA3AF'; // Gray-400
+                            case 'Ceramic': return '#A5F3FC'; // Cyan-200 (light blue/white-ish)
+                            case 'Composite': return '#3B82F6'; // Blue-500
+                            default: return '#3B82F6'; // Default Blue
+                        }
+                    })()}
                 />
 
                 {/* Main Content - Right Column */}

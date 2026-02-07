@@ -13,11 +13,14 @@ const ToothDetailPage = () => {
 
 
 
+    const [previewData, setPreviewData] = React.useState(null);
+
     const tooth = teeth[toothNumber];
 
     useEffect(() => {
         if (toothNumber) {
             selectTooth(toothNumber);
+            setPreviewData(null); // Reset preview when changing tooth
         }
     }, [toothNumber, selectTooth]);
 
@@ -33,14 +36,15 @@ const ToothDetailPage = () => {
             <div className="visualization-sidebar">
                 <ToothVisualization
                     toothNumber={toothNumber}
-                    conditions={mapToothDataToConditions(tooth)}
+                    conditions={mapToothDataToConditions(previewData || tooth)}
                     onSelectTooth={handleToothSelect}
+                    overrideToothData={previewData} // New prop for visualization if needed internally
                 />
             </div>
 
             {/* Main Content Area */}
             <div className="main-content">
-                <Outlet context={{ tooth }} />
+                <Outlet context={{ tooth, setPreviewData }} />
             </div>
         </div>
     );

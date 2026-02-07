@@ -81,12 +81,12 @@
 }
 
 .tab-link:hover {
-    color: #0ea5e9;
+    color: var(--color-primary);
 }
 
 .tab-link.active {
-    color: #0ea5e9;
-    border-bottom-color: #0ea5e9;
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
 }
 
 .tab-content-area {
@@ -122,6 +122,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    text-align: left;
     margin-bottom: 1rem;
 }
 
@@ -134,7 +135,7 @@
 }
 
 .edit-link {
-    color: #0ea5e9;
+    color: var(--color-primary);
     font-size: 0.75rem;
     font-weight: 700;
     text-transform: uppercase;
