@@ -17,11 +17,11 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
         : ['lingual', 'topview', 'frontal'];
 
     // Check for extraction
-    const isExtractionPlanned = selectedPatient?.treatmentPlan?.items?.some(
+    const isExtractionPlanned = (selectedPatient?.treatmentPlan?.items?.some(
         item => parseInt(item.tooth) === parseInt(toothNumber) &&
             item.procedure === 'Extraction' &&
             item.status === 'planned'
-    );
+    )) || toothData?.toBeExtracted;
 
     const extractionText = isExtractionPlanned ? (
         <div className="extraction-text">TO BE EXTRACTED</div>

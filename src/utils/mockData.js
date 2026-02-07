@@ -181,5 +181,8 @@ export const generateMockTeeth = () => {
 
     teeth[27].pathology.fracture.crown = 'Horizontal';
 
+    // 44: Marked for Extraction
+    teeth[44].toBeExtracted = true;
+
     return teeth;
 };

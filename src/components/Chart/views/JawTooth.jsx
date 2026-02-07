@@ -5,6 +5,7 @@ import WaveInteractiveView from '../../Tooth/WaveInteractiveView';
 import { WaveInteractionModel } from '../../../models/WaveInteractionModel';
 import { mapToothDataToConditions } from '../../../utils/toothUtils';
 import PerioGrid from './PerioGrid';
+import { TOOTH_TRANSFORMS } from './JawToothConfig';
 import usePatientStore from '../../../store/patientStore';
 
 
@@ -35,7 +36,7 @@ const JawTooth = ({
 
     const isExtractionPlanned = treatments.some(
         item => item.procedure === 'Extraction' && item.status === 'planned'
-    );
+    ) || toothData?.toBeExtracted;
 
     // Use refs to hold stable models
     const buccalModel = useRef(new WaveInteractionModel()).current;
@@ -120,17 +121,18 @@ const JawTooth = ({
 
     const OverlapIcon = () => (
         <div className="extraction-overlap-icon" style={{
-            height: 0,
+            position: 'absolute',
+            bottom: '-10px', // Half of the 20px gap
+            left: 0,
             width: '100%',
-            position: 'relative',
             zIndex: 20,
             display: 'flex',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            height: 0,
+            overflow: 'visible'
         }}>
             <div className="extraction-icon-container" style={{
                 margin: 0,
-                position: 'absolute',
-                top: 0,
                 transform: 'translateY(-50%)'
             }}>
                 <div className="extraction-icon">
@@ -157,21 +159,10 @@ const JawTooth = ({
                 const isLingual = view === 'lingual';
                 const isOcclusal = view === 'topview';
 
+                const isFirst = index === 0;
+                const isLast = index === visualViews.length - 1;
+
                 const shouldShowWave = index === 0 || index === 2; // Original logic based on full index?
-                // Visual views length is 2 or 3.
-                // We need to map `index` from visualViews to original context for Wave Logic?
-                // Wave Logic relies on index 0 (Top) and index 2 (Bottom).
-                // If we excluded 'number', the indices shift.
-                // Let's rely on View Type for Wave Logic instead of Index.
-                // Upper: Frontal (0), Top (1), Lingual (2). -> Wave on Frontal (down) and Lingual (up).
-                // Lower: Lingual (0), Top (1), Frontal (2). -> Wave on Lingual (down) and Frontal (up).
-                // Normal Upper: Frontal (0), Top (1). (Number was 2). -> Wave on Frontal (down). And... nothing on bottom?
-                // Normal View usually matches JawView logic but Number is inserted.
-                // Let's preserve `index` logic by checking `view` against original `views` array?
-                // Or:
-                // Frontal is always "Outside". Lingual is "Inside".
-                // If Upper: Frontal is Top (Wave Down). Lingual is Bottom (Wave Up).
-                // If Lower: Lingual is Top (Wave Down). Frontal is Bottom (Wave Up).
 
                 let modelToUse = null;
                 let waveDirection = 'down';
@@ -210,10 +201,15 @@ const JawTooth = ({
                 // For Lower Jaw: Lingual is index 0. No rotation.
                 // So `isLingual && isUpperJaw` covers it.
 
+                const transformConfig = TOOTH_TRANSFORMS[toothNumber]?.[view];
+                const transformStyle = transformConfig ? {
+                    transform: `translateY(${transformConfig.y || 0}px) rotate(${transformConfig.rotate || 0}deg)`
+                } : {};
+
                 const content = (
                     <div
                         className={`trigger visualization ${isBuccal ? 'view-buccal' : isLingual ? 'view-lingual' : 'view-occlusal'}`}
-                        style={{}}
+                        style={transformStyle}
                         onClick={() => onToothClick(toothNumber)}
                     >
                         <ToothRenderer
@@ -247,16 +243,24 @@ const JawTooth = ({
                     </WaveInteractiveView>
                 ) : content;
 
+                const frameStyle = {};
+                if (!isLast) {
+                    frameStyle.bottom = '-10px';
+                }
+                if (!isFirst) {
+                    frameStyle.top = '-10px';
+                }
+
                 return (
                     <React.Fragment key={view}>
                         <div className="view-stack">
                             {wrappedContent}
-                            {isExtractionPlanned && <div className="extraction-frame-overlay" />}
+                            {isExtractionPlanned && <div className="extraction-frame-overlay" style={frameStyle} />}
+                            {/* Render overlapping icon inside view-stack, absolutely positioned */}
+                            {isExtractionPlanned && index < visualViews.length - 1 && (
+                                <OverlapIcon />
+                            )}
                         </div>
-                        {/* Render overlapping icon at the intersection */}
-                        {isExtractionPlanned && index < visualViews.length - 1 && (
-                            <OverlapIcon />
-                        )}
                     </React.Fragment>
                 );
             })}
