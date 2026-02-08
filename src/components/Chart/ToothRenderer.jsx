@@ -41,7 +41,7 @@ const ToothRenderer = ({
 
     let shouldMirrorImage = false;
     if (isRightSide && view === 'lingual') shouldMirrorImage = true;
-    if (isLeftSide && (view === 'frontal' || view === 'buccal')) shouldMirrorImage = true;
+    if (isLeftSide && (view === 'frontal' || view === 'buccal' || view === 'topview')) shouldMirrorImage = true;
 
     // Build container transform (incorporating the CSS scale)
     const baseScale = 1.35; // Base scale from CSS

@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
 import useChartStore from '../../store/chartStore';
-import { generateMockTeeth } from '../../utils/mockData';
 
 import './ChartOverview.css';
 import NormalView from './views/NormalView';
@@ -14,11 +13,6 @@ const ChartOverview = () => {
     const { patientId } = useParams();
     const { chartView } = useOutletContext();
 
-    useEffect(() => {
-        if (Object.keys(teeth).length === 0) {
-            setTeeth(generateMockTeeth());
-        }
-    }, [teeth, setTeeth]);
 
     const handleToothClick = (toothNumber) => {
         selectTooth(toothNumber);

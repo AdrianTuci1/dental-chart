@@ -103,18 +103,21 @@ const ToothOverview = () => {
                 <div className="status-message">
                     {toothTreatments.length > 0 ? (
                         <div className="tooth-treatment-list">
-                            {toothTreatments.map(item => (
-                                <div key={item.id} className={`tooth-treatment-item ${item.status}`}>
-                                    <button className="done-btn" onClick={() => handleDone(item.id)}>
-                                        Done
-                                    </button>
-                                    <div className="treatment-info">
-                                        <span className="treatment-name">
-                                            {item.procedure}
-                                        </span>
+                            <div className="treatment-grouped">
+                                {toothTreatments.map((item) => (
+                                    <div key={item.id} className={`tooth-treatment-item ${item.status}`}>
+                                        <button className="done-btn" onClick={() => handleDone(item.id)}>
+                                            Done
+                                        </button>
+                                        <span className="tooth-card-number">{tooth.isoNumber}</span>
+                                        <div className="treatment-info">
+                                            <span className="treatment-name">
+                                                {item.procedure}
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     ) : (
                         "Currently there are no treatments pending"

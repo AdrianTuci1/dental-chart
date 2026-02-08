@@ -126,10 +126,10 @@ export const mapToothDataToConditions = (tooth) => {
     };
 
     const materialColorMap = {
-        [Material.COMPOSITE]: '#3B82F6', // Blue
-        [Material.CERAMIC]: '#E5E7EB', // White/Gray
+        [Material.COMPOSITE]: '#3bc7f6ff', // Blue
+        [Material.CERAMIC]: '#c72ef1ff', // White/Gray
         [Material.GOLD]: '#F59E0B', // Gold
-        [Material.NON_PRECIOUS]: '#4B5563' // Dark Gray
+        [Material.NON_PRECIOUS]: '#7f8ebbff' // Dark Gray
     };
 
     // Specific colors for Anterior zones (requested by User)
@@ -168,7 +168,7 @@ export const mapToothDataToConditions = (tooth) => {
                         surface: surface,
                         zone: zone, // Preserve original zone for filtering (e.g. Buccal vs Palatal)
                         color: getColor(surface, baseColor),
-                        opacity: 0.8
+                        opacity: 0.6
                     });
                 }
             });
@@ -199,7 +199,7 @@ export const mapToothDataToConditions = (tooth) => {
                             surface: surface,
                             zone: zone, // Preserve original zone
                             color: getColor(surface, baseColor),
-                            opacity: 0.8
+                            opacity: 0.6
                         });
                     }
                 });

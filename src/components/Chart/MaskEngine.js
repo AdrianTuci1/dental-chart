@@ -41,7 +41,7 @@ class MaskEngine {
                                
                                Values between 0.70 and 0.90 will have semi-transparency, reducing pixelation.
                            -->
-                           <feFuncA type="linear" slope="4" intercept="-3"/>
+                           <feFuncA type="linear" slope="5" intercept="-3.5"/>
                        </feComponentTransfer>
                     </filter>
                 </defs>

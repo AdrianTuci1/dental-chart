@@ -23,18 +23,19 @@
 
 /* history-date merged into description in JSX, so hiding or removing this class usage */
 .history-date {
-    display: none;
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-style: italic;
 }
 
 .history-description {
     font-size: 0.875rem;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     margin: 0;
 }
 
-.history-provider {
-    font-size: 0.75rem;
-    /* text-xs */
-    color: var(--text-secondary);
-    font-style: italic;
+.history-tooth-label {
+    font-weight: 700;
+    margin-right: 4px;
 }

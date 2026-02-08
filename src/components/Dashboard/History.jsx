@@ -1,8 +1,6 @@
 
 import './History.css';
-
-
-import './History.css';
+import React from 'react';
 
 const History = ({ history }) => {
     const items = history?.completedItems || [];
@@ -15,15 +13,38 @@ const History = ({ history }) => {
         );
     }
 
+    // Group history by tooth and date
+    const groupedHistory = items.reduce((acc, item) => {
+        const toothKey = item.tooth || 'General';
+        const dateKey = item.date || 'No Date';
+        const compositeKey = `${toothKey}-${dateKey}`;
+
+        if (!acc[compositeKey]) {
+            acc[compositeKey] = {
+                tooth: toothKey,
+                date: dateKey,
+                procedures: []
+            };
+        }
+        acc[compositeKey].procedures.push(item);
+        return acc;
+    }, {});
+
     return (
         <div className="history-card">
             <div className="history-list">
-                {items.map((item, index) => (
+                {Object.values(groupedHistory).sort((a, b) => new Date(b.date) - new Date(a.date)).map((group, index) => (
                     <div key={index} className="history-item">
                         <p className="history-description">
-                            {item.description || item.procedure}{item.date ? `, ${item.date}` : ''}
+                            <span className="history-tooth-label">{group.tooth}, </span>
+                            {group.procedures.map((p, idx) => (
+                                <React.Fragment key={idx}>
+                                    {p.description || p.procedure}
+                                    {idx < group.procedures.length - 1 ? ', ' : ''}
+                                </React.Fragment>
+                            ))}
                         </p>
-                        <p className="history-provider">{item.provider}</p>
+                        <p className="history-date">{group.date}</p>
                     </div>
                 ))}
             </div>

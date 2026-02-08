@@ -184,7 +184,7 @@ const ToothPathology = () => {
     const handleAction = (actionType) => {
         if (!tooth || !selectedPatient) return;
 
-        const parts = [tooth.toothNumber];
+        const parts = [];
         const typeLabel = pathologyTypes.find(t => t.route === selectedPathologyType)?.label;
         if (typeLabel) parts.push(typeLabel);
 
@@ -228,7 +228,7 @@ const ToothPathology = () => {
             // Save logic: update tooth state and add to history
             handleSave(true); // silent save
             addToHistory(selectedPatient.id, {
-                description: `Completed: ${procedure} on Tooth #${tooth.toothNumber}`,
+                description: procedure,
                 provider: 'Dr. Current',
                 tooth: tooth.toothNumber
             });

@@ -35,39 +35,18 @@ const ToothMask = ({
         ctx.clearRect(0, 0, width, height);
 
         const drawConditions = async () => {
-            // Always clear first, even if no conditions
-            ctx.clearRect(0, 0, width, height);
-
-            if (!conditions || conditions.length === 0) return;
-
-            // Save context for safe restoration
-            ctx.save();
-
-            // Load the base tooth image for masking
-            let maskImg = null;
-            try {
-                maskImg = await maskEngine.loadImage(toothImagePath);
-            } catch (e) {
-                console.warn("Failed to load mask image", e);
+            if (!conditions || conditions.length === 0) {
+                ctx.clearRect(0, 0, width, height);
+                return;
             }
 
-            // Offscreen canvas for individual condition coloring
-            const offCanvas = document.createElement('canvas');
-            offCanvas.width = width * scale;
-            offCanvas.height = height * scale;
-            const offCtx = offCanvas.getContext('2d');
-            offCtx.scale(scale, scale);
-
-            // For each condition, fetch overlay and draw
-            for (const cond of conditions) {
+            // 1. Prepare all overlay data first (paths, slices)
+            const overlayData = conditions.map(cond => {
                 let zoneId = cond.zone;
-
-                // Handle missing zone, map surface
                 if (!zoneId && cond.surface) {
                     if (cond.surface === 'Buccal') {
                         zoneId = 'Buccal Surf';
                     } else if (cond.surface === 'Lingual' || cond.surface === 'Palatal') {
-                        // Map based on tooth index
                         const index = tNum % 10;
                         if (index >= 1 && index <= 3) {
                             zoneId = 'Palatal Surf';
@@ -77,88 +56,97 @@ const ToothMask = ({
                     }
                 }
 
-                if (!zoneId) continue; // Skip if no zone ID
+                if (!zoneId) return null;
 
                 const overlayPath = getOverlayPath(toothNumber, zoneId);
-                if (!overlayPath) continue;
+                if (!overlayPath) return null;
 
-                // Determine slice from the SVG file
-                // For lower jaw (31-48), the slice order is inverted:
-                // Inside (lingual) is at top, Outside (frontal) is at bottom
                 let viewForSlice = view;
                 const isLowerJaw = tNum >= 31 && tNum <= 48;
                 if (isLowerJaw) {
                     if (view === 'frontal') {
-                        viewForSlice = 'lingual'; // Use lingual slice for frontal view
+                        viewForSlice = 'lingual';
                     } else if (view === 'lingual') {
-                        viewForSlice = 'frontal'; // Use frontal slice for lingual view
+                        viewForSlice = 'frontal';
                     }
                 }
 
                 const slice = getOverlaySlice(viewForSlice);
+                if (slice.h <= 0) return null;
 
-                if (slice.h <= 0) continue;
+                return { cond, overlayPath, slice };
+            }).filter(Boolean);
 
-                try {
-                    const img = await maskEngine.loadImage(overlayPath);
+            // 2. Preload ALL images (mask and overlays)
+            const preloadPromises = [
+                maskEngine.loadImage(toothImagePath).catch(() => null),
+                ...overlayData.map(data => maskEngine.loadImage(data.overlayPath).catch(() => null))
+            ];
 
-                    // Clear offscreen
-                    offCtx.clearRect(0, 0, width, height);
+            const [maskImg, ...loadedOverlayImages] = await Promise.all(preloadPromises);
 
-                    // 1. Draw the SVG slice with tooth-specific transforms
-                    offCtx.save();
+            // 3. Clear and Draw
+            ctx.clearRect(0, 0, width, height);
+            ctx.save();
 
-                    // Get transforms from configuration
-                    const { needsHorizontalFlip, needsRotation } = getMaskTransforms(toothNumber, view);
+            // Offscreen canvas for individual condition coloring
+            const offCanvas = document.createElement('canvas');
+            offCanvas.width = width * scale;
+            offCanvas.height = height * scale;
+            const offCtx = offCanvas.getContext('2d');
+            offCtx.scale(scale, scale);
 
-                    // Apply rotation if needed
-                    if (needsRotation) {
-                        offCtx.translate(width / 2, height / 2);
-                        offCtx.rotate(Math.PI); // 180 degrees
-                        offCtx.translate(-width / 2, -height / 2);
-                    }
+            overlayData.forEach((data, index) => {
+                const img = loadedOverlayImages[index];
+                if (!img) return;
 
-                    // Apply horizontal flip if needed
-                    if (needsHorizontalFlip) {
-                        offCtx.translate(width, 0);
-                        offCtx.scale(-1, 1);
-                    }
+                const { cond, slice } = data;
 
-                    // Always apply vertical flip for upper jaw lingual
-                    if (isUpperJaw && view === 'lingual') {
-                        offCtx.translate(0, height);
-                        offCtx.scale(1, -1);
-                    }
-                    offCtx.drawImage(
-                        img,
-                        0, slice.y, img.width, slice.h,
-                        0, 0, width, height
-                    );
-                    offCtx.restore();
+                offCtx.clearRect(0, 0, width, height);
+                offCtx.save();
 
-                    // 2. Composite Color
-                    offCtx.globalCompositeOperation = 'source-in';
-                    offCtx.fillStyle = cond.color || 'rgba(100, 150, 255, 0.7)';
-                    offCtx.globalAlpha = cond.opacity || 0.7;
-                    offCtx.fillRect(0, 0, width, height);
+                const { needsHorizontalFlip, needsRotation } = getMaskTransforms(toothNumber, view);
 
-                    // 3. Draw offscreen to main
-                    offCtx.globalCompositeOperation = 'source-over';
-                    ctx.drawImage(offCanvas, 0, 0, width, height);
-
-                } catch (err) {
-                    console.warn(`Failed to load overlay: ${overlayPath}`, err);
+                if (needsRotation) {
+                    offCtx.translate(width / 2, height / 2);
+                    offCtx.rotate(Math.PI);
+                    offCtx.translate(-width / 2, -height / 2);
                 }
-            }
 
-            // Apply Masking (Clip to Tooth Shape)
+                if (needsHorizontalFlip) {
+                    offCtx.translate(width, 0);
+                    offCtx.scale(-1, 1);
+                }
+
+                if (isUpperJaw && view === 'lingual') {
+                    offCtx.translate(0, height);
+                    offCtx.scale(1, -1);
+                }
+
+                offCtx.drawImage(
+                    img,
+                    0, slice.y, img.width, slice.h,
+                    0, 0, width, height
+                );
+                offCtx.restore();
+
+                offCtx.globalCompositeOperation = 'source-in';
+                offCtx.fillStyle = cond.color || 'rgba(100, 150, 255, 0.7)';
+                offCtx.globalAlpha = cond.opacity || 0.7;
+                offCtx.fillRect(0, 0, width, height);
+
+                offCtx.globalCompositeOperation = 'source-over';
+                ctx.drawImage(offCanvas, 0, 0, width, height);
+            });
+
+            // 4. Apply Masking
             if (maskImg) {
                 ctx.globalCompositeOperation = 'destination-in';
                 ctx.drawImage(maskImg, 0, 0, width, height);
                 ctx.globalCompositeOperation = 'source-over';
             }
 
-            ctx.restore(); // Restore context
+            ctx.restore();
         };
 
         drawConditions();

@@ -159,7 +159,7 @@ const ToothRestoration = () => {
     const handleAction = (actionType) => {
         if (!tooth || !selectedPatient) return;
 
-        const parts = [tooth.toothNumber];
+        const parts = [];
         const typeLabel = restorationTypes.find(t => t.route === selectedRestorationType)?.label;
         if (typeLabel) parts.push(typeLabel);
 
@@ -197,7 +197,7 @@ const ToothRestoration = () => {
         } else if (actionType === 'save') {
             handleSave(true);
             addToHistory(selectedPatient.id, {
-                description: `Completed: ${procedure} on Tooth #${tooth.toothNumber}`,
+                description: procedure,
                 provider: 'Dr. Current',
                 tooth: tooth.toothNumber
             });

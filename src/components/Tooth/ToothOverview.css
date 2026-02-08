@@ -82,7 +82,20 @@
     gap: 0.5rem;
     width: 100%;
     padding: 0px 12px;
-    /* Ensure full width */
+}
+
+.treatment-grouped {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.tooth-card-number {
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    min-width: 24px;
 }
 
 .tooth-treatment-item {
@@ -93,6 +106,7 @@
     border-radius: var(--radius-sm);
     border-left: 4px solid transparent;
     gap: 1rem;
+    width: 100%;
 }
 
 .tooth-treatment-item.monitoring {

@@ -1,8 +1,6 @@
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import usePatientStore from '../store/patientStore';
-import useChartStore from '../store/chartStore';
-import { generateMockTeeth } from '../utils/mockData';
 import { Printer, Download, Mail, Activity, Heart, Wind, Cigarette, Wine, Snowflake, Flame, Hand, Gavel, Zap, Hourglass } from 'lucide-react';
 import NormalView from '../components/Chart/views/NormalView';
 import UpperJawView from '../components/Chart/views/UpperJawView';
@@ -15,11 +13,6 @@ const PatientReportPage = () => {
     const { selectedPatient } = usePatientStore();
     const { teeth, setTeeth } = useChartStore();
 
-    useEffect(() => {
-        if (!teeth || Object.keys(teeth).length === 0) {
-            setTeeth(generateMockTeeth());
-        }
-    }, [teeth, setTeeth]);
 
     if (!selectedPatient) return <div>Loading...</div>;
 

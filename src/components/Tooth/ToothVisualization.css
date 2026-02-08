@@ -57,34 +57,30 @@
     font-size: 14px;
 }
 
-/* Visualization Column - now a scrollable list */
+/* Visualization Column - now a viewport for the sliding wrapper */
 .visualization-column {
     flex-grow: 1;
     position: relative;
-    overflow-y: auto;
-    overflow-x: hidden;
-    scroll-snap-type: y mandatory;
+    overflow: hidden;
+    /* Important for the slide effect */
     height: 100%;
     background-color: var(--background-secondary);
-    scrollbar-width: none;
-    /* Hide scrollbar Firefox */
-    -ms-overflow-style: none;
-    /* Hide scrollbar IE/Edge */
 }
 
-.visualization-column::-webkit-scrollbar {
-    display: none;
-    /* Hide scrollbar Chrome/Safari */
+.sliding-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    will-change: transform;
 }
 
 .tooth-item-container {
     height: 100%;
     width: 100%;
-    scroll-snap-align: start;
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
-    transition: background-color 0.3s ease;
 }
 
 /* Visualization column inner structure */

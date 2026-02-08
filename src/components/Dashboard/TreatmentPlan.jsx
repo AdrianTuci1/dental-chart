@@ -19,29 +19,43 @@ const TreatmentPlan = ({ plan }) => {
         }
     };
 
+    // Group treatments by tooth
+    const groupedTreatments = treatments.reduce((acc, item) => {
+        const toothKey = item.tooth || 'General';
+        if (!acc[toothKey]) {
+            acc[toothKey] = [];
+        }
+        acc[toothKey].push(item);
+        return acc;
+    }, {});
+
     return (
         <div className="treatment-plan-card">
-
             <div className="plan-list">
-                {treatments.map((item) => (
+                {Object.entries(groupedTreatments).map(([tooth, items]) => (
                     <div
-                        key={item.id}
-                        className={`plan-item ${item.status}`}
+                        key={tooth}
+                        className={`plan-item-grouped`}
                         onClick={() => {
-                            if (item.tooth) {
-                                navigate(`/patients/${patientId}/tooth/${item.tooth}/restoration`);
+                            if (tooth !== 'General') {
+                                navigate(`/patients/${patientId}/tooth/${tooth}/restoration`);
                             }
                         }}
                     >
                         <div className="item-details">
                             <p className="item-text">
-                                {item.procedure}
+                                <span className="tooth-number-label">{tooth}, </span>
+                                {items.map((item, index) => (
+                                    <span key={item.id} className={`procedure-item ${item.status}`}>
+                                        {item.procedure}
+                                        {index < items.length - 1 ? ', ' : ''}
+                                    </span>
+                                ))}
                             </p>
                         </div>
                     </div>
                 ))}
             </div>
-
         </div>
     );
 };

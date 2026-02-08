@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { Outlet, useParams, useLocation } from 'react-router-dom';
 import usePatientStore from '../store/patientStore';
-import { MOCK_PATIENTS } from '../utils/mockData';
+import useChartStore from '../store/chartStore';
+import { MOCK_PATIENTS, generateMockTeeth } from '../utils/mockData';
 import PatientSidebar from './PatientSidebar';
 
 import './PatientLayout.css';
@@ -9,6 +10,7 @@ import './PatientLayout.css';
 const PatientLayout = () => {
     const { patientId } = useParams();
     const { selectedPatient, selectPatient, patients, setPatients } = usePatientStore();
+    const { teeth, setTeeth } = useChartStore();
 
     useEffect(() => {
         // Ensure patients are loaded
@@ -23,7 +25,12 @@ const PatientLayout = () => {
                 selectPatient(patient);
             }
         }
-    }, [patientId, patients, selectedPatient, selectPatient, setPatients]);
+
+        // Initialize teeth data if not already present
+        if (Object.keys(teeth).length === 0) {
+            setTeeth(generateMockTeeth());
+        }
+    }, [patientId, patients, selectedPatient, selectPatient, setPatients, teeth, setTeeth]);
 
     if (!selectedPatient) {
         return <div className="loading-state">Loading patient data...</div>;

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ToothRenderer from '../Chart/ToothRenderer';
 import '../Chart/ChartOverview.css';
 import './ToothVisualization.css';
@@ -7,6 +7,13 @@ import useChartStore from '../../store/chartStore';
 import usePatientStore from '../../store/patientStore';
 import { WaveInteractionModel } from '../../models/WaveInteractionModel';
 import { mapToothDataToConditions, isUpperJaw } from '../../utils/toothUtils';
+
+const ALL_TEETH = [
+    18, 17, 16, 15, 14, 13, 12, 11,
+    21, 22, 23, 24, 25, 26, 27, 28,
+    48, 47, 46, 45, 44, 43, 42, 41,
+    31, 32, 33, 34, 35, 36, 37, 38
+];
 
 const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
     const isUpper = isUpperJaw(toothNumber);
@@ -116,32 +123,74 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
 const ToothVisualization = ({ toothNumber, onSelectTooth, overrideToothData }) => {
     const currentTooth = parseInt(toothNumber);
     const sidebarScrollRef = useRef(null);
-    const vizScrollRef = useRef(null);
     const teeth = useChartStore(state => state.teeth);
 
-    const allTeeth = [
-        18, 17, 16, 15, 14, 13, 12, 11,
-        21, 22, 23, 24, 25, 26, 27, 28,
-        48, 47, 46, 45, 44, 43, 42, 41,
-        31, 32, 33, 34, 35, 36, 37, 38
-    ];
+    const [displayState, setDisplayState] = useState({
+        teeth: [currentTooth],
+        transform: 'translateY(0)',
+        transition: 'none'
+    });
+    const prevToothRef = useRef(currentTooth);
 
-    // Scroll both sidebars to active tooth
+    // Sidebar scroll sync
     useEffect(() => {
         if (sidebarScrollRef.current) {
             const activeItem = sidebarScrollRef.current.querySelector('.tooth-number-item.active');
             if (activeItem) activeItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
-        if (vizScrollRef.current) {
-            const activeViz = vizScrollRef.current.querySelector(`.tooth-item-container[data-number="${currentTooth}"]`);
-            if (activeViz) activeViz.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+    }, [currentTooth]);
+
+    // Sliding Transition Effect
+    useEffect(() => {
+        const current = currentTooth;
+        const prev = prevToothRef.current;
+
+        if (current === prev) return;
+
+        const prevIndex = ALL_TEETH.indexOf(prev);
+        const currentIndex = ALL_TEETH.indexOf(current);
+
+        const isGoingDown = currentIndex > prevIndex;
+        const pair = isGoingDown ? [prev, current] : [current, prev];
+        const startTransform = isGoingDown ? 'translateY(0)' : 'translateY(-100%)';
+        const endTransform = isGoingDown ? 'translateY(-100%)' : 'translateY(0)';
+
+        // 1. Prepare pair without animation
+        setDisplayState({
+            teeth: pair,
+            transform: startTransform,
+            transition: 'none'
+        });
+
+        // 2. Trigger animation in next frame
+        const animTimeout = setTimeout(() => {
+            setDisplayState(prevS => ({
+                ...prevS,
+                transform: endTransform,
+                transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+            }));
+        }, 16); // ~1 frame
+
+        // 3. Finalize and clean up after animation completes
+        const cleanupTimeout = setTimeout(() => {
+            setDisplayState({
+                teeth: [current],
+                transform: 'translateY(0)',
+                transition: 'none'
+            });
+            prevToothRef.current = current;
+        }, 450);
+
+        return () => {
+            clearTimeout(animTimeout);
+            clearTimeout(cleanupTimeout);
+        };
     }, [currentTooth]);
 
     return (
         <div className="tooth-visualization-container">
             <div className="tooth-selector-column" ref={sidebarScrollRef}>
-                {allTeeth.map((num) => (
+                {ALL_TEETH.map((num) => (
                     <div
                         key={num}
                         className={`tooth-number-item ${num === currentTooth ? 'active' : ''}`}
@@ -152,16 +201,24 @@ const ToothVisualization = ({ toothNumber, onSelectTooth, overrideToothData }) =
                 ))}
             </div>
 
-            <div className="visualization-column" ref={vizScrollRef}>
-                {allTeeth.map((num) => (
-                    <ToothItem
-                        key={num}
-                        toothNumber={num}
-                        toothData={num === currentTooth && overrideToothData ? overrideToothData : teeth[num]}
-                        isSelected={num === currentTooth}
-                        onSelectTooth={onSelectTooth}
-                    />
-                ))}
+            <div className="visualization-column">
+                <div
+                    className="sliding-wrapper"
+                    style={{
+                        transform: displayState.transform,
+                        transition: displayState.transition
+                    }}
+                >
+                    {displayState.teeth.map((num) => (
+                        <ToothItem
+                            key={num}
+                            toothNumber={num}
+                            toothData={num === currentTooth && overrideToothData ? overrideToothData : teeth[num]}
+                            isSelected={num === currentTooth}
+                            onSelectTooth={onSelectTooth}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
     );

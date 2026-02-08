@@ -31,20 +31,37 @@
     gap: var(--spacing-3);
 }
 
-.plan-item {
+.plan-item-grouped {
     display: flex;
     align-items: center;
     background: var(--background-elevated);
     padding: 0.5rem 1rem;
     border-radius: var(--radius-sm);
-    border-left: 4px solid transparent;
     gap: 1rem;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
-.plan-item:hover {
+.plan-item-grouped:hover {
     background-color: var(--background-tertiary);
+}
+
+.tooth-number-label {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-right: 4px;
+}
+
+.procedure-item {
+    color: var(--text-secondary);
+}
+
+.procedure-item.planned {
+    color: var(--color-error);
+}
+
+.procedure-item.monitoring {
+    color: var(--color-warning);
 }
 
 .plan-item.monitoring {
