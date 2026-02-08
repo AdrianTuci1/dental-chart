@@ -66,6 +66,12 @@ const HomePage = () => {
                         </div>
                     </div>
 
+                    <div style={{ textAlign: 'right', marginTop: '-10px' }}>
+                        <a href="#" style={{ fontSize: '0.85rem', color: 'var(--color-primary)', textDecoration: 'none' }}>
+                            Forgot password?
+                        </a>
+                    </div>
+
                     <button
                         type="submit"
                         className="submit-button"
@@ -73,6 +79,16 @@ const HomePage = () => {
                         Sign In
                     </button>
                 </form>
+
+                <div className="signup-link-container">
+                    Don't have an account?
+                    <span
+                        className="signup-link"
+                        onClick={() => navigate('/signup')}
+                    >
+                        Sign Up
+                    </span>
+                </div>
 
                 <div className="demo-text">
                     <p>Demo Mode: Click "Sign In" to continue</p>

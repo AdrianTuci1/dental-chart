@@ -26,6 +26,8 @@ import ToothRestoration from './components/Tooth/ToothRestoration';
 import './App.css'
 
 
+import SignupPage from './pages/SignupPage';
+
 function App() {
   return (
     <BrowserRouter>
@@ -33,6 +35,7 @@ function App() {
         <div className="">
           <Routes>
             <Route path="/" element={<HomePage />} />
+            <Route path="/signup" element={<SignupPage />} />
             <Route path="/patients" element={<PatientsListPage />} />
 
             <Route path="/patients/:patientId" element={<PatientLayout />}>

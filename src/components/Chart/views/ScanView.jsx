@@ -124,7 +124,7 @@ const ScanView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
             <div className="scan-view-main-layout">
                 <div className="scan-view-content">
                     {/* Top Section: Scan Area */}
-                    <div className="scan-area">
+                    <div className={`scan-area ${!scanImage && !isProcessing ? 'scan-area-empty' : ''}`}>
                         {isProcessing ? (
                             <div className="scan-processing-state">
                                 <div className="processing-content">
@@ -194,44 +194,48 @@ const ScanView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
                 </div>
 
                 {/* Right Sidebar */}
-                <div className="scan-view-sidebar">
-                    <DetectionsPanel />
-                </div>
+                {scanImage && (
+                    <div className="scan-view-sidebar">
+                        <DetectionsPanel />
+                    </div>
+                )}
             </div>
 
             {/* Footer Section - Full Width */}
-            <div className="scan-view-footer">
-                <div className="footer-left">
-                    <button className="btn-secondary">Hide detections</button>
-                </div>
+            {scanImage && (
+                <div className="scan-view-footer">
+                    <div className="footer-left">
+                        <button className="btn-secondary">Hide detections</button>
+                    </div>
 
-                <div className="footer-center">
-                    <label className="filter-checkbox">
-                        <input type="checkbox" defaultChecked />
-                        <span>Caries</span>
-                    </label>
-                    <label className="filter-checkbox">
-                        <input type="checkbox" defaultChecked />
-                        <span>Periapical radiolucency</span>
-                    </label>
-                    <label className="filter-checkbox">
-                        <input type="checkbox" defaultChecked />
-                        <span>Other detections</span>
-                    </label>
-                    <div className="filter-divider"></div>
-                    <label className="filter-switch">
-                        <span>Mandibular canal</span>
-                        <div className="switch-track">
-                            <div className="switch-thumb"></div>
-                        </div>
-                    </label>
-                </div>
+                    <div className="footer-center">
+                        <label className="filter-checkbox">
+                            <input type="checkbox" defaultChecked />
+                            <span>Caries</span>
+                        </label>
+                        <label className="filter-checkbox">
+                            <input type="checkbox" defaultChecked />
+                            <span>Periapical radiolucency</span>
+                        </label>
+                        <label className="filter-checkbox">
+                            <input type="checkbox" defaultChecked />
+                            <span>Other detections</span>
+                        </label>
+                        <div className="filter-divider"></div>
+                        <label className="filter-switch">
+                            <span>Mandibular canal</span>
+                            <div className="switch-track">
+                                <div className="switch-thumb"></div>
+                            </div>
+                        </label>
+                    </div>
 
-                <div className="footer-right">
-                    <button className="btn-text">Save</button>
-                    <button className="btn-primary">Confirm and generate report</button>
+                    <div className="footer-right">
+                        <button className="btn-text">Save</button>
+                        <button className="btn-primary">Confirm and generate report</button>
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

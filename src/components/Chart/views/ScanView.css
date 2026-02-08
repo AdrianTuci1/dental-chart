@@ -117,7 +117,14 @@
     overflow: hidden;
     display: flex;
     align-items: center;
+    align-items: center;
     justify-content: center;
+    transition: flex 0.3s ease;
+}
+
+.scan-area.scan-area-empty {
+    flex: 0.8;
+    min-height: 250px;
 }
 
 .scan-upload-placeholder {
