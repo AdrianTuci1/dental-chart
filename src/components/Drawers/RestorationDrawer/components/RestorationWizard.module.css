@@ -1,0 +1,147 @@
+/* Configuration View Styles */
+.configurationView {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    gap: 16px;
+    flex: 1;
+}
+
+.summaryList {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.summaryRow {
+    display: flex;
+    align-items: baseline;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.summaryLabel {
+    font-weight: 700;
+    color: var(--text-tertiary);
+    /* Gray-400 */
+    margin-right: 8px;
+    text-transform: uppercase;
+    min-width: 80px;
+}
+
+.summaryValue {
+    color: #0ea5e9;
+    /* Sky-500 */
+    font-weight: 500;
+}
+
+.stepContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.stepLabel {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    width: 100%;
+    text-align: left;
+}
+
+.optionsStack {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+}
+
+.stackBtn {
+    width: 100%;
+    padding: 16px;
+    background-color: var(--background-tertiary);
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.stackBtn:hover {
+    background-color: var(--background-elevated);
+    color: var(--text-primary);
+}
+
+.active {
+    background-color: #6b7280;
+    color: white;
+}
+
+.continueBtn {
+    width: 100%;
+    padding: 12px;
+    outline: 2px solid #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.continueBtn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Fixed Footer for Save Button */
+.fixedFooter {
+    padding: 16px;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--background-secondary);
+}
+
+.saveFull {
+    width: 100%;
+    padding: 16px;
+    background-color: #0ea5e9;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.saveFull:hover {
+    background-color: #0284c7;
+}
+
+/* Zones container in drawer */
+.drawerZones {
+    display: flex;
+    justify-content: center;
+    /* Negative margin to counteract configurationView padding */
+    margin-left: -24px !important;
+    margin-right: -24px !important;
+    width: calc(100% + 48px);
+    background-color: var(--background-secondary);
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.fullWidthZones {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    padding: 10px !important;
+    border: none !important;
+    order: unset !important;
+}

@@ -5,7 +5,7 @@ import { useOutletContext } from 'react-router-dom';
 import NormalView from './views/NormalView';
 import UpperJawView from './views/UpperJawView';
 import LowerJawView from './views/LowerJawView';
-import PathologyDrawer from './PathologyDrawer';
+import PathologyDrawer from '../Drawers/PathologyDrawer/PathologyDrawer';
 
 const ChartPathology = () => {
     const { teeth, selectTooth, selectedTooth } = useChartStore();

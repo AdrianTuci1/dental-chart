@@ -3,7 +3,7 @@ import { getToothType } from '../../utils/toothUtils';
 import { ToothZone } from '../../models/Enums';
 import './ToothZones.css';
 
-const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumber, zoneColor }) => {
+const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumber, zoneColor, className }) => {
 
     // Determine last 4 zones based on tooth index (last digit)
     const getDynamicZones = () => {
@@ -65,7 +65,7 @@ const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumbe
     };
 
     return (
-        <div className="zones">
+        <div className={`zones ${className || ''}`}>
             <ul className="zones-list">
                 {zones.map(zone => {
                     const isSelected = selectedZones.includes(zone.id);

@@ -1,0 +1,34 @@
+.drawerHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--background-secondary);
+}
+
+.drawerNav {
+    display: flex;
+    gap: 16px;
+}
+
+.navArrow {
+    cursor: pointer;
+    color: #3b82f6;
+    font-size: 1.2rem;
+}
+
+.toothTitle {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.drawerActions {
+    display: flex;
+    gap: 16px;
+    color: var(--text-secondary);
+}
+
+.actionIcon {
+    cursor: pointer;
+}

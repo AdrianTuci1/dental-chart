@@ -1,0 +1,52 @@
+.drawerHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--background-secondary);
+}
+
+.drawerNav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toothTitle {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.navArrow {
+    cursor: pointer;
+    color: var(--text-tertiary);
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.navArrow:hover {
+    color: var(--text-primary);
+}
+
+.drawerActions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.actionIcon {
+    cursor: pointer;
+    color: var(--text-tertiary);
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.actionIcon:hover {
+    color: var(--text-primary);
+}

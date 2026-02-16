@@ -1,0 +1,22 @@
+.typeSelectorList {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px;
+}
+
+.typeBtn {
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--background-tertiary);
+    cursor: pointer;
+    font-weight: 500;
+    color: var(--text-primary);
+    text-align: center;
+}
+
+.typeBtn:hover {
+    border-color: #3b82f6;
+    background-color: var(--background-elevated);
+}
