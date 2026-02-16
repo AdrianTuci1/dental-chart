@@ -207,6 +207,15 @@ export const mapToothDataToConditions = (tooth) => {
         });
     }
 
+    // Map Apical Pathology
+    if (tooth.pathology && tooth.pathology.apicalPathology) {
+        conditions.push({
+            type: 'apical',
+            color: '#EF4444', // Red for pathology
+            opacity: 1.0
+        });
+    }
+
     return conditions;
 };
 

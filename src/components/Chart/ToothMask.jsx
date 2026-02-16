@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { maskEngine } from './MaskEngine';
 import { getOverlayPath, getOverlaySlice } from '../../utils/toothOverlayMapping';
 import { getMaskTransforms } from '../../utils/toothMaskTransforms';
+import { getApicalCoordinates } from '../../utils/apicalConfig';
 import './ToothMask.css';
 
 const ToothMask = ({
@@ -13,6 +14,10 @@ const ToothMask = ({
     toothImagePath,
     imageScale = 0.9
 }) => {
+    // Apical Circle Configuration
+    const APICAL_RADIUS = 4;
+    const APICAL_LINE_WIDTH = 1;
+
     const tNum = parseInt(toothNumber, 10);
     const isUpperJaw = (tNum >= 11 && tNum <= 28) || (tNum >= 51 && tNum <= 65);
     const canvasRef = useRef(null);
@@ -23,9 +28,9 @@ const ToothMask = ({
         if (!canvas || !toothImagePath) return;
 
         const ctx = canvas.getContext('2d');
-        const width = 100;
-        // Logic heights for the CANVAS (display area)
-        const height = (view === 'frontal' || view === 'lingual') ? 150 : 100;
+        const width = 54;
+        // Logic heights for the CANVAS (display area) matching SVG viewboxes
+        const height = (view === 'frontal' || view === 'lingual') ? 172 : 94;
         const scale = 2;
 
         canvas.width = width * scale;
@@ -139,11 +144,54 @@ const ToothMask = ({
                 ctx.drawImage(offCanvas, 0, 0, width, height);
             });
 
-            // 4. Apply Masking
+            // 4. Apply Masking (Destination-in clips condition layers to tooth alpha)
             if (maskImg) {
                 ctx.globalCompositeOperation = 'destination-in';
                 ctx.drawImage(maskImg, 0, 0, width, height);
                 ctx.globalCompositeOperation = 'source-over';
+            }
+
+            // 5. Draw Apical Circles (AFTER masking)
+            // Skip for topview
+            if (view !== 'topview') {
+                const apicalCondition = conditions.find(c => c.type === 'apical');
+                if (apicalCondition) {
+                    ctx.save();
+                    ctx.strokeStyle = apicalCondition.color || '#EF4444';
+                    ctx.lineWidth = APICAL_LINE_WIDTH;
+                    ctx.globalAlpha = apicalCondition.opacity || 1.0;
+
+                    const baseCoords = getApicalCoordinates(toothNumber);
+                    const tNum = parseInt(toothNumber, 10);
+                    const quadrant = Math.floor(tNum / 10);
+
+                    const needsHorizontalFlipForApical = [2, 3].includes(quadrant);
+                    const isInsideView = view === 'lingual';
+
+                    // Box dimensions: 48x160 relative to 54x172 logical space
+                    const LOGICAL_W = 54;
+                    const LOGICAL_H = 172;
+                    const BOX_W = 48;
+                    const BOX_H = 160;
+
+                    const boxOffsetX = (LOGICAL_W - BOX_W) / 2; // 3
+                    const boxOffsetY = (LOGICAL_H - BOX_H) / 2; // 6
+
+                    baseCoords.forEach(coord => {
+                        let drawX = coord.x;
+                        let drawY = coord.y;
+
+
+                        // Map to logical/canvas space (1:1 mapping now)
+                        let finalX = boxOffsetX + drawX;
+                        let finalY = boxOffsetY + drawY;
+
+                        ctx.beginPath();
+                        ctx.arc(finalX, finalY, APICAL_RADIUS, 0, Math.PI * 2);
+                        ctx.stroke();
+                    });
+                    ctx.restore();
+                }
             }
 
             ctx.restore();
