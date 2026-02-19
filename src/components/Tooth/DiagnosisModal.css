@@ -1,0 +1,154 @@
+.diagnosis-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.diagnosis-modal-content {
+    background-color: var(--background-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    width: 100%;
+    max-width: 28rem;
+    padding: 1.5rem;
+    margin: 1rem;
+    animation: zoomIn 0.2s ease-out;
+    color: var(--text-primary);
+}
+
+.diagnosis-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.diagnosis-modal-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.diagnosis-icon {
+    color: var(--color-primary);
+}
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-tertiary);
+    transition: color 0.2s;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.close-modal-btn:hover {
+    color: var(--text-primary);
+}
+
+.diagnosis-modal-body {
+    margin-bottom: 1.5rem;
+}
+
+.diagnosis-text {
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+}
+
+.diagnosis-display-box {
+    background-color: var(--background-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.diagnosis-result {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    display: block;
+}
+
+.diagnosis-question {
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+}
+
+.diagnosis-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+}
+
+.modal-btn {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Cancel button removed from UI, but keeping style just in case */
+.modal-btn-cancel {
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+}
+
+.modal-btn-cancel:hover {
+    background-color: var(--background-tertiary);
+    color: var(--text-primary);
+}
+
+.modal-btn-confirm {
+    background-color: var(--color-primary);
+    border: 1px solid transparent;
+    color: white;
+    width: 100%;
+    justify-content: center;
+}
+
+.modal-btn-confirm:hover {
+    background-color: var(--color-primary-dark);
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

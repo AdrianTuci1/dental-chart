@@ -214,9 +214,6 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                         <div className={styles.summaryList}>
                             <span className={styles.summaryLabel}>Restoration:</span>
                         </div>
-                        <div className={styles.addedItemsList}>
-                            {renderAddedItems()}
-                        </div>
                         <TypeSelector
                             restorationTypes={restorationTypes}
                             onTypeSelect={handleTypeSelect}

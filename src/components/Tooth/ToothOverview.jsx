@@ -1,16 +1,81 @@
 import React, { useState } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
-import { ChevronLeft, PlusCircle, RefreshCw, XCircle, Snowflake, Gavel, Hand, Flame, Zap, CheckCircle } from 'lucide-react';
+import { ChevronLeft, PlusCircle, RefreshCw, XCircle, CheckCircle } from 'lucide-react';
 import useChartStore from '../../store/chartStore';
 import usePatientStore from '../../store/patientStore';
 import ConfirmationModal from '../UI/ConfirmationModal';
 import './ToothOverview.css';
+import EndodonticSection from './EndodonticSection';
+import PeriodontalSection from './PeriodontalSection';
+
+import EndoTestDetail from './EndoTestDetail';
+import { suggestPulpalDiagnosis } from '../../utils/endoDiagnosis';
+import DiagnosisModal from './DiagnosisModal';
 
 const ToothOverview = () => {
     const { tooth } = useOutletContext();
     const navigate = useNavigate();
     const updateTooth = useChartStore(state => state.updateTooth);
     const { selectedPatient, completeTreatmentPlanItem } = usePatientStore();
+
+    const [selectedTest, setSelectedTest] = useState(null);
+    const [testResults, setTestResults] = useState({});
+    const [suggestedDiagnosis, setSuggestedDiagnosis] = useState(null);
+
+    const handleTestSelect = (testName) => {
+        setSelectedTest(testName);
+    };
+
+    const handleCloseTest = () => {
+        setSelectedTest(null);
+    };
+
+    const [showDiagnosisModal, setShowDiagnosisModal] = useState(false);
+
+    const handleSaveTest = (testName, data) => {
+        const newResults = { ...testResults, [testName]: data };
+        if (!data) {
+            delete newResults[testName];
+        }
+        setTestResults(newResults);
+
+        const diagnosis = suggestPulpalDiagnosis(newResults);
+
+        // Only show modal if diagnosis changed and is not null
+        if (diagnosis && diagnosis !== suggestedDiagnosis) {
+            setSuggestedDiagnosis(diagnosis);
+
+            // If diagnosis is 'Normal Pulp', apply it automatically without modal
+            if (diagnosis === 'Normal Pulp') {
+                const updatedEndo = { ...tooth.endodontic, diagnosis: diagnosis };
+                updateTooth(tooth.isoNumber, { endodontic: updatedEndo });
+                setShowDiagnosisModal(false);
+            } else {
+                setShowDiagnosisModal(true);
+            }
+        } else if (!diagnosis) {
+            setSuggestedDiagnosis(null);
+        }
+
+        // Close EndoTestDetail after selection
+        setSelectedTest(null);
+    };
+
+    const handleAcceptDiagnosis = () => {
+        // Update the tooth model with the diagnosis
+        // We need to ensure we are updating the endodontic object
+        const updatedEndo = { ...tooth.endodontic, diagnosis: suggestedDiagnosis };
+        updateTooth(tooth.isoNumber, { endodontic: updatedEndo });
+        setShowDiagnosisModal(false);
+    };
+
+    const handleRejectDiagnosis = () => {
+        setShowDiagnosisModal(false);
+        // Optionally clear the suggestion or keep it but don't apply it
+        // For now we just close the modal
+    };
+
+
 
     const [modalState, setModalState] = useState({
         isOpen: false,
@@ -65,16 +130,7 @@ const ToothOverview = () => {
         item => parseInt(item.tooth) === parseInt(tooth.isoNumber)
     ) || [];
 
-    const getIcon = (test) => {
-        switch (test) {
-            case 'Cold': return <Snowflake size={16} className="endo-icon text-blue-400" />;
-            case 'Percussion': return <Gavel size={16} className="endo-icon text-gray-500" />;
-            case 'Palpation': return <Hand size={16} className="endo-icon text-orange-400" />;
-            case 'Heat': return <Flame size={16} className="endo-icon text-red-500" />;
-            case 'Electricity': return <Zap size={16} className="endo-icon text-yellow-500" />;
-            default: return <Zap size={16} className="endo-icon" />;
-        }
-    };
+
 
     return (
         <div className="tooth-overview-container">
@@ -123,62 +179,24 @@ const ToothOverview = () => {
                         "Currently there are no treatments pending"
                     )}
                 </div>
+
             </div>
 
             {/* Bottom Half: Content Grid */}
             <div className="content-grid">
                 {/* Endodontic Section (Left) */}
-                <div className="section-card">
-                    <div className="section-header">
-                        <h2>Endodontic</h2>
-                    </div>
-                    <div className="endo-list">
-                        {['Cold', 'Percussion', 'Palpation', 'Heat', 'Electricity'].map(test => (
-                            <div key={test} className="endo-item">
-                                <div className="endo-label">
-                                    {getIcon(test)} {test}
-                                </div>
-                                <div className="endo-action">
-                                    Test <ChevronLeft size={16} className="rotate-180 ml-1" />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                <EndodonticSection onTestSelect={handleTestSelect} />
 
-                {/* Periodontal Section (Right) */}
-                <div className="section-card">
-                    <div className="section-header">
-                        <h2>Periodontal</h2>
-                        <button
-                            onClick={() => navigate('periodontal')}
-                            className="probing-btn"
-                        >
-                            <PlusCircle size={16} /> PROBING
-                        </button>
-                    </div>
-                    <div className="perio-grid">
-                        {/* Mock Data for Periodontal - In real app, map from tooth.periodontal.sites */}
-                        {[
-                            { label: 'Disto Lingual', val: 2, sub: 0, route: 'disto-lingual' },
-                            { label: 'Lingual', val: 2, sub: 0, route: 'lingual' },
-                            { label: 'Mesio Lingual', val: 1, sub: 0, route: 'mesio-lingual' },
-                            { label: 'Disto Buccal', val: 1, sub: 0, route: 'disto-buccal' },
-                            { label: 'Buccal', val: 1, sub: 0, route: 'buccal' },
-                            { label: 'Mesio Buccal', val: 1, sub: 0, route: 'mesio-buccal' },
-                        ].map((site, idx) => (
-                            <div
-                                key={idx}
-                                className="perio-card"
-                                onClick={() => navigate(`periodontal/${site.route}`)}
-                            >
-                                <div className="perio-value">{site.val}</div>
-                                <div className="perio-sub">{site.sub}</div>
-                                <div className="perio-label">{site.label}</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                {/* Periodontal Section (Right) OR Endo Detail */}
+                {selectedTest ? (
+                    <EndoTestDetail
+                        testName={selectedTest}
+                        onClose={handleCloseTest}
+                        onSave={handleSaveTest}
+                    />
+                ) : (
+                    <PeriodontalSection />
+                )}
 
             </div>
 
@@ -188,6 +206,13 @@ const ToothOverview = () => {
                 onConfirm={handleConfirm}
                 title={modalState.title}
                 message={modalState.message}
+            />
+
+            <DiagnosisModal
+                isOpen={showDiagnosisModal}
+                diagnosis={suggestedDiagnosis}
+                onAccept={handleAcceptDiagnosis}
+                onReject={handleRejectDiagnosis}
             />
         </div>
     );

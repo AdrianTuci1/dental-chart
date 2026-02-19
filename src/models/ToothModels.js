@@ -153,7 +153,9 @@ export class Endodontic {
         this.percussion = null;
         this.palpation = null;
         this.heat = null;
+        this.heat = null;
         this.electricity = null;
+        this.diagnosis = null; // Calculated or manually set diagnosis
     }
 }
 
