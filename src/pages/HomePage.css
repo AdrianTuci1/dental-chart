@@ -18,7 +18,6 @@
     left: 10%;
     width: 300px;
     height: 300px;
-    filter: blur(100px);
     opacity: 0.1;
     border-radius: 50%;
     animation: float 10s infinite alternate;
@@ -31,7 +30,6 @@
     right: 10%;
     width: 250px;
     height: 250px;
-    filter: blur(80px);
     opacity: 0.1;
     border-radius: 50%;
     animation: float 8s infinite alternate-reverse;
@@ -50,15 +48,32 @@
 .login-card {
     width: 100%;
     max-width: 400px;
-    background: rgba(30, 30, 30, 0.65);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-xl);
-    padding: 40px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     z-index: 10;
-    transition: transform 0.3s ease;
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    padding: 0;
+}
+
+.brand-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    margin-bottom: 40px;
+    width: fit-content;
+}
+
+.brand-logo {
+    width: 32px;
+    height: 32px;
+}
+
+.brand-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-white);
+    letter-spacing: -0.02em;
 }
 
 .login-header {
@@ -69,10 +84,7 @@
 .login-title {
     font-size: 2.25rem;
     font-weight: 800;
-    background: linear-gradient(to right, var(--color-white), var(--color-gray-300));
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--color-white);
     margin-bottom: 8px;
     letter-spacing: -0.03em;
 }
@@ -100,6 +112,7 @@
     font-weight: 500;
     color: var(--text-secondary);
     margin-left: 2px;
+    text-align: left;
 }
 
 .input-wrapper {
@@ -142,22 +155,19 @@
 
 .submit-button {
     margin-top: 12px;
-    background: linear-gradient(135deg, var(--color-primary) 0%, #6d28d9 100%);
+    background: var(--color-primary);
     color: white;
     padding: 14px;
     border-radius: var(--radius-md);
     font-weight: 600;
     font-size: 1rem;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s;
     position: relative;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
 }
 
 .submit-button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px rgba(124, 58, 237, 0.4);
-    filter: brightness(1.1);
+    background: var(--color-purple);
 }
 
 .submit-button:active {

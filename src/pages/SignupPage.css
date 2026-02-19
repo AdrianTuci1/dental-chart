@@ -11,14 +11,27 @@
 .signup-card {
     width: 100%;
     max-width: 420px;
-    background: rgba(30, 30, 30, 0.6);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-xl);
-    padding: var(--spacing-8);
-    box-shadow: var(--shadow-xl), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-    animation: slideIn 0.5s ease-out;
+}
+
+.brand-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    margin-bottom: 40px;
+    width: fit-content;
+}
+
+.brand-logo {
+    width: 32px;
+    height: 32px;
+}
+
+.brand-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-white);
+    letter-spacing: -0.02em;
 }
 
 @keyframes slideIn {
@@ -71,6 +84,7 @@
     font-weight: 500;
     color: var(--text-secondary);
     transition: color 0.2s;
+    text-align: left;
 }
 
 .input-wrapper {
@@ -112,7 +126,7 @@
 
 .signup-button {
     margin-top: var(--spacing-4);
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    background: var(--color-primary);
     color: white;
     padding: 12px;
     border-radius: var(--radius-md);
@@ -124,8 +138,7 @@
 }
 
 .signup-button:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-glow);
+    background: var(--color-purple);
 }
 
 .signup-button:active {

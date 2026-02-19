@@ -26,9 +26,9 @@ const HomePage = () => {
     return (
         <div className="home-page-container">
             <div className="login-card">
-                <div className="login-header">
-                    <h1 className="login-title">Dental Chart</h1>
-                    <p className="login-subtitle">Professional Dental Charting System</p>
+                <div className="brand-header">
+                    <img src="/logo.png" alt="Pixtooth Logo" className="brand-logo" />
+                    <span className="brand-name">Pixtooth</span>
                 </div>
 
                 <form onSubmit={handleLogin} className="login-form">
@@ -66,7 +66,7 @@ const HomePage = () => {
                         </div>
                     </div>
 
-                    <div style={{ textAlign: 'right', marginTop: '-10px' }}>
+                    <div style={{ textAlign: 'left', marginTop: '-10px' }}>
                         <a href="#" style={{ fontSize: '0.85rem', color: 'var(--color-primary)', textDecoration: 'none' }}>
                             Forgot password?
                         </a>

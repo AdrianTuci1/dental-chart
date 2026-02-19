@@ -4,6 +4,7 @@ import usePatientStore from '../store/patientStore';
 import { MOCK_PATIENTS } from '../utils/mockData';
 import { Search, Plus, User, Settings } from 'lucide-react';
 import SettingsModal from '../components/UI/SettingsModal';
+import AddPatientModal from '../components/UI/AddPatientModal';
 
 import './PatientsListPage.css';
 
@@ -11,6 +12,7 @@ const PatientsListPage = () => {
     const navigate = useNavigate();
     const { patients, setPatients, searchQuery, setSearchQuery, selectPatient } = usePatientStore();
     const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+    const [isAddPatientOpen, setIsAddPatientOpen] = React.useState(false);
 
     useEffect(() => {
         // Initialize with mock data if empty
@@ -56,7 +58,7 @@ const PatientsListPage = () => {
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
-                <button className="add-patient-btn">
+                <button className="add-patient-btn" onClick={() => setIsAddPatientOpen(true)}>
                     <Plus size={20} />
                     <span>Add Patient</span>
                 </button>
@@ -136,6 +138,11 @@ const PatientsListPage = () => {
             <SettingsModal
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
+            />
+
+            <AddPatientModal
+                isOpen={isAddPatientOpen}
+                onClose={() => setIsAddPatientOpen(false)}
             />
         </div>
     );

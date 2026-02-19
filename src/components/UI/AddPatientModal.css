@@ -1,0 +1,128 @@
+.add-patient-modal {
+    width: 90%;
+    max-width: 500px;
+    background-color: #0d0d0d;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 32px 64px -16px rgba(0, 0, 0, 0.6);
+    position: relative;
+    animation: modalPulseIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.add-patient-modal .modal-topbar {
+    padding: var(--spacing-8) var(--spacing-6) var(--spacing-4);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.add-patient-modal .topbar-content h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #fff;
+    text-align: left;
+}
+
+.add-patient-modal .topbar-content p {
+    margin: 4px 0 0;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.add-patient-modal .modal-content-area {
+    padding: var(--spacing-4) var(--spacing-6) var(--spacing-8);
+}
+
+.add-patient-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-6);
+}
+
+.form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-5);
+}
+
+@media (max-width: 640px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left;
+}
+
+.form-group label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 12px;
+    color: rgba(255, 255, 255, 0.3);
+    pointer-events: none;
+}
+
+.input-wrapper input {
+    width: 100%;
+    background-color: #121212;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px 12px 10px 40px;
+    color: #fff;
+    font-size: 0.9375rem;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.input-wrapper input:focus {
+    border-color: #a855f7;
+    background-color: #161616;
+    box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.1);
+}
+
+.input-wrapper input::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+/* Calendar icon specifically for date input if needed, though browser might override */
+.input-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-3);
+    margin-top: var(--spacing-4);
+    padding-top: var(--spacing-6);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.pro-btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}

@@ -31,9 +31,9 @@ const SignupPage = () => {
     return (
         <div className="signup-page-container">
             <div className="signup-card">
-                <div className="signup-header">
-                    <h1 className="signup-title">Create Account</h1>
-                    <p className="signup-subtitle">Join the professional dental charting system</p>
+                <div className="brand-header">
+                    <img src="/logo.png" alt="Pixtooth Logo" className="brand-logo" />
+                    <span className="brand-name">Pixtooth</span>
                 </div>
 
                 <form onSubmit={handleSignup} className="signup-form">
