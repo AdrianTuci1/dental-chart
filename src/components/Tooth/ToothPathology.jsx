@@ -210,7 +210,10 @@ const ToothPathology = () => {
         const procedure = parts.join(', ');
         if (parts.length <= 1 && actionType !== 'save') return;
 
+        const newItemId = Date.now().toString();
+
         const baseItem = {
+            id: newItemId,
             procedure,
             tooth: tooth.toothNumber,
             cost: actionType === 'monitor' ? 50 : 200,
@@ -222,12 +225,11 @@ const ToothPathology = () => {
                 ...baseItem,
                 status: actionType === 'monitor' ? 'monitoring' : 'planned'
             });
-            // Optional: Also update tooth state if you want it visible on chart as "planned"
-            // For now, let's keep it simple as requested.
+            handleSave(actionType, newItemId, true);
         } else if (actionType === 'save') {
-            // Save logic: update tooth state and add to history
-            handleSave(true); // silent save
+            handleSave(actionType, newItemId, true);
             addToHistory(selectedPatient.id, {
+                id: newItemId,
                 description: procedure,
                 provider: 'Dr. Current',
                 tooth: tooth.toothNumber
@@ -237,56 +239,73 @@ const ToothPathology = () => {
         navigate('../');
     };
 
-    const handleSave = (silent = false) => {
+    const handleSave = (actionType = 'save', newItemId = Date.now().toString(), silent = false) => {
         if (!tooth) return;
 
-        // Update tooth pathology based on current type
         const updatedPathology = { ...tooth.pathology };
         let hasChanges = false;
+        const status = actionType === 'monitor' ? 'monitoring' : (actionType === 'treat' ? 'planned' : 'completed');
+        const dateStr = actionType === 'save' ? new Date().toISOString() : undefined;
+
+        const attachMeta = (obj) => {
+            obj.id = newItemId;
+            obj.status = status;
+            if (dateStr) obj.date = dateStr;
+            return obj;
+        };
 
         switch (selectedPathologyType) {
             case 'decay':
-                if (selectedZones.length > 0 && decayMaterial && cavitation && cavitationLevel) {
-                    const newDecay = {
-                        type: `${decayMaterial}-${cavitation}-${cavitationLevel}`,
+                if (selectedZones.length > 0) {
+                    const newDecay = attachMeta({
+                        type: `${decayMaterial || '?'}-${cavitation || '?'}-${cavitationLevel || '?'}`,
                         zones: selectedZones
-                    };
+                    });
                     updatedPathology.decay = [...(updatedPathology.decay || []), newDecay];
                     hasChanges = true;
                 }
                 break;
             case 'fracture':
+                const fractureBase = updatedPathology.fracture || {};
+                updatedPathology.fracture = attachMeta(fractureBase);
                 if (fractureLocation === 'crown') {
                     updatedPathology.fracture.crown = true;
+                    hasChanges = true;
                 } else if (fractureLocation === 'root' && fractureDirection) {
                     updatedPathology.fracture.root = fractureDirection === 'vertical' ? 'Vertical' : 'Horizontal';
                     hasChanges = true;
                 }
                 break;
             case 'tooth-wear':
-                if (toothWearType && toothWearSurface) {
-                    updatedPathology.toothWear = {
-                        type: toothWearType === 'abrasion' ? 'Abrasion' : 'Erosion',
-                        surface: toothWearSurface === 'buccal' ? 'Buccal' : 'Palatal'
-                    };
+                if (toothWearType || toothWearSurface) {
+                    updatedPathology.toothWear = attachMeta({
+                        type: toothWearType === 'abrasion' ? 'Abrasion' : (toothWearType === 'erosion' ? 'Erosion' : '?'),
+                        surface: toothWearSurface === 'buccal' ? 'Buccal' : (toothWearSurface === 'lingual' ? 'Lingual' : '?')
+                    });
                     hasChanges = true;
                 }
                 break;
             case 'discoloration':
                 if (discolorationColor) {
-                    updatedPathology.discoloration = discolorationColor.charAt(0).toUpperCase() + discolorationColor.slice(1);
+                    updatedPathology.discoloration = attachMeta({
+                        color: discolorationColor.charAt(0).toUpperCase() + discolorationColor.slice(1)
+                    });
                     hasChanges = true;
                 }
                 break;
             case 'apical':
                 if (apicalPresent !== null) {
-                    updatedPathology.apicalPathology = apicalPresent;
+                    updatedPathology.apicalPathology = attachMeta({
+                        present: apicalPresent
+                    });
                     hasChanges = true;
                 }
                 break;
             case 'development-disorder':
                 if (developmentDisorderPresent !== null) {
-                    updatedPathology.developmentDisorder = developmentDisorderPresent;
+                    updatedPathology.developmentDisorder = attachMeta({
+                        present: developmentDisorderPresent
+                    });
                     hasChanges = true;
                 }
                 break;
@@ -585,13 +604,13 @@ const ToothPathology = () => {
     return (
         <div className="pathology-container" data-view="pathology">
             <div className="pathology-content">
-                {/* Tooth Zones - Left Column */}
                 <ToothZones
                     selectedZones={selectedZones}
                     onChange={setSelectedZones}
                     inactive={selectedPathologyType !== 'decay'}
                     toothNumber={tooth?.toothNumber}
                     zoneColor="#EF4444" // Red-500 for pathology
+                    restorationType="decay"
                 />
 
                 {/* Main Content - Right Column */}

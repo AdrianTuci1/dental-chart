@@ -59,8 +59,24 @@ export const getToothType = (toothNumber) => {
     return 'molar';
 };
 
-export const mapToothDataToConditions = (tooth) => {
+export const mapToothDataToConditions = (tooth, historicalDate = null) => {
     if (!tooth) return [];
+
+    const isBeforeOrAtHistoricalDate = (item) => {
+        if (!historicalDate) return true; // Show everything in current view
+
+        // If passing just a date string (e.g. missingDate)
+        if (typeof item === 'string') {
+            return new Date(item) <= new Date(historicalDate);
+        }
+
+        // If it's a rich object
+        if (!item) return true;
+        // User requested that masks should appear on teeth regardless of history if they are planned/monitoring
+        if (item.status === 'planned' || item.status === 'monitoring') return true;
+        if (!item.date) return true; // Show legacy items unconditionally
+        return new Date(item.date) <= new Date(historicalDate);
+    };
 
     // Determine tooth category (Anterior / Premolar / Molar)
     const type = getToothType(tooth.number);
@@ -70,11 +86,11 @@ export const mapToothDataToConditions = (tooth) => {
 
     // Check for Implant or Pontic (to exclude fractures)
     const hasImplantOrPontic = tooth.restoration && tooth.restoration.crowns && tooth.restoration.crowns.some(c =>
-        c.base === 'Implant' || c.type === 'Pontic'
+        (c.base === 'Implant' || c.type === 'Pontic') && isBeforeOrAtHistoricalDate(c)
     );
 
     // Map Fractures (Only if natural tooth / not implant/pontic)
-    if (!hasImplantOrPontic && tooth.pathology && tooth.pathology.fracture) {
+    if (!hasImplantOrPontic && tooth.pathology && tooth.pathology.fracture && isBeforeOrAtHistoricalDate(tooth.pathology.fracture)) {
         if (tooth.pathology.fracture.crown) {
             conditions.push({
                 surface: `fracture_crown_${tooth.pathology.fracture.crown.toLowerCase()}`,
@@ -153,7 +169,7 @@ export const mapToothDataToConditions = (tooth) => {
 
     // Map Restorations (Fillings)
     if (tooth.restoration && tooth.restoration.fillings) {
-        tooth.restoration.fillings.forEach(filling => {
+        tooth.restoration.fillings.filter(f => isBeforeOrAtHistoricalDate(f)).forEach(filling => {
             filling.zones.forEach(zone => {
                 let surface = zoneMap[zone];
                 // Fallback for direct string matches if enum fails
@@ -176,7 +192,7 @@ export const mapToothDataToConditions = (tooth) => {
 
     // Map Advanced Restorations (Inlay, Onlay, Partial Crown)
     if (tooth.restoration && tooth.restoration.advancedRestorations) {
-        tooth.restoration.advancedRestorations.forEach(rest => {
+        tooth.restoration.advancedRestorations.filter(r => isBeforeOrAtHistoricalDate(r)).forEach(rest => {
             if (rest.zones) {
                 rest.zones.forEach(zone => {
                     let surface = zoneMap[zone];
@@ -200,7 +216,7 @@ export const mapToothDataToConditions = (tooth) => {
 
     // Map Pathology (Decay)
     if (tooth.pathology && tooth.pathology.decay) {
-        tooth.pathology.decay.forEach(decay => {
+        tooth.pathology.decay.filter(d => isBeforeOrAtHistoricalDate(d)).forEach(decay => {
             if (decay.zones) {
                 decay.zones.forEach(zone => {
                     // Normalize zone to string if it's an object (though usually strings here)
@@ -231,7 +247,7 @@ export const mapToothDataToConditions = (tooth) => {
     }
 
     // Map Apical Pathology
-    if (tooth.pathology && tooth.pathology.apicalPathology) {
+    if (tooth.pathology && tooth.pathology.apicalPathology && isBeforeOrAtHistoricalDate(tooth.pathology.apicalPathology)) {
         conditions.push({
             type: 'apical',
             color: '#EF4444', // Red for pathology
@@ -305,26 +321,43 @@ export const mapViewToImageView = (view, toothNumber) => {
 /**
  * Get tooth condition from tooth data
  */
-export const getToothCondition = (tooth) => {
+export const getToothCondition = (tooth, historicalDate = null) => {
     if (!tooth) return 'withRoots';
 
+    const isBeforeOrAtHistoricalDate = (item) => {
+        if (!historicalDate) return true; // Show everything in current view
+
+        // If passing just a date string (e.g. missingDate)
+        if (typeof item === 'string') {
+            return new Date(item) <= new Date(historicalDate);
+        }
+
+        // If it's a rich object
+        if (!item) return true;
+        if (item.status === 'planned' || item.status === 'monitoring') return true;
+        if (!item.date) return true; // Show legacy items unconditionally
+        return new Date(item.date) <= new Date(historicalDate);
+    };
+
     // 1. Check for Missing
-    if (tooth.isMissing) return 'missing';
+    if (tooth.isMissing && isBeforeOrAtHistoricalDate(tooth.missingDate)) return 'missing';
 
     // 2. Check for Restorations (Crowns)
     if (tooth.restoration && tooth.restoration.crowns && tooth.restoration.crowns.length > 0) {
-        // Evaluate the most significant crown (usually the last one added or just the first one if multiple exist)
-        // For simplicity, we check if ANY crown matches the criteria
-        const crowns = tooth.restoration.crowns;
+        const crowns = tooth.restoration.crowns.filter(c => isBeforeOrAtHistoricalDate(c));
+        if (crowns.length > 0) {
+            // Evaluate the most significant crown (usually the last one added or just the first one if multiple exist)
+            // For simplicity, we check if ANY crown matches the criteria
 
-        // Check for Implant supported crown
-        const hasImplant = crowns.some(c => c.base === 'Implant');
-        if (hasImplant) return 'implant';
+            // Check for Implant supported crown
+            const hasImplant = crowns.some(c => c.base === 'Implant');
+            if (hasImplant) return 'implant';
 
-        // Check for Pontic with Natural base (or just any other crown)
-        // User specific request: "Daca avem pontic si natural la restoration ar trebui sa afisam imaginea cu _crown"
-        // This generally falls under generic crown
-        return 'crown';
+            // Check for Pontic with Natural base (or just any other crown)
+            // User specific request: "Daca avem pontic si natural la restoration ar trebui sa afisam imaginea cu _crown"
+            // This generally falls under generic crown
+            return 'crown';
+        }
     }
 
     return 'withRoots';

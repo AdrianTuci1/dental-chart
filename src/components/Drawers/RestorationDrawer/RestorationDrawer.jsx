@@ -10,6 +10,7 @@ import { useRestorationForm } from './hooks/useRestorationForm';
 
 const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious, initialType = null }) => {
     const { teeth, updateTooth } = useChartStore();
+    const { addTreatmentPlanItem, selectedPatient } = usePatientStore();
     const tooth = teeth[toothNumber];
 
     const [view, setView] = useState(initialType ? 'configure' : 'list'); // 'list' or 'configure'
@@ -65,51 +66,65 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
             editingIndex
         } = formState;
 
+        const newItemId = editingIndex !== null ? null : Date.now().toString();
+        let procedureString = '';
+
         switch (selectedRestorationType) {
             case 'filling':
-                if (fillingMaterial && fillingQuality) {
+                if (fillingMaterial || selectedZones.length > 0) {
                     const newFilling = {
+                        id: newItemId, // Only applied if new
+                        status: 'planned',
                         zones: selectedZones,
-                        material: fillingMaterial,
-                        quality: fillingQuality
+                        material: fillingMaterial || 'Composite',
+                        quality: fillingQuality || 'Sufficient'
                     };
                     if (editingIndex !== null && updatedRestoration.fillings && updatedRestoration.fillings[editingIndex]) {
-                        updatedRestoration.fillings[editingIndex] = newFilling;
+                        updatedRestoration.fillings[editingIndex] = { ...updatedRestoration.fillings[editingIndex], ...newFilling };
                     } else {
                         updatedRestoration.fillings = [...(updatedRestoration.fillings || []), newFilling];
+                        procedureString = `Filling, ${fillingMaterial || 'Composite'}, ${fillingQuality || 'Sufficient'}, ${selectedZones.join(', ')}`;
                     }
                 }
                 break;
             case 'veneer':
-                if (selectedZones.length > 0 && veneerMaterial && veneerQuality && veneerDetail) {
+                if (selectedZones.length > 0) {
                     const newVeneer = {
+                        id: newItemId,
+                        status: 'planned',
                         zones: selectedZones,
-                        material: veneerMaterial,
-                        quality: veneerQuality,
-                        detail: veneerDetail
+                        material: veneerMaterial || 'Ceramic',
+                        quality: veneerQuality || 'Sufficient',
+                        detail: veneerDetail || 'Flush'
                     };
                     if (editingIndex !== null && updatedRestoration.veneers && updatedRestoration.veneers[editingIndex]) {
-                        updatedRestoration.veneers[editingIndex] = newVeneer;
+                        updatedRestoration.veneers[editingIndex] = { ...updatedRestoration.veneers[editingIndex], ...newVeneer };
                     } else {
                         updatedRestoration.veneers = [...(updatedRestoration.veneers || []), newVeneer];
+                        procedureString = `Veneer, ${veneerMaterial || 'Ceramic'}, ${veneerQuality || 'Sufficient'}, ${veneerDetail || 'Flush'}`;
                     }
                 }
                 break;
             case 'crown':
-                if (crownMaterial && crownType && crownBase) {
+                if (crownMaterial || crownType || crownBase) {
                     const newCrown = {
-                        material: crownMaterial,
+                        id: newItemId,
+                        status: 'planned',
+                        material: crownMaterial || 'Ceramic',
                         quality: 'Sufficient',
-                        type: crownType,
-                        base: crownBase
+                        type: crownType || 'Single Crown',
+                        base: crownBase || 'Natural'
                     };
+                    let extraInfo = '';
                     if (crownBase === 'Implant' && implantType) {
                         newCrown.implantType = implantType;
+                        extraInfo = `, ${implantType}`;
                     }
                     if (editingIndex !== null && updatedRestoration.crowns && updatedRestoration.crowns[editingIndex]) {
-                        updatedRestoration.crowns[editingIndex] = newCrown;
+                        updatedRestoration.crowns[editingIndex] = { ...updatedRestoration.crowns[editingIndex], ...newCrown };
                     } else {
                         updatedRestoration.crowns = [...(updatedRestoration.crowns || []), newCrown];
+                        procedureString = `Crown, ${crownMaterial || 'Ceramic'}, ${crownType || 'Single Crown'}, ${crownBase || 'Natural'}${extraInfo}`;
                     }
                 }
                 break;
@@ -118,6 +133,17 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
         }
 
         updateTooth(toothNumber, { restoration: updatedRestoration });
+
+        // Add to treatment plan if it's a new item (not editing existing)
+        if (newItemId && procedureString && selectedPatient) {
+            addTreatmentPlanItem(selectedPatient.id, {
+                id: newItemId,
+                tooth: toothNumber,
+                procedure: procedureString,
+                status: 'planned'
+            });
+        }
+
         handleBack();
     };
 

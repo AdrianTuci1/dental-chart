@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { produce } from 'immer';
 
 const usePatientStore = create((set) => ({
     patients: [],
@@ -8,85 +9,123 @@ const usePatientStore = create((set) => ({
     setPatients: (patients) => set({ patients }),
     selectPatient: (patient) => set({ selectedPatient: patient }),
     setSearchQuery: (query) => set({ searchQuery: query }),
-    addPatient: (patient) => set((state) => ({ patients: [...state.patients, patient] })),
-    updatePatient: (updatedPatient) => set((state) => ({
-        patients: state.patients.map(p => p.id === updatedPatient.id ? updatedPatient : p),
-        selectedPatient: state.selectedPatient?.id === updatedPatient.id ? updatedPatient : state.selectedPatient
+    addPatient: (patient) => set(produce((state) => {
+        state.patients.push(patient);
     })),
-    addTreatmentPlanItem: (patientId, item) => set((state) => {
-        const patients = state.patients.map(p => {
-            if (p.id === patientId) {
-                const newItem = { ...item, id: Date.now().toString() };
-                const updatedPatient = {
-                    ...p,
-                    treatmentPlan: {
-                        ...p.treatmentPlan,
-                        items: [...(p.treatmentPlan?.items || []), newItem]
+    updatePatient: (updatedPatient) => set(produce((state) => {
+        const pIndex = state.patients.findIndex(p => p.id === updatedPatient.id);
+        if (pIndex !== -1) {
+            state.patients[pIndex] = updatedPatient;
+        }
+        if (state.selectedPatient?.id === updatedPatient.id) {
+            state.selectedPatient = updatedPatient;
+        }
+    })),
+    addTreatmentPlanItem: (patientId, item) => set(produce((state) => {
+        const patient = state.patients.find(p => p.id === patientId);
+        if (patient) {
+            const newItem = { ...item, id: item.id || Date.now().toString() };
+            if (!patient.treatmentPlan) patient.treatmentPlan = { items: [] };
+            if (!patient.treatmentPlan.items) patient.treatmentPlan.items = [];
+            patient.treatmentPlan.items.push(newItem);
+        }
+
+        if (state.selectedPatient?.id === patientId) {
+            state.selectedPatient = state.patients.find(p => p.id === patientId);
+        }
+    })),
+    completeTreatmentPlanItem: (patientId, itemId) => set(produce((state) => {
+        const patient = state.patients.find(p => p.id === patientId);
+        if (!patient || !patient.treatmentPlan?.items) return;
+
+        const itemIndex = patient.treatmentPlan.items.findIndex(i => i.id === itemId);
+        if (itemIndex === -1) return;
+
+        const itemToComplete = patient.treatmentPlan.items[itemIndex];
+        const currentDate = new Date().toISOString().split('T')[0];
+
+        // 1. Remove from treatment plan
+        patient.treatmentPlan.items.splice(itemIndex, 1);
+
+        // 2. Add to history
+        if (!patient.history) patient.history = { completedItems: [] };
+        if (!patient.history.completedItems) patient.history.completedItems = [];
+        patient.history.completedItems.push({
+            ...itemToComplete,
+            date: currentDate,
+            status: 'completed'
+        });
+
+        // 3. UPDATE VIRTUAL TOOTH ITEM IF IT HAS THE SAME ID
+        if (patient.chart?.teeth && itemToComplete.tooth) {
+            const tooth = patient.chart.teeth[itemToComplete.tooth];
+            if (tooth) {
+                const fullIsoDate = new Date().toISOString();
+                const markDone = (itemsArray) => {
+                    if (!itemsArray) return;
+                    for (let obj of itemsArray) {
+                        if (obj.id === itemId) {
+                            obj.status = 'completed';
+                            obj.date = fullIsoDate;
+                        }
                     }
                 };
-                return updatedPatient;
-            }
-            return p;
-        });
-        const selectedPatient = state.selectedPatient?.id === patientId
-            ? patients.find(p => p.id === patientId)
-            : state.selectedPatient;
-        return { patients, selectedPatient };
-    }),
-    completeTreatmentPlanItem: (patientId, itemId) => set((state) => {
-        const patients = state.patients.map(p => {
-            if (p.id === patientId) {
-                const itemToComplete = p.treatmentPlan.items.find(i => i.id === itemId);
-                if (!itemToComplete) return p;
 
-                const updatedTreatmentPlan = {
-                    ...p.treatmentPlan,
-                    items: p.treatmentPlan.items.filter(i => i.id !== itemId)
-                };
-                const updatedHistory = {
-                    ...p.history,
-                    completedItems: [
-                        ...(p.history?.completedItems || []),
-                        {
-                            ...itemToComplete,
-                            date: new Date().toISOString().split('T')[0],
-                            status: 'completed'
-                        }
-                    ]
-                };
-                return { ...p, treatmentPlan: updatedTreatmentPlan, history: updatedHistory };
+                if (tooth.restoration) {
+                    markDone(tooth.restoration.fillings);
+                    markDone(tooth.restoration.veneers);
+                    markDone(tooth.restoration.crowns);
+                    markDone(tooth.restoration.advancedRestorations);
+                }
+
+                if (tooth.pathology) {
+                    markDone(tooth.pathology.decay);
+                    if (tooth.pathology.fracture?.id === itemId) {
+                        tooth.pathology.fracture.status = 'completed';
+                        tooth.pathology.fracture.date = fullIsoDate;
+                    }
+                    if (tooth.pathology.toothWear?.id === itemId) {
+                        tooth.pathology.toothWear.status = 'completed';
+                        tooth.pathology.toothWear.date = fullIsoDate;
+                    }
+                    if (tooth.pathology.discoloration?.id === itemId) {
+                        tooth.pathology.discoloration.status = 'completed';
+                        tooth.pathology.discoloration.date = fullIsoDate;
+                    }
+                    if (tooth.pathology.apicalPathology?.id === itemId) {
+                        tooth.pathology.apicalPathology.status = 'completed';
+                        tooth.pathology.apicalPathology.date = fullIsoDate;
+                    }
+                    if (tooth.pathology.developmentDisorder?.id === itemId) {
+                        tooth.pathology.developmentDisorder.status = 'completed';
+                        tooth.pathology.developmentDisorder.date = fullIsoDate;
+                    }
+                }
             }
-            return p;
-        });
-        const selectedPatient = state.selectedPatient?.id === patientId
-            ? patients.find(p => p.id === patientId)
-            : state.selectedPatient;
-        return { patients, selectedPatient };
-    }),
-    addToHistory: (patientId, item) => set((state) => {
-        const patients = state.patients.map(p => {
-            if (p.id === patientId) {
-                const updatedHistory = {
-                    ...p.history,
-                    completedItems: [
-                        ...(p.history?.completedItems || []),
-                        {
-                            ...item,
-                            id: Date.now().toString(),
-                            date: new Date().toISOString().split('T')[0],
-                            status: 'completed'
-                        }
-                    ]
-                };
-                return { ...p, history: updatedHistory };
-            }
-            return p;
-        });
-        const selectedPatient = state.selectedPatient?.id === patientId
-            ? patients.find(p => p.id === patientId)
-            : state.selectedPatient;
-        return { patients, selectedPatient };
-    }),
+        }
+
+        if (state.selectedPatient?.id === patientId) {
+            state.selectedPatient = patient;
+        }
+    })),
+    addToHistory: (patientId, item) => set(produce((state) => {
+        const patient = state.patients.find(p => p.id === patientId);
+        if (patient) {
+            if (!patient.history) patient.history = { completedItems: [] };
+            if (!patient.history.completedItems) patient.history.completedItems = [];
+
+            patient.history.completedItems.push({
+                ...item,
+                id: Date.now().toString(),
+                date: new Date().toISOString().split('T')[0],
+                status: 'completed'
+            });
+        }
+
+        if (state.selectedPatient?.id === patientId) {
+            state.selectedPatient = patient;
+        }
+    })),
 }));
 
 export default usePatientStore;

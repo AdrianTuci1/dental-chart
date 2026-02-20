@@ -241,7 +241,10 @@ const ToothRestoration = () => {
         const procedure = parts.join(', ');
         if (parts.length <= 1 && actionType !== 'save') return;
 
+        const newItemId = Date.now().toString();
+
         const baseItem = {
+            id: newItemId,
             procedure,
             tooth: tooth.toothNumber,
             cost: actionType === 'monitor' ? 100 : 400,
@@ -253,46 +256,56 @@ const ToothRestoration = () => {
                 ...baseItem,
                 status: actionType === 'monitor' ? 'monitoring' : 'planned'
             });
+            handleSave(actionType, newItemId, true);
         } else if (actionType === 'save') {
-            handleSave(true);
+            handleSave(actionType, newItemId, true);
             addToHistory(selectedPatient.id, {
+                id: newItemId,
                 description: procedure,
                 provider: 'Dr. Current',
-                tooth: tooth.toothNumber
+                tooth: tooth.toothNumber,
+                date: new Date().toISOString()
             });
         }
 
         navigate('../');
     };
 
-    const handleSave = (silent = false) => {
+    const handleSave = (actionType = 'save', newItemId = Date.now().toString(), silent = false) => {
         if (!tooth) return;
 
-        // Update tooth restoration based on current type
         const updatedRestoration = { ...tooth.restoration };
         let hasChanges = false;
+        const status = actionType === 'monitor' ? 'monitoring' : (actionType === 'treat' ? 'planned' : 'completed');
+        const dateStr = actionType === 'save' ? new Date().toISOString() : undefined;
+
+        const attachMeta = (obj) => {
+            obj.id = newItemId;
+            obj.status = status;
+            if (dateStr) obj.date = dateStr;
+            return obj;
+        };
 
         switch (selectedRestorationType) {
             case 'filling':
-                if (fillingMaterial && fillingQuality) {
-                    const newFilling = {
+                if (fillingMaterial || selectedZones.length > 0) {
+                    const newFilling = attachMeta({
                         zones: selectedZones,
-                        material: fillingMaterial,
-                        quality: fillingQuality
-                    };
+                        material: fillingMaterial || 'Composite',
+                        quality: fillingQuality || 'Sufficient'
+                    });
                     updatedRestoration.fillings = [...(updatedRestoration.fillings || []), newFilling];
                     hasChanges = true;
                 }
                 break;
             case 'veneer':
-                if (selectedZones.length > 0 && veneerMaterial && veneerQuality && veneerDetail) {
-                    const newVeneer = {
+                if (selectedZones.length > 0) {
+                    const newVeneer = attachMeta({
                         zones: selectedZones,
-                        material: veneerMaterial,
-                        quality: veneerQuality,
-                        detail: veneerDetail
-                    };
-                    // Add veneers array if it doesn't exist
+                        material: veneerMaterial || 'Ceramic',
+                        quality: veneerQuality || 'Sufficient',
+                        detail: veneerDetail || 'Flush'
+                    });
                     if (!updatedRestoration.veneers) {
                         updatedRestoration.veneers = [];
                     }
@@ -301,14 +314,13 @@ const ToothRestoration = () => {
                 }
                 break;
             case 'crown':
-                if (crownMaterial && crownType && crownBase) {
-                    const newCrown = {
-                        material: crownMaterial,
-                        quality: 'Sufficient', // Default quality
-                        type: crownType,
-                        base: crownBase
-                    };
-                    // Add implant type if base is implant
+                if (crownMaterial || crownType || crownBase) {
+                    const newCrown = attachMeta({
+                        material: crownMaterial || 'Ceramic',
+                        quality: 'Sufficient',
+                        type: crownType || 'Single Crown',
+                        base: crownBase || 'Natural'
+                    });
                     if (crownBase === 'Implant' && implantType) {
                         newCrown.implantType = implantType;
                     }
@@ -319,14 +331,14 @@ const ToothRestoration = () => {
             case 'inlay':
             case 'onlay':
             case 'partial_crown':
-                if (selectedZones.length > 0 && advancedMaterial && advancedQuality && advancedDetail) {
-                    const newAdvanced = {
+                if (selectedZones.length > 0) {
+                    const newAdvanced = attachMeta({
                         type: selectedRestorationType,
                         zones: selectedZones,
-                        material: advancedMaterial,
-                        quality: advancedQuality,
-                        detail: advancedDetail
-                    };
+                        material: advancedMaterial || 'Ceramic',
+                        quality: advancedQuality || 'Sufficient',
+                        detail: advancedDetail || 'Flush'
+                    });
 
                     if (!updatedRestoration.advancedRestorations) {
                         updatedRestoration.advancedRestorations = [];

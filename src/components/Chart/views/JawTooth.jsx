@@ -7,8 +7,7 @@ import { mapToothDataToConditions } from '../../../utils/toothUtils';
 import PerioGrid from './PerioGrid';
 import { TOOTH_TRANSFORMS } from './JawToothConfig';
 import usePatientStore from '../../../store/patientStore';
-
-
+import useChartStore from '../../../store/chartStore';
 const JawTooth = ({
     toothNumber,
     toothData,
@@ -24,6 +23,7 @@ const JawTooth = ({
     // Determine if tooth is in upper or lower jaw
     const isUpperJaw = toothNumber >= 11 && toothNumber <= 28;
     const { selectedPatient } = usePatientStore();
+    const historicalDate = useChartStore(state => state.historicalDate);
 
     // Determine status class
     const treatments = selectedPatient?.treatmentPlan?.items?.filter(item => parseInt(item.tooth) === parseInt(toothNumber)) || [];
@@ -215,8 +215,9 @@ const JawTooth = ({
                         <ToothRenderer
                             toothNumber={toothNumber}
                             view={view}
-                            conditions={mapToothDataToConditions(toothData)}
+                            conditions={mapToothDataToConditions(toothData, historicalDate)}
                             toothData={toothData}
+                            historicalDate={historicalDate}
                             interactive={true}
                             onSurfaceClick={(surface) => console.log(`Clicked surface ${surface} on tooth ${toothNumber}`)}
                         />

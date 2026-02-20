@@ -15,6 +15,7 @@ const DecayFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumber
                         selectedZones={selectedZones}
                         onChange={(zones) => updateForm({ selectedZones: zones })}
                         className={styles.fullWidthZones}
+                        restorationType="decay"
                     />
                 </div>
                 <button

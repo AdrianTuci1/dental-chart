@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import useChartStore from '../../../store/chartStore';
+import usePatientStore from '../../../store/patientStore';
 import styles from './PathologyDrawer.module.css';
 
 // Subcomponents
@@ -10,6 +10,7 @@ import { usePathologyForm } from './hooks/usePathologyForm';
 
 const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious }) => {
     const { teeth, updateTooth } = useChartStore();
+    const { addTreatmentPlanItem, selectedPatient } = usePatientStore();
     const tooth = teeth[toothNumber];
 
     const [view, setView] = useState('list'); // 'list' or 'configure'
@@ -67,53 +68,94 @@ const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onP
             editingIndex
         } = formState;
 
+        const newItemId = editingIndex !== null ? null : Date.now().toString();
+        let procedureString = '';
+
         switch (selectedPathologyType) {
             case 'decay':
-                if (selectedZones.length > 0 && decayMaterial && cavitation && cavitationLevel) {
+                if (selectedZones.length > 0) {
                     const newDecay = {
-                        type: `${decayMaterial}-${cavitation}-${cavitationLevel}`,
+                        id: newItemId,
+                        status: 'planned',
+                        type: `${decayMaterial || '?'}-${cavitation || '?'}-${cavitationLevel || '?'}`,
                         zones: selectedZones
                     };
                     if (editingIndex !== null && updatedPathology.decay && updatedPathology.decay[editingIndex]) {
-                        updatedPathology.decay[editingIndex] = newDecay;
+                        updatedPathology.decay[editingIndex] = { ...updatedPathology.decay[editingIndex], ...newDecay };
                     } else {
                         updatedPathology.decay = [...(updatedPathology.decay || []), newDecay];
+                        procedureString = `Decay, ${decayMaterial || 'Unspecified Material'}, ${cavitation || 'Unspecified Cavitation'}, ${cavitationLevel || 'Unspecified Level'}, ${selectedZones.join(', ')}`;
                     }
                 }
                 break;
             case 'fracture':
+                const fractureId = updatedPathology.fracture?.id || newItemId;
+                updatedPathology.fracture = updatedPathology.fracture || {};
+                if (!updatedPathology.fracture.id && newItemId) updatedPathology.fracture.id = fractureId;
+                updatedPathology.fracture.status = updatedPathology.fracture.status || 'planned';
+
                 if (fractureLocation === 'crown') {
-                    updatedPathology.fracture = { ...updatedPathology.fracture, crown: true };
+                    updatedPathology.fracture.crown = true;
+                    if (newItemId) procedureString = `Fracture, Crown`;
                 } else if (fractureLocation === 'root' && fractureDirection) {
-                    updatedPathology.fracture = { ...updatedPathology.fracture, root: fractureDirection === 'vertical' ? 'Vertical' : 'Horizontal' };
+                    updatedPathology.fracture.root = fractureDirection === 'vertical' ? 'Vertical' : 'Horizontal';
+                    if (newItemId) procedureString = `Fracture, Root, ${updatedPathology.fracture.root}`;
                 }
                 break;
             case 'tooth-wear':
-                if (toothWearType && toothWearSurface) {
+                if (toothWearType || toothWearSurface) {
                     updatedPathology.toothWear = {
-                        type: toothWearType === 'abrasion' ? 'Abrasion' : 'Erosion',
-                        surface: toothWearSurface === 'buccal' ? 'Buccal' : 'Palatal'
+                        id: updatedPathology.toothWear?.id || newItemId,
+                        status: updatedPathology.toothWear?.status || 'planned',
+                        type: toothWearType === 'abrasion' ? 'Abrasion' : (toothWearType === 'erosion' ? 'Erosion' : '?'),
+                        surface: toothWearSurface === 'buccal' ? 'Buccal' : (toothWearSurface === 'lingual' ? 'Lingual' : '?')
                     };
+                    if (newItemId) procedureString = `Tooth Wear, ${updatedPathology.toothWear.type}, ${updatedPathology.toothWear.surface}`;
                 }
                 break;
             case 'discoloration':
                 if (discolorationColor) {
-                    updatedPathology.discoloration = discolorationColor.charAt(0).toUpperCase() + discolorationColor.slice(1);
+                    updatedPathology.discoloration = {
+                        id: updatedPathology.discoloration?.id || newItemId,
+                        status: updatedPathology.discoloration?.status || 'planned',
+                        color: discolorationColor.charAt(0).toUpperCase() + discolorationColor.slice(1)
+                    };
+                    if (newItemId) procedureString = `Discoloration, ${updatedPathology.discoloration.color}`;
                 }
                 break;
             case 'apical':
                 if (apicalPresent !== null) {
-                    updatedPathology.apicalPathology = apicalPresent;
+                    updatedPathology.apicalPathology = {
+                        id: updatedPathology.apicalPathology?.id || newItemId,
+                        status: updatedPathology.apicalPathology?.status || 'planned',
+                        present: apicalPresent
+                    };
+                    if (newItemId) procedureString = `Apical Pathology`;
                 }
                 break;
             case 'development-disorder':
                 if (developmentDisorderPresent !== null) {
-                    updatedPathology.developmentDisorder = developmentDisorderPresent;
+                    updatedPathology.developmentDisorder = {
+                        id: updatedPathology.developmentDisorder?.id || newItemId,
+                        status: updatedPathology.developmentDisorder?.status || 'planned',
+                        present: developmentDisorderPresent
+                    };
+                    if (newItemId) procedureString = `Development Disorder`;
                 }
                 break;
         }
 
         updateTooth(toothNumber, { pathology: updatedPathology });
+
+        if (newItemId && procedureString && selectedPatient) {
+            addTreatmentPlanItem(selectedPatient.id, {
+                id: newItemId,
+                tooth: toothNumber,
+                procedure: procedureString,
+                status: 'planned'
+            });
+        }
+
         handleBack();
     };
 

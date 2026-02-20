@@ -11,7 +11,8 @@ const ToothRenderer = ({
     onSurfaceClick,
     isSelected = false,
     toothData = null,
-    className = ''
+    className = '',
+    historicalDate = null
 }) => {
     const tNum = parseInt(toothNumber, 10);
     const isUpperJaw = (tNum >= 11 && tNum <= 28) || (tNum >= 51 && tNum <= 65);
@@ -22,7 +23,7 @@ const ToothRenderer = ({
     const type = getToothType(toothNumber);
 
     const imageView = mapViewToImageView(view, toothNumber);
-    const condition = toothData ? getToothCondition(toothData) : 'withRoots';
+    const condition = toothData ? getToothCondition(toothData, historicalDate) : 'withRoots';
     const toothImagePath = getToothImage(toothNumber, condition, imageView);
     const imageScale = 0.9;
 

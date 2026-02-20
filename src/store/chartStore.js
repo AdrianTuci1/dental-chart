@@ -1,7 +1,8 @@
 import { create } from 'zustand';
+import { produce } from 'immer';
 import usePatientStore from './patientStore';
 
-const useChartStore = create((set) => ({
+const useChartStore = create((set, get) => ({
     teeth: {}, // Map of toothNumber -> Tooth object
     selectedTooth: null,
     chartView: 'normal', // 'normal', 'upper', or 'lower'
@@ -12,21 +13,14 @@ const useChartStore = create((set) => ({
     showDental: true,
 
     setTeeth: (teeth) => set({ teeth }),
-    updateTooth: (toothNumber, updates) => set((state) => {
-        const currentTooth = state.teeth[toothNumber];
-        if (!currentTooth) return state;
+    updateTooth: (toothNumber, updates) => {
+        set(produce((state) => {
+            const currentTooth = state.teeth[toothNumber];
+            if (!currentTooth) return;
 
-        // Create a new instance with the same prototype
-        const updatedTooth = Object.assign(
-            Object.create(Object.getPrototypeOf(currentTooth)),
-            currentTooth,
-            updates
-        );
-
-        const newTeeth = {
-            ...state.teeth,
-            [toothNumber]: updatedTooth
-        };
+            // Apply all passed updates by mutating the draft
+            Object.assign(currentTooth, updates);
+        }));
 
         const patientStore = usePatientStore.getState();
         if (patientStore.selectedPatient) {
@@ -34,24 +28,19 @@ const useChartStore = create((set) => ({
                 ...patientStore.selectedPatient,
                 chart: {
                     ...patientStore.selectedPatient.chart,
-                    teeth: newTeeth
+                    teeth: get().teeth // Finalized object, not an Immer draft
                 }
             });
         }
-
-        return { teeth: newTeeth };
-    }),
-    updateTeeth: (updates) => set((state) => {
-        const newTeeth = { ...state.teeth };
-        Object.keys(updates).forEach(toothNumber => {
-            if (newTeeth[toothNumber]) {
-                newTeeth[toothNumber] = Object.assign(
-                    Object.create(Object.getPrototypeOf(newTeeth[toothNumber])),
-                    newTeeth[toothNumber],
-                    updates[toothNumber]
-                );
-            }
-        });
+    },
+    updateTeeth: (updates) => {
+        set(produce((state) => {
+            Object.keys(updates).forEach(toothNumber => {
+                if (state.teeth[toothNumber]) {
+                    Object.assign(state.teeth[toothNumber], updates[toothNumber]);
+                }
+            });
+        }));
 
         const patientStore = usePatientStore.getState();
         if (patientStore.selectedPatient) {
@@ -59,13 +48,11 @@ const useChartStore = create((set) => ({
                 ...patientStore.selectedPatient,
                 chart: {
                     ...patientStore.selectedPatient.chart,
-                    teeth: newTeeth
+                    teeth: get().teeth // Finalized object, not an Immer draft
                 }
             });
         }
-
-        return { teeth: newTeeth };
-    }),
+    },
     selectTooth: (toothNumber) => set({ selectedTooth: toothNumber }),
     setChartView: (view) => set({ chartView: view }),
     setViewMode: (mode) => set({ viewMode: mode }),

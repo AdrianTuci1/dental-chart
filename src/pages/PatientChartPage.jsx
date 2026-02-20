@@ -154,13 +154,22 @@ const PatientChartPage = () => {
             </div>
 
             {/* Date Selector - Bottom Left (Absolute) */}
-            <button
-                className={`chart-date-selector ${showTimeline ? 'active' : ''}`}
-                title="Select Date"
-                onClick={() => setShowTimeline(!showTimeline)}
-            >
-                <Calendar size={20} />
-            </button>
+            {(() => {
+                const path = location.pathname;
+                const isOverview = path.endsWith('/chart') ||
+                    path.endsWith('/chart/') ||
+                    path.endsWith('/chart/upper-jaw') ||
+                    path.endsWith('/chart/lower-jaw');
+                return isOverview ? (
+                    <button
+                        className={`chart-date-selector ${showTimeline ? 'active' : ''}`}
+                        title="Select Date"
+                        onClick={() => setShowTimeline(!showTimeline)}
+                    >
+                        <Calendar size={20} />
+                    </button>
+                ) : null;
+            })()}
 
             {/* Main Chart Content */}
             <div className="chart-outlet-container">
