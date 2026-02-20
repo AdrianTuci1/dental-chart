@@ -1,0 +1,99 @@
+.dev-drawer {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 400px;
+    background-color: var(--background-secondary);
+    box-shadow: var(--shadow-xl);
+    border-left: 1px solid var(--border-color);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease-in-out;
+    color: var(--text-primary);
+}
+
+.dev-drawer.left {
+    left: 64px;
+    border-right: 1px solid var(--border-color);
+    border-left: none;
+}
+
+.dev-drawer.right {
+    right: 0;
+}
+
+.dev-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-4);
+    border-bottom: 1px solid var(--border-color-light);
+}
+
+.dev-drawer-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.dev-drawer-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+}
+
+.dev-drawer-close:hover {
+    color: var(--text-primary);
+    background-color: var(--background-elevated);
+}
+
+.dev-drawer-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--spacing-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+}
+
+.dev-drawer-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 0 0 var(--spacing-4) 0;
+}
+
+.dev-drawer-options {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.dev-drawer-btn {
+    width: 100%;
+    text-align: left;
+    padding: var(--spacing-3) var(--spacing-4);
+    background-color: var(--background-elevated);
+    border: 1px solid var(--border-color-light);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.dev-drawer-btn:hover {
+    border-color: var(--color-primary);
+    background-color: var(--background-tertiary);
+    color: var(--text-primary);
+}

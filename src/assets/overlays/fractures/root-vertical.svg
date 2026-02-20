@@ -1,0 +1,36 @@
+<svg width="54" height="482" viewBox="0 0 54 482" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_37_32)">
+<path d="M23.3684 40.5L30 36L26.6842 33.75L23.3684 31.5" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23.3684 31.5L29.6316 26.5L26.3158 24.25L23 22" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23 22L29.6316 17.5L26.3158 15.25L23 13" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23 13L29.6316 8.5L26.3158 6.25L23 4" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23 4L29.6316 -0.5L26.3158 -2.75L23 -5" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23.3684 94.5L30 90L26.6842 87.75L23.3684 85.5" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23.3684 85.5L30 81L26.6842 78.75L23.3684 76.5" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23.3684 76.5L30 72L26.6842 69.75L23.3684 67.5" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23.3684 67.5L30 63L26.6842 60.75L23.3684 58.5" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23.3684 58.5L30 54L26.6842 51.75L23.3684 49.5" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23.3684 49.5L30 45L26.6842 42.75L23.3684 40.5" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+</g>
+<g clip-path="url(#clip1_37_32)">
+<path d="M23.3684 441.5L30 437L26.6842 434.75L23.3684 432.5" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23.3684 432.5L29.6316 427.5L26.3158 425.25L23 423" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23 423L29.6316 418.5L26.3158 416.25L23 414" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23 414L29.6316 409.5L26.3158 407.25L23 405" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23 405L29.6316 400.5L26.3158 398.25L23 396" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23 396L29.6316 391.5L26.3158 389.25L23 387" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23.3684 486.5L30 482L26.6842 479.75L23.3684 477.5" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23.3684 477.5L30 473L26.6842 470.75L23.3684 468.5" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23.3684 468.5L30 464L26.6842 461.75L23.3684 459.5" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23.3684 459.5L30 455L26.6842 452.75L23.3684 450.5" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+<path d="M23.3684 450.5L30 446L26.6842 443.75L23.3684 441.5" stroke="black" stroke-width="0.3" stroke-linecap="round"/>
+</g>
+<defs>
+<clipPath id="clip0_37_32">
+<rect width="54" height="172" fill="white"/>
+</clipPath>
+<clipPath id="clip1_37_32">
+<rect width="54" height="172" fill="white" transform="matrix(-1 0 0 -1 54 482)"/>
+</clipPath>
+</defs>
+</svg>

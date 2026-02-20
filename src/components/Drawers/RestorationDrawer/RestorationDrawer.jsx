@@ -8,23 +8,23 @@ import TypeSelector from './components/TypeSelector';
 import RestorationWizard from './components/RestorationWizard';
 import { useRestorationForm } from './hooks/useRestorationForm';
 
-const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious }) => {
+const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious, initialType = null }) => {
     const { teeth, updateTooth } = useChartStore();
     const tooth = teeth[toothNumber];
 
-    const [view, setView] = useState('list'); // 'list' or 'configure'
-    const [selectedRestorationType, setSelectedRestorationType] = useState(null);
-    const [currentStep, setCurrentStep] = useState(0);
+    const [view, setView] = useState(initialType ? 'configure' : 'list'); // 'list' or 'configure'
+    const [selectedRestorationType, setSelectedRestorationType] = useState(initialType);
+    const [currentStep, setCurrentStep] = useState(initialType ? 1 : 0);
 
     const { formState, updateForm, resetForm, loadFormFromItem } = useRestorationForm();
 
     // Reset form when tooth changes or drawer closes/opens
     useEffect(() => {
         resetForm();
-        setView('list');
-        setSelectedRestorationType(null);
-        setCurrentStep(0);
-    }, [toothNumber, resetForm]);
+        setView(initialType ? 'configure' : 'list');
+        setSelectedRestorationType(initialType);
+        setCurrentStep(initialType ? 1 : 0);
+    }, [toothNumber, resetForm, initialType]);
 
     const restorationTypes = [
         { id: 'filling', label: 'Filling', route: 'filling' },

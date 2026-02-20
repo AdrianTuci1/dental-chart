@@ -2,14 +2,18 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { X, Volume2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import useChartStore from '../../store/chartStore';
+import { PeriodontalFacade } from '../../models/PeriodontalFacade';
 import { WaveInteractionModel } from '../../models/WaveInteractionModel';
 import './ToothPeriodontal.css';
 
 const ToothPeriodontal = () => {
     const { site } = useParams();
     const navigate = useNavigate();
-    const { tooth } = useOutletContext();
-    const { updateTooth } = useChartStore();
+    const { tooth: outletContextTooth } = useOutletContext();
+    const { teeth, updateTooth } = useChartStore();
+
+    const facade = new PeriodontalFacade(outletContextTooth?.toothNumber, teeth, updateTooth);
+    const tooth = facade.tooth;
 
     // Default to 'disto-lingual' if no site is selected
     const currentSiteKey = site || 'disto-lingual';
@@ -24,43 +28,25 @@ const ToothPeriodontal = () => {
         'mesio-buccal': 'mesioBuccal'
     };
 
+    const siteLabels = facade.getSiteLabels();
     const displayMap = {
-        'disto-lingual': 'Disto Lingual',
-        'lingual': 'Lingual',
-        'mesio-lingual': 'Mesio Lingual',
-        'disto-buccal': 'Disto Buccal',
-        'buccal': 'Buccal',
-        'mesio-buccal': 'Mesio Buccal'
+        'disto-lingual': siteLabels.distoLingual,
+        'lingual': siteLabels.lingual,
+        'mesio-lingual': siteLabels.mesioLingual,
+        'disto-buccal': siteLabels.distoBuccal,
+        'buccal': siteLabels.buccal,
+        'mesio-buccal': siteLabels.mesioBuccal
     };
 
     const internalKey = siteMap[currentSiteKey];
-
-    // Helper to get current site data safely
-    const getSiteData = (key) => {
-        if (tooth && tooth.periodontal && tooth.periodontal.sites && tooth.periodontal.sites[key]) {
-            return tooth.periodontal.sites[key];
-        }
-        return { probingDepth: 0, gingivalMargin: 0, bleeding: false, plaque: false, pus: false, tartar: false };
-    };
-
-    const currentData = getSiteData(internalKey);
+    const currentData = facade.getSiteData(internalKey);
 
     const handleSiteChange = (newSite) => {
         navigate(`../periodontal/${newSite}`);
     };
 
-    const updateSiteData = (updates) => {
-        if (!tooth) return;
-
-        const newSites = { ...tooth.periodontal.sites };
-        newSites[internalKey] = { ...newSites[internalKey], ...updates };
-
-        updateTooth(tooth.toothNumber, {
-            periodontal: {
-                ...tooth.periodontal,
-                sites: newSites
-            }
-        });
+    const handleSiteDataUpdate = (updates) => {
+        facade.updateSiteData(internalKey, updates);
     };
 
     // --- Wave Interaction Logic ---
@@ -83,7 +69,7 @@ const ToothPeriodontal = () => {
         const gm = [];
         const OFFSETS = [1, 2, 1];
         relevantKeys.forEach((key, index) => {
-            const data = getSiteData(key);
+            const data = facade.getSiteData(key);
             const offset = OFFSETS[index];
             pd.push((data.probingDepth || 0) + offset);
             gm.push(Math.abs(data.gingivalMargin || 0) + offset);
@@ -137,17 +123,9 @@ const ToothPeriodontal = () => {
                         gingivalMargin: newGM
                     };
                     hasChanges = true;
+                    facade.updateSiteData(key, { probingDepth: newPD, gingivalMargin: newGM });
                 }
             });
-
-            if (hasChanges) {
-                updateTooth(tooth.toothNumber, {
-                    periodontal: {
-                        ...tooth.periodontal,
-                        sites: newSites
-                    }
-                });
-            }
         });
 
         return unsubscribe;
@@ -155,12 +133,7 @@ const ToothPeriodontal = () => {
 
 
     const handleMobilityChange = (cls) => {
-        updateTooth(tooth.toothNumber, {
-            periodontal: {
-                ...tooth.periodontal,
-                mobility: cls
-            }
-        });
+        facade.updateMobility(cls);
     };
 
     const renderKeypad = (type, range, special = []) => {
@@ -169,7 +142,7 @@ const ToothPeriodontal = () => {
                 {range.map(num => (
                     <button
                         key={num}
-                        onClick={() => updateSiteData({ [type]: num })}
+                        onClick={() => handleSiteDataUpdate({ [type]: num })}
                         className={`num-btn ${currentData[type] === num ? 'active' : 'default'}`}
                     >
                         {num}
@@ -178,7 +151,7 @@ const ToothPeriodontal = () => {
                 {special.map(val => (
                     <button
                         key={val}
-                        onClick={() => updateSiteData({ [type]: val })}
+                        onClick={() => handleSiteDataUpdate({ [type]: val })}
                         className={`num-btn ${currentData[type] === val ? 'active' : 'default'}`}
                     >
                         {val}
@@ -205,7 +178,7 @@ const ToothPeriodontal = () => {
                 {/* Top Row: Site Selectors */}
                 <div className="site-selector-grid">
                     {Object.keys(siteMap).map((key) => {
-                        const data = getSiteData(siteMap[key]);
+                        const data = facade.getSiteData(siteMap[key]);
                         const isSelected = currentSiteKey === key;
                         return (
                             <div
@@ -253,7 +226,7 @@ const ToothPeriodontal = () => {
                     ].map(item => (
                         <button
                             key={item.key}
-                            onClick={() => updateSiteData({ [item.key]: !currentData[item.key] })}
+                            onClick={() => handleSiteDataUpdate({ [item.key]: !currentData[item.key] })}
                             className={`toggle-btn ${currentData[item.key] ? 'active' : 'inactive'}`}
                         >
                             {item.label}

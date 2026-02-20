@@ -35,7 +35,9 @@ const PatientsListPage = () => {
         <div className="patients-page-container">
             <div className="sticky-header">
                 <div className="sticky-header-content">
-                    <h1 className="sticky-title">Patients</h1>
+                    <h1 className="sticky-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <img src="/logo.png" alt="logo" style={{ width: '30px', height: '30px' }} />
+                        Patients</h1>
                     <div className="user-profile">
                         <span className="user-name">Adrian Tuci</span>
                         <button className="settings-btn" onClick={() => setIsSettingsOpen(true)}>

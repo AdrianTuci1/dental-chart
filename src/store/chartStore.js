@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import usePatientStore from './patientStore';
 
 const useChartStore = create((set) => ({
     teeth: {}, // Map of toothNumber -> Tooth object
@@ -22,12 +23,23 @@ const useChartStore = create((set) => ({
             updates
         );
 
-        return {
-            teeth: {
-                ...state.teeth,
-                [toothNumber]: updatedTooth
-            }
+        const newTeeth = {
+            ...state.teeth,
+            [toothNumber]: updatedTooth
         };
+
+        const patientStore = usePatientStore.getState();
+        if (patientStore.selectedPatient) {
+            patientStore.updatePatient({
+                ...patientStore.selectedPatient,
+                chart: {
+                    ...patientStore.selectedPatient.chart,
+                    teeth: newTeeth
+                }
+            });
+        }
+
+        return { teeth: newTeeth };
     }),
     updateTeeth: (updates) => set((state) => {
         const newTeeth = { ...state.teeth };
@@ -40,6 +52,18 @@ const useChartStore = create((set) => ({
                 );
             }
         });
+
+        const patientStore = usePatientStore.getState();
+        if (patientStore.selectedPatient) {
+            patientStore.updatePatient({
+                ...patientStore.selectedPatient,
+                chart: {
+                    ...patientStore.selectedPatient.chart,
+                    teeth: newTeeth
+                }
+            });
+        }
+
         return { teeth: newTeeth };
     }),
     selectTooth: (toothNumber) => set({ selectedTooth: toothNumber }),

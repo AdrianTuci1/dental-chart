@@ -6,7 +6,7 @@ import NormalView from './views/NormalView';
 import UpperJawView from './views/UpperJawView';
 import LowerJawView from './views/LowerJawView';
 
-import PeriodontalDrawer from './PeriodontalDrawer';
+import PeriodontalDrawer from '../Drawers/PeriodontalDrawer';
 
 const ChartPeriodontalProbing = () => {
     const { teeth, selectTooth, selectedTooth } = useChartStore();

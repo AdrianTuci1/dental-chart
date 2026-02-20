@@ -186,3 +186,5 @@ export const generateMockTeeth = () => {
 
     return teeth;
 };
+
+MOCK_PATIENTS[0].chart = { teeth: generateMockTeeth() };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import useChartStore from '../../store/chartStore';
 import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
 
@@ -6,15 +6,22 @@ import NormalView from './views/NormalView';
 import UpperJawView from './views/UpperJawView';
 import LowerJawView from './views/LowerJawView';
 
+import EndodonticDrawer from '../Drawers/EndodonticDrawer';
+import DevelopmentDrawer from '../Drawers/DevelopmentDrawer';
+import RestorationDrawer from '../Drawers/RestorationDrawer/RestorationDrawer';
+
 const ChartQuickselect = () => {
     const { teeth, selectTooth, updateTeeth } = useChartStore();
     const navigate = useNavigate();
     const { patientId } = useParams();
     const { chartView } = useOutletContext();
-    const [selectedTeeth, setSelectedTeeth] = React.useState(new Set());
+    const [selectedTeeth, setSelectedTeeth] = useState(new Set());
+
+    const [isEndoDrawerOpen, setIsEndoDrawerOpen] = useState(false);
+    const [isDevDrawerOpen, setIsDevDrawerOpen] = useState(false);
+    const [isRestDrawerOpen, setIsRestDrawerOpen] = useState(false);
 
     const handleToothClick = (toothNumber) => {
-        // Toggle selection
         const newSelection = new Set(selectedTeeth);
         if (newSelection.has(toothNumber)) {
             newSelection.delete(toothNumber);
@@ -22,13 +29,6 @@ const ChartQuickselect = () => {
             newSelection.add(toothNumber);
         }
         setSelectedTeeth(newSelection);
-
-        // Also update global selection for single view navigation if needed, 
-        // but for quickselect we primarily want multiselect.
-        // We can keep the last selected as the "active" one if we want to navigate.
-        // But the requirement says "multiselect on all views", implying we stay on the page.
-        // If we want to navigate to detail, maybe double click? 
-        // For now, let's just handle selection.
         selectTooth(toothNumber);
     };
 
@@ -40,14 +40,6 @@ const ChartQuickselect = () => {
             const tooth = teeth[toothNumber];
             if (!tooth) return;
 
-            // Create a clone to modify
-            // Note: updateTeeth expects an object of updates per tooth
-            // We need to construct the update object for the tooth
-
-            // Since our models are classes, we need to be careful.
-            // The store's updateTooth/updateTeeth merges properties.
-            // For complex nested objects like restoration, we might need to clone the specific sub-object.
-
             let toothUpdate = {};
 
             switch (action) {
@@ -58,13 +50,10 @@ const ChartQuickselect = () => {
                     toothUpdate = { isMissing: !tooth.isMissing };
                     break;
                 case 'veneer':
-                    // Add a default veneer
                     const newRestorationVeneer = Object.assign(
                         Object.create(Object.getPrototypeOf(tooth.restoration)),
                         tooth.restoration
                     );
-                    // Check if already has veneer to toggle? Or just add?
-                    // Requirement implies adding. Let's add a default one.
                     newRestorationVeneer.addVeneer('Ceramic', 'Sufficient', 'Flush');
                     toothUpdate = { restoration: newRestorationVeneer };
                     break;
@@ -76,21 +65,41 @@ const ChartQuickselect = () => {
                     newRestorationPontic.addCrown('Ceramic', 'Sufficient', 'Pontic', 'Natural');
                     toothUpdate = { restoration: newRestorationPontic };
                     break;
-                // Add other cases here
             }
             updates[toothNumber] = toothUpdate;
         });
 
         updateTeeth(updates);
-        setSelectedTeeth(new Set()); // Clear selection after action? Or keep it? keeping it might be better for multiple actions.
-        // Let's clear for now to give feedback that action is done.
+        setSelectedTeeth(new Set());
+    };
+
+    const handleOpenDrawer = (drawerType) => {
+        if (selectedTeeth.size === 0) return;
+        setIsEndoDrawerOpen(false);
+        setIsDevDrawerOpen(false);
+        setIsRestDrawerOpen(false);
+
+        if (drawerType === 'endo') {
+            setIsEndoDrawerOpen(true);
+        } else if (drawerType === 'dev') {
+            setIsDevDrawerOpen(true);
+        } else if (drawerType === 'restoration') {
+            setIsRestDrawerOpen(true);
+        }
+    };
+
+    const closeDrawers = () => {
+        setIsEndoDrawerOpen(false);
+        setIsDevDrawerOpen(false);
+        setIsRestDrawerOpen(false);
+        setSelectedTeeth(new Set()); // clear selection when closing via save/etc
     };
 
     const renderView = () => {
         const props = {
             teeth,
             onToothClick: handleToothClick,
-            selectedTeeth // Pass the Set
+            selectedTeeth
         };
 
         switch (chartView) {
@@ -103,8 +112,18 @@ const ChartQuickselect = () => {
         }
     };
 
+    // Determine position based on first selected tooth if any
+    const getDrawerPosition = () => {
+        if (selectedTeeth.size === 0) return 'right';
+        const firstTooth = parseInt(Array.from(selectedTeeth)[0]);
+        if ((firstTooth >= 11 && firstTooth <= 18) || (firstTooth >= 41 && firstTooth <= 48)) {
+            return 'right';
+        }
+        return 'left';
+    };
+
     return (
-        <div className="chart-quickselect-page">
+        <div className="chart-quickselect-page relative">
             <div className="chart-overview-container">
                 {renderView()}
             </div>
@@ -113,10 +132,35 @@ const ChartQuickselect = () => {
                 <button className="qs-btn" onClick={() => handleAction('missing')}>Missing</button>
                 <button className="qs-btn" onClick={() => handleAction('veneer')}>Veneer</button>
                 <button className="qs-btn" onClick={() => handleAction('pontic')}>Pontics</button>
-                <button className="qs-btn">Crown &gt;</button>
-                <button className="qs-btn">Endo tests &gt;</button>
-                <button className="qs-btn">Baby / adult teeth &gt;</button>
+                <button className="qs-btn" onClick={() => handleOpenDrawer('restoration')}>Crown &gt;</button>
+                <button className="qs-btn" onClick={() => handleOpenDrawer('endo')}>Endo tests &gt;</button>
+                <button className="qs-btn" onClick={() => handleOpenDrawer('dev')}>Baby / adult teeth &gt;</button>
             </div>
+
+            {isEndoDrawerOpen && (
+                <EndodonticDrawer
+                    selectedTeeth={Array.from(selectedTeeth)}
+                    position={getDrawerPosition()}
+                    onClose={closeDrawers}
+                />
+            )}
+
+            {isDevDrawerOpen && (
+                <DevelopmentDrawer
+                    selectedTeeth={Array.from(selectedTeeth)}
+                    position={getDrawerPosition()}
+                    onClose={closeDrawers}
+                />
+            )}
+
+            {isRestDrawerOpen && (
+                <RestorationDrawer
+                    toothNumber={Array.from(selectedTeeth)[0]}
+                    position={getDrawerPosition()}
+                    onClose={closeDrawers}
+                    initialType="crown"
+                />
+            )}
         </div>
     );
 };
