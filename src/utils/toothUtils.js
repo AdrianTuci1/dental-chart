@@ -157,7 +157,6 @@ export const mapToothDataToConditions = (tooth) => {
             filling.zones.forEach(zone => {
                 let surface = zoneMap[zone];
                 // Fallback for direct string matches if enum fails
-                // Fallback for direct string matches if enum fails
                 if (!surface && typeof zone === 'string') {
                     surface = zone;
                 }
@@ -172,6 +171,30 @@ export const mapToothDataToConditions = (tooth) => {
                     });
                 }
             });
+        });
+    }
+
+    // Map Advanced Restorations (Inlay, Onlay, Partial Crown)
+    if (tooth.restoration && tooth.restoration.advancedRestorations) {
+        tooth.restoration.advancedRestorations.forEach(rest => {
+            if (rest.zones) {
+                rest.zones.forEach(zone => {
+                    let surface = zoneMap[zone];
+                    if (!surface && typeof zone === 'string') {
+                        surface = zone;
+                    }
+
+                    if (surface) {
+                        const baseColor = materialColorMap[rest.material] || '#3B82F6';
+                        conditions.push({
+                            surface: surface,
+                            zone: zone,
+                            color: getColor(surface, baseColor),
+                            opacity: 0.6
+                        });
+                    }
+                });
+            }
         });
     }
 

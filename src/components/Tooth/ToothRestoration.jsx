@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
-import { X, Volume2 } from 'lucide-react';
+import { X } from 'lucide-react';
 import useChartStore from '../../store/chartStore';
 import usePatientStore from '../../store/patientStore';
 import ToothZones from './ToothZones';
+import { getToothType } from '../../utils/toothUtils';
 import './ToothRestoration.css';
 
 const ToothRestoration = () => {
@@ -16,11 +17,21 @@ const ToothRestoration = () => {
     // Track if a restoration type is selected (null means none selected)
     const [selectedRestorationType, setSelectedRestorationType] = useState(type || null);
 
-    const restorationTypes = [
+    const isPosterior = tooth ? (getToothType(tooth.toothNumber) === 'premolar' || getToothType(tooth.toothNumber) === 'molar') : false;
+
+    const baseRestorationTypes = [
         { id: 'filling', label: 'Filling', route: 'filling' },
         { id: 'veneer', label: 'Veneer', route: 'veneer' },
         { id: 'crown', label: 'Crown', route: 'crown' },
     ];
+
+    const posteriorRestorationTypes = [
+        { id: 'inlay', label: 'Inlay', route: 'inlay' },
+        { id: 'onlay', label: 'Onlay', route: 'onlay' },
+        { id: 'partial_crown', label: 'Partial Crown', route: 'partial_crown' },
+    ];
+
+    const restorationTypes = isPosterior ? [...baseRestorationTypes, ...posteriorRestorationTypes] : baseRestorationTypes;
 
     const [selectedZones, setSelectedZones] = useState([]);
 
@@ -38,6 +49,11 @@ const ToothRestoration = () => {
     const [crownType, setCrownType] = useState(null);
     const [crownBase, setCrownBase] = useState(null);
     const [implantType, setImplantType] = useState(null);
+
+    // Inlay / Onlay / Partial Crown generic states (reused to save repeating)
+    const [advancedMaterial, setAdvancedMaterial] = useState(null);
+    const [advancedQuality, setAdvancedQuality] = useState(null);
+    const [advancedDetail, setAdvancedDetail] = useState(null);
 
     const handleTypeChange = (restType) => {
         if (selectedRestorationType === restType.route) {
@@ -68,7 +84,21 @@ const ToothRestoration = () => {
         setCrownType(null);
         setCrownBase(null);
         setImplantType(null);
+        setAdvancedMaterial(null);
+        setAdvancedQuality(null);
+        setAdvancedDetail(null);
     };
+
+    // Effect for default zone selection
+    useEffect(() => {
+        if (selectedRestorationType === 'inlay') {
+            setSelectedZones(['Occlusal', 'Mesial', 'Distal']);
+        } else if (selectedRestorationType === 'onlay') {
+            setSelectedZones(['Mesial', 'Distal']);
+        } else if (selectedRestorationType === 'partial_crown') {
+            setSelectedZones(['Buccal', 'Buccal Cusp']);
+        }
+    }, [selectedRestorationType]);
 
     // Effect for Real-time Preview
     React.useEffect(() => {
@@ -122,6 +152,27 @@ const ToothRestoration = () => {
                     isValidPreview = true;
                 }
                 break;
+            case 'inlay':
+            case 'onlay':
+            case 'partial_crown':
+                if (advancedMaterial || selectedZones.length > 0) {
+                    // For preview, we might just store it like an inlay/onlay in custom array 
+                    // or just reuse 'advanced' property, but for now just mock it or add to proper place
+                    // assuming the backend/visualization supports advanced or maps them. 
+                    // If visualization doesn't support inlay explicitly, it might just draw the zones 
+                    // if mapped as fillings or similar. 
+                    // Let's add them to a generic 'advancedRestorations' array for preview so we don't crash
+                    if (!previewRestoration.advancedRestorations) previewRestoration.advancedRestorations = [];
+                    previewRestoration.advancedRestorations.push({
+                        type: selectedRestorationType,
+                        zones: selectedZones,
+                        material: advancedMaterial || 'Unknown',
+                        quality: advancedQuality || 'Sufficient',
+                        detail: advancedDetail || 'Flush'
+                    });
+                    isValidPreview = true;
+                }
+                break;
         }
 
         if (isValidPreview) {
@@ -146,6 +197,9 @@ const ToothRestoration = () => {
         crownType,
         crownBase,
         implantType,
+        advancedMaterial,
+        advancedQuality,
+        advancedDetail,
         setPreviewData
     ]);
 
@@ -177,6 +231,11 @@ const ToothRestoration = () => {
             if (crownType) parts.push(crownType);
             if (crownBase) parts.push(crownBase);
             if (implantType) parts.push(implantType);
+        } else if (['inlay', 'onlay', 'partial_crown'].includes(selectedRestorationType)) {
+            if (advancedMaterial) parts.push(advancedMaterial);
+            if (advancedQuality) parts.push(advancedQuality);
+            if (advancedDetail) parts.push(advancedDetail);
+            if (selectedZones.length > 0) parts.push(selectedZones.join(', '));
         }
 
         const procedure = parts.join(', ');
@@ -254,6 +313,25 @@ const ToothRestoration = () => {
                         newCrown.implantType = implantType;
                     }
                     updatedRestoration.crowns = [...(updatedRestoration.crowns || []), newCrown];
+                    hasChanges = true;
+                }
+                break;
+            case 'inlay':
+            case 'onlay':
+            case 'partial_crown':
+                if (selectedZones.length > 0 && advancedMaterial && advancedQuality && advancedDetail) {
+                    const newAdvanced = {
+                        type: selectedRestorationType,
+                        zones: selectedZones,
+                        material: advancedMaterial,
+                        quality: advancedQuality,
+                        detail: advancedDetail
+                    };
+
+                    if (!updatedRestoration.advancedRestorations) {
+                        updatedRestoration.advancedRestorations = [];
+                    }
+                    updatedRestoration.advancedRestorations = [...updatedRestoration.advancedRestorations, newAdvanced];
                     hasChanges = true;
                 }
                 break;
@@ -462,6 +540,69 @@ const ToothRestoration = () => {
         </div>
     );
 
+    const renderAdvancedOptions = () => (
+        <div className="restoration-options">
+            {/* Step 1: Select Material */}
+            <div className="option-group">
+                <h3 className="option-label">Material</h3>
+                <div className="button-row">
+                    {['Composite', 'Ceramic', 'Gold', 'Non-Precious Metal'].map(material => (
+                        <button
+                            key={material}
+                            className={`option-btn ${advancedMaterial === material ? 'active' : ''}`}
+                            onClick={() => {
+                                setAdvancedMaterial(material);
+                                setAdvancedQuality(null);
+                                setAdvancedDetail(null);
+                            }}
+                        >
+                            {material}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {/* Step 2: Show Quality only if material is selected */}
+            {advancedMaterial && (
+                <div className="option-group">
+                    <h3 className="option-label">Quality</h3>
+                    <div className="button-row">
+                        {['Sufficient', 'Uncertain', 'Insufficient'].map(quality => (
+                            <button
+                                key={quality}
+                                className={`option-btn ${advancedQuality === quality ? 'active' : ''}`}
+                                onClick={() => {
+                                    setAdvancedQuality(quality);
+                                    setAdvancedDetail(null);
+                                }}
+                            >
+                                {quality}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Step 3: Show Detail only if quality is selected */}
+            {advancedMaterial && advancedQuality && (
+                <div className="option-group">
+                    <h3 className="option-label">Detail</h3>
+                    <div className="button-row">
+                        {['Overhang', 'Flush', 'Shortfall'].map(detail => (
+                            <button
+                                key={detail}
+                                className={`option-btn ${advancedDetail === detail ? 'active' : ''}`}
+                                onClick={() => setAdvancedDetail(detail)}
+                            >
+                                {detail}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+
     const renderOptions = () => {
         // Only render options if a restoration type is selected
         if (!selectedRestorationType) {
@@ -475,6 +616,10 @@ const ToothRestoration = () => {
                 return renderVeneerOptions();
             case 'crown':
                 return renderCrownOptions();
+            case 'inlay':
+            case 'onlay':
+            case 'partial_crown':
+                return renderAdvancedOptions();
             default:
                 return null;
         }
@@ -484,12 +629,12 @@ const ToothRestoration = () => {
         <div className="restoration-container" data-view="restoration">
             <div className="restoration-content">
                 {/* Tooth Zones - Left Column - Only for veneer */}
-                {/* Tooth Zones - Left Column - Only for veneer */}
                 <ToothZones
                     selectedZones={selectedZones}
                     onChange={setSelectedZones}
                     inactive={false}
                     toothNumber={tooth?.toothNumber}
+                    restorationType={selectedRestorationType}
                     zoneColor={(() => {
                         const material = fillingMaterial || veneerMaterial || crownMaterial;
                         switch (material) {
@@ -509,7 +654,6 @@ const ToothRestoration = () => {
                     <div className="restoration-header">
                         <h2 className="restoration-title">Restoration</h2>
                         <div className="header-controls">
-                            <Volume2 className="control-icon" size={20} />
                             <X className="control-icon" size={20} onClick={() => navigate('../')} />
                         </div>
                     </div>

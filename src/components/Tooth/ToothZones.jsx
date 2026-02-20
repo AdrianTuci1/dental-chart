@@ -3,7 +3,7 @@ import { getToothType } from '../../utils/toothUtils';
 import { ToothZone } from '../../models/Enums';
 import './ToothZones.css';
 
-const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumber, zoneColor, className }) => {
+const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumber, zoneColor, className, restorationType }) => {
 
     // Determine last 4 zones based on tooth index (last digit)
     const getDynamicZones = () => {
@@ -52,9 +52,9 @@ const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumbe
 
     const zones = [...staticZones, ...getDynamicZones()];
 
-    const handleZoneClick = (zoneId) => {
+    const handleZoneClick = (zoneId, isZoneInactive) => {
         // Don't allow clicks in inactive mode
-        if (inactive || !onChange) return;
+        if (isZoneInactive || !onChange) return;
 
         const isSelected = selectedZones.includes(zoneId);
         const newZones = isSelected
@@ -68,6 +68,38 @@ const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumbe
         <div className={`zones ${className || ''}`}>
             <ul className="zones-list">
                 {zones.map(zone => {
+
+                    let isZoneInactive = inactive;
+                    if (!restorationType || restorationType === 'crown') {
+                        isZoneInactive = true;
+                    } else if (restorationType === 'veneer') {
+                        if (zone.id !== ToothZone.BUCCAL && zone.id !== ToothZone.PALATAL) {
+                            isZoneInactive = true;
+                        }
+                    } else if (restorationType === 'inlay') {
+                        if (zone.id !== ToothZone.MESIAL && zone.id !== ToothZone.OCCLUSAL && zone.id !== ToothZone.DISTAL) {
+                            isZoneInactive = true;
+                        }
+                    } else if (restorationType === 'onlay') {
+                        if (zone.id !== ToothZone.MESIAL && zone.id !== ToothZone.DISTAL) {
+                            isZoneInactive = true;
+                        }
+                    } else if (restorationType === 'partial_crown') {
+                        const allowedPartialCrownZones = [
+                            ToothZone.BUCCAL,
+                            ToothZone.PALATAL,
+                            'Buccal Cusp',
+                            'Lingual Cusp',
+                            ToothZone.MESIO_BUCCAL_CUSP,
+                            ToothZone.DISTO_BUCCAL_CUSP,
+                            ToothZone.MESIO_PALATAL_CUSP,
+                            ToothZone.DISTO_PALATAL_CUSP
+                        ];
+                        if (!allowedPartialCrownZones.includes(zone.id)) {
+                            isZoneInactive = true;
+                        }
+                    }
+
                     const isSelected = selectedZones.includes(zone.id);
                     const style = {
                         gridArea: zone.area,
@@ -82,12 +114,12 @@ const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumbe
                     return (
                         <li
                             key={zone.id}
-                            className={`zone-pad ${isSelected ? 'selected' : ''} ${inactive ? 'inactive' : ''}`}
+                            className={`zone-pad ${isSelected ? 'selected' : ''} ${isZoneInactive ? 'inactive' : ''}`}
                             style={style}
-                            onClick={() => handleZoneClick(zone.id)}
+                            onClick={() => handleZoneClick(zone.id, isZoneInactive)}
                         >
                             {/* Don't show label text in inactive mode */}
-                            {!inactive && zone.label}
+                            {!isZoneInactive && zone.label}
                         </li>
                     );
                 })}

@@ -15,6 +15,7 @@ const VeneerFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumbe
                         selectedZones={selectedZones}
                         onChange={(zones) => updateForm({ selectedZones: zones })}
                         className={styles.fullWidthZones}
+                        restorationType="veneer"
                     />
                 </div>
                 <button

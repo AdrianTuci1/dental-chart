@@ -600,7 +600,6 @@ const ToothPathology = () => {
                     <div className="pathology-header">
                         <h2 className="pathology-title">Pathology</h2>
                         <div className="header-controls">
-                            <Volume2 className="control-icon" size={20} />
                             <X className="control-icon" size={20} onClick={() => navigate('../')} />
                         </div>
                     </div>
