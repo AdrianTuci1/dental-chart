@@ -1,190 +1,115 @@
-import { Patient, Gender, Tooth, ToothZone, Material, Quality, ActionType } from '../models/DentalModels.js';
+import { Gender, ToothZone, Material, Quality, ActionType } from '../models/DentalModels.js';
 
-export const MOCK_PATIENTS = [
-    new Patient(
-        '1',
-        'John Doe',
-        '1980-05-15',
-        '123 Main St, Anytown, CA 12345, USA',
-        Gender.MALE
-    ),
-    new Patient(
-        '2',
-        'Jane Smith',
-        '1992-08-22',
-        '456 Oak Ave, Somewhere, NY 67890, USA',
-        Gender.FEMALE
-    )
-];
-
-// Initialize mock medical history and other data for patients
-MOCK_PATIENTS[0].medicalIssues.highBloodPressure = true;
-MOCK_PATIENTS[0].medicalIssues.other = ['Anxious about dental procedures'];
-MOCK_PATIENTS[0].email = 'john.doe@example.com'; // Add extra properties if needed by UI but not in constructor
-MOCK_PATIENTS[0].phone = '555-0123';
-MOCK_PATIENTS[0].lastExamDate = '2024-10-01';
-MOCK_PATIENTS[0].treatmentPlan.items = [
+/**
+ * --- HIERARCHICAL MOCK DATA ---
+ * Structure: medic > patient > history | treatmentPlan
+ * 
+ * Note: Following the user's requirement, the "Chart" itself is just a visual projection.
+ * The absolute source of truth for any tooth state is either:
+ * 1. History (Completed interventions)
+ * 2. Treatment Plan (Planned or Monitoring interventions)
+ */
+export const MOCK_HIERARCHY_DATA = [
     {
-        id: 'tp1',
-        procedure: 'Composite Filling',
-        tooth: 11,
-        priority: 'medium',
-        status: 'planned',
-        cost: 150
-    },
-    {
-        id: 'tp2',
-        procedure: 'Monitor Decay',
-        tooth: 14,
-        priority: 'low',
-        status: 'monitoring',
-        cost: 50
-    },
-    {
-        id: 'tp3',
-        procedure: 'Root Canal Treatment',
-        tooth: 16,
-        priority: 'urgent',
-        status: 'planned',
-        cost: 600
-    },
-    {
-        id: 'tp4',
-        procedure: 'Extraction',
-        tooth: 15,
-        priority: 'urgent',
-        status: 'planned',
-        cost: 100
+        id: 'medic-1',
+        name: 'Dr. John Watson',
+        specialty: 'General Dentistry',
+        patients: [
+            {
+                id: 'patient-1',
+                fullName: 'John Doe',
+                dateOfBirth: '1980-05-15',
+                gender: Gender.MALE,
+                phone: '555-0123',
+                email: 'john.doe@example.com',
+                medicalIssues: {
+                    highBloodPressure: true,
+                    asthma: false,
+                    allergies: ['Penicillin'],
+                    other: ['Anxious about dental procedures']
+                },
+                lastExamDate: '2024-10-01',
+                // PREVIOUSLY PLANNED OR MONITORING
+                treatmentPlan: [
+                    { id: 'tp1', isoNumber: 11, type: 'decay', zones: [ToothZone.MESIAL, ToothZone.DISTAL], status: 'planned', priority: 'medium', cost: 150 },
+                    { id: 'tp-endo-1', isoNumber: 11, type: 'endodontic', cold: 'Positive', percussion: 'Normal', status: 'monitoring' },
+                    { id: 'tp-endo-2', isoNumber: 16, type: 'endodontic', palpation: 'Sensitive', heat: 'Positive', status: 'planned', cost: 600 },
+                    { id: 'tp-decay-2', isoNumber: 26, type: 'decay', zones: [ToothZone.BUCCAL], status: 'planned' },
+                    { id: 'tp-endo-3', isoNumber: 26, type: 'endodontic', electricity: 'Non-responsive', status: 'monitoring' },
+                    { id: 'tp-ext-1', isoNumber: 44, type: 'extraction', status: 'planned' },
+                    { id: 'tp-ext-2', isoNumber: 27, type: 'extraction', status: 'planned' }
+                ],
+                // PREVIOUSLY COMPLETED
+                history: [
+                    { id: 'h-1', isoNumber: 11, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: [ToothZone.INCISAL, ToothZone.CERVICAL_BUCCAL], status: 'completed', date: '2024-05-10' },
+                    { id: 'h-2', isoNumber: 12, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: ['Class 4 Mesial', 'Class 4 Distal'], status: 'completed', date: '2024-05-10' },
+                    { id: 'h-3', isoNumber: 12, type: 'restoration', subtype: 'filling', material: Material.GOLD, zones: [ToothZone.PALATAL], status: 'completed', date: '2023-11-20' },
+                    { id: 'h-6', isoNumber: 26, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: [ToothZone.CERVICAL_BUCCAL], status: 'completed' },
+                    { id: 'h-7', isoNumber: 46, type: 'missing', status: 'completed' },
+                    { id: 'h-8', isoNumber: 24, type: 'restoration', subtype: 'crown', material: Material.CERAMIC, base: 'Natural', quality: 'Sufficient', status: 'completed' },
+                    { id: 'h-9', isoNumber: 21, type: 'restoration', subtype: 'crown', material: Material.CERAMIC, base: 'Implant', quality: 'Sufficient', status: 'completed' },
+                    // Implants of different materials
+                    { id: 'h-imp-1', isoNumber: 35, type: 'restoration', subtype: 'crown', material: Material.GOLD, base: 'Implant', status: 'completed' },
+                    { id: 'h-imp-2', isoNumber: 36, type: 'restoration', subtype: 'crown', material: Material.NON_PRECIOUS, base: 'Implant', status: 'completed' },
+                    { id: 'h-imp-3', isoNumber: 16, type: 'restoration', subtype: 'crown', material: Material.CERAMIC, base: 'Implant', status: 'completed' },
+                    // Implants with fillings to reflect restoration on surface
+                    { id: 'h-imp-fill-1', isoNumber: 35, type: 'restoration', subtype: 'filling', material: Material.CERAMIC, zones: [ToothZone.MESIAL, ToothZone.OCCLUSAL, ToothZone.DISTAL, 'Buccal Cusp', 'Lingual Cusp', 'Buccal Surf', 'Lingual Surf', ToothZone.BUCCAL, ToothZone.LINGUAL], status: 'completed' },
+                    { id: 'h-imp-fill-2', isoNumber: 36, type: 'restoration', subtype: 'filling', material: Material.CERAMIC, zones: [ToothZone.MESIAL, ToothZone.OCCLUSAL, ToothZone.DISTAL, 'Buccal Cusp', 'Lingual Cusp', 'Buccal Surf', 'Lingual Surf', ToothZone.BUCCAL, ToothZone.LINGUAL], status: 'completed' },
+                    { id: 'h-imp-fill-3', isoNumber: 16, type: 'restoration', subtype: 'filling', material: Material.CERAMIC, zones: [ToothZone.MESIAL, ToothZone.DISTAL, ToothZone.MESIO_BUCCAL_CUSP, ToothZone.DISTO_BUCCAL_CUSP, ToothZone.MESIO_PALATAL_CUSP, ToothZone.DISTO_PALATAL_CUSP], status: 'completed' },
+                    // Missing tooth explicitly added
+                    { id: 'h-miss-1', isoNumber: 38, type: 'missing', status: 'completed' },
+                    // Pontics
+                    { id: 'h-pon-1', isoNumber: 46, type: 'restoration', subtype: 'crown', crownType: 'Pontic', material: Material.CERAMIC, status: 'completed' },
+                    { id: 'h-pon-2', isoNumber: 45, type: 'restoration', subtype: 'crown', crownType: 'Pontic', material: Material.COMPOSITE, status: 'completed' },
+                    // Pontics with surface restorations (fillings on pontics)
+                    { id: 'h-pon-fill-2', isoNumber: 45, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: [ToothZone.DISTAL, ToothZone.MESIAL], status: 'completed' },
+                    // Regular filling on 47
+                    { id: 'h-fill-47', isoNumber: 47, type: 'restoration', subtype: 'filling', material: Material.GOLD, zones: [ToothZone.OCCLUSAL, ToothZone.LINGUAL], status: 'completed' }
+                ],
+                chart: { id: 'chart-1', lastUpdated: '2024-10-01', teeth: [] }
+            },
+            {
+                id: 'patient-2',
+                fullName: 'Jane Smith',
+                dateOfBirth: '1992-08-22',
+                gender: Gender.FEMALE,
+                phone: '555-0456',
+                email: 'jane.smith@example.com',
+                medicalIssues: { highBloodPressure: false, asthma: true },
+                lastExamDate: '2024-11-15',
+                treatmentPlan: [
+                    { id: 'tp-path-1', isoNumber: 26, type: 'pathology', subtype: 'fracture', crown: 'Vertical', status: 'planned' },
+                    { id: 'tp-path-2', isoNumber: 48, type: 'pathology', subtype: 'fracture', crown: 'Horizontal', root: 'Vertical', status: 'planned' },
+                    { id: 'tp-ext-2', isoNumber: 48, type: 'extraction', status: 'planned' }
+                ],
+                history: [
+                    { id: 'h-miss-1', isoNumber: 35, type: 'missing', status: 'completed' },
+                    { id: 'h-crown-1', isoNumber: 36, type: 'restoration', subtype: 'crown', material: Material.CERAMIC, base: 'Implant', quality: 'Sufficient', status: 'completed' }
+                ],
+                chart: { id: 'chart-2', lastUpdated: '2024-11-15', teeth: [] }
+            },
+            {
+                id: 'patient-3',
+                fullName: 'Michael Johnson',
+                dateOfBirth: '1975-03-10',
+                gender: Gender.MALE,
+                phone: '555-0789',
+                email: 'michael.j@example.com',
+                medicalIssues: { highBloodPressure: true, tobaccoUse: true },
+                lastExamDate: '2024-12-05',
+                treatmentPlan: [
+                    { id: 'tp-path-3', isoNumber: 27, type: 'pathology', subtype: 'fracture', crown: 'Horizontal', status: 'planned' }
+                ],
+                history: [
+                    { id: 'h-fill-1', isoNumber: 17, type: 'restoration', subtype: 'filling', zones: [ToothZone.PALATAL_CUSP], material: Material.GOLD, status: 'completed' },
+                    { id: 'h-fill-2', isoNumber: 17, type: 'restoration', subtype: 'filling', zones: [ToothZone.BUCCAL, ToothZone.MESIAL, ToothZone.DISTAL], material: Material.COMPOSITE, status: 'completed' },
+                    { id: 'h-fill-3', isoNumber: 13, type: 'restoration', subtype: 'filling', zones: [ToothZone.CERVICAL_PALATAL], material: Material.COMPOSITE, status: 'completed' },
+                    { id: 'h-fill-4', isoNumber: 27, type: 'restoration', subtype: 'filling', zones: [ToothZone.PALATAL], material: Material.AMALGAM, status: 'completed' },
+                    { id: 'h-fill-5', isoNumber: 27, type: 'restoration', subtype: 'filling', zones: [ToothZone.BUCCAL_CUSP], material: Material.COMPOSITE, status: 'completed' }
+                ],
+                // Add Periodontal as a specific condition type (can be huge)
+                chart: { id: 'chart-3', lastUpdated: '2024-12-05', teeth: [] }
+            }
+        ]
     }
 ];
-MOCK_PATIENTS[0].history.completedItems = [
-    {
-        id: 'h1',
-        date: '2024-09-15',
-        description: 'Dental Checkup',
-        provider: 'Dr. Smith',
-        status: 'completed'
-    },
-    {
-        id: 'h2',
-        date: '2024-08-10',
-        description: 'Scale and Polish',
-        provider: 'Dr. Jones',
-        status: 'completed'
-    }
-];
-
-MOCK_PATIENTS[1].medicalIssues.other = ['No significant medical history'];
-MOCK_PATIENTS[1].email = 'jane.smith@example.com';
-MOCK_PATIENTS[1].phone = '555-0456';
-MOCK_PATIENTS[1].lastExamDate = '2024-11-15';
-
-
-export const generateMockTeeth = () => {
-    const teeth = {};
-    const allTeeth = [
-        18, 17, 16, 15, 14, 13, 12, 11,
-        21, 22, 23, 24, 25, 26, 27, 28,
-        31, 32, 33, 34, 35, 36, 37, 38,
-        41, 42, 43, 44, 45, 46, 47, 48
-    ];
-
-    allTeeth.forEach(num => {
-        teeth[num] = new Tooth(num);
-    });
-
-    // --- ANTERIOR TEST CASES ---
-
-    // 11 (Central Incisor)
-    // Verify: Mesial/Distal Red Points, Incisal Green Band, Cervical
-    teeth[11].pathology.addDecay([ToothZone.MESIAL]); // Red Point
-    teeth[11].pathology.addDecay([ToothZone.DISTAL]); // Red Point
-    teeth[11].restoration.addFilling([ToothZone.INCISAL], Material.COMPOSITE); // Green Band
-    teeth[11].restoration.addFilling([ToothZone.CERVICAL_BUCCAL], Material.CERAMIC); // Cervical Arc
-    teeth[11].endodontic.cold = 'Positive';
-    teeth[11].endodontic.percussion = 'Normal';
-
-    // 12 (Lateral Incisor)
-    // Verify: Class 4 Ellipses (Blue), Palatal Body (Orange)
-    teeth[12].restoration.addFilling(['Class 4 Mesial'], Material.COMPOSITE); // Blue Ellipse
-    teeth[12].restoration.addFilling(['Class 4 Distal'], Material.COMPOSITE); // Blue Ellipse
-    teeth[12].restoration.addFilling([ToothZone.PALATAL], Material.GOLD); // Orange Body
-
-    // 13 (Canine)
-    teeth[13].restoration.addFilling([ToothZone.CERVICAL_PALATAL], Material.COMPOSITE);
-
-    // --- MOLAR TEST CASES ---
-
-    // 16 (First Molar)
-    // Verify: Complex SVG Occlusal, Individual Cusps
-    teeth[16].restoration.addFilling([ToothZone.OCCLUSAL], Material.AMALGAM);
-    teeth[16].restoration.addFilling([ToothZone.MESIO_BUCCAL_CUSP], Material.COMPOSITE);
-    teeth[16].restoration.addFilling([ToothZone.DISTO_BUCCAL_CUSP], Material.COMPOSITE);
-    teeth[16].endodontic.palpation = 'Sensitive';
-    teeth[16].endodontic.heat = 'Positive';
-
-    // 17 (Second Molar)
-    // Verify: Palatal Cusps (Bottom Cusp), Full Buccal Surface
-    teeth[17].restoration.addFilling([ToothZone.PALATAL_CUSP], Material.GOLD); // "Cusp-ul de jos"
-    teeth[17].restoration.addFilling([ToothZone.BUCCAL], Material.CERAMIC); // Full Surface Highlight
-    teeth[17].restoration.addFilling([ToothZone.MESIAL], Material.COMPOSITE);
-    teeth[17].restoration.addFilling([ToothZone.DISTAL], Material.COMPOSITE);
-
-    // 27 (Molar)
-    // Verify: Palatal Surface
-    teeth[27].restoration.addFilling([ToothZone.PALATAL], Material.AMALGAM);
-    teeth[27].restoration.addFilling([ToothZone.BUCCAL_CUSP], Material.COMPOSITE);
-
-    // 26 (Molar)
-    // Verify: Decay Surface (Red) + Cervical
-    teeth[26].pathology.addDecay([ToothZone.BUCCAL]); // Should be Red Surface
-    teeth[26].restoration.addFilling([ToothZone.CERVICAL_BUCCAL], Material.COMPOSITE);
-    teeth[26].endodontic.electricity = 'Non-responsive';
-
-    // --- PREMOLAR TEST ---
-    // 14
-    teeth[14].restoration.addFilling([ToothZone.OCCLUSAL], Material.COMPOSITE);
-
-    // --- CONDITION TEST CASES ---
-
-    // 46: Missing Tooth
-    teeth[46].isMissing = true;
-    teeth[46].endodontic.percussion = 'Sensitive';
-
-    // 24: Crown (Natural Base)
-    // Verify: Crown Image
-    teeth[24].restoration.addCrown(Material.CERAMIC, 'Sufficient', 'Single Crown', 'Natural');
-
-    // 21: Implant
-    // Verify: Implant Image
-    teeth[21].restoration.addCrown(Material.CERAMIC, 'Sufficient', 'Single Crown', 'Implant');
-
-    teeth[35].isMissing = true;
-    teeth[36].restoration.addCrown(Material.CERAMIC, 'Sufficient', 'Single Crown', 'Implant');
-
-    // --- FRACTURE TEST CASES ---
-
-    teeth[41].pathology.fracture.crown = 'Vertical';
-
-    // 22 (Anterior): Root Vertical & Crown Horizontal
-    teeth[22].pathology.fracture.root = 'Vertical';
-
-    // 25 (Premolar - uses Molar logic): Root Horizontal
-    teeth[25].pathology.fracture.root = 'Horizontal';
-
-    // 47 (Molar): Crown Vertical
-    teeth[47].pathology.fracture.crown = 'Vertical';
-
-    // 48 (Molar): Crown Horizontal + Root Vertical
-    teeth[48].pathology.fracture.crown = 'Horizontal';
-    teeth[48].pathology.fracture.root = 'Vertical';
-
-    teeth[27].pathology.fracture.crown = 'Horizontal';
-
-    // 44: Marked for Extraction
-    teeth[44].toBeExtracted = true;
-
-    return teeth;
-};
-
-MOCK_PATIENTS[0].chart = { teeth: generateMockTeeth() };

@@ -3,8 +3,8 @@ import ToothRenderer from '../Chart/ToothRenderer';
 import '../Chart/ChartOverview.css';
 import './ToothVisualization.css';
 import WaveInteractiveView from './WaveInteractiveView';
-import useChartStore from '../../store/chartStore';
-import usePatientStore from '../../store/patientStore';
+import { useAppStore } from '../../core/store/appStore';
+import { AppFacade } from '../../core/AppFacade';
 import { WaveInteractionModel } from '../../models/WaveInteractionModel';
 import { mapToothDataToConditions, isUpperJaw } from '../../utils/toothUtils';
 
@@ -17,44 +17,33 @@ const ALL_TEETH = [
 
 const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
     const isUpper = isUpperJaw(toothNumber);
-    const { selectedPatient } = usePatientStore();
-
     const views = isUpper
         ? ['frontal', 'topview', 'lingual']
         : ['lingual', 'topview', 'frontal'];
 
-    // Check for extraction
-    const isExtractionPlanned = (selectedPatient?.treatmentPlan?.items?.some(
-        item => parseInt(item.tooth) === parseInt(toothNumber) &&
-            item.procedure === 'Extraction' &&
-            item.status === 'planned'
-    )) || toothData?.toBeExtracted;
+    const OFFSETS = [1, 2, 1];
+    const getSiteData = (data, key) => (data?.periodontal?.sites?.[key] || { probingDepth: 0, gingivalMargin: 0 });
 
-    const extractionText = isExtractionPlanned ? (
-        <div className="extraction-text">TO BE EXTRACTED</div>
-    ) : null;
+    const getDataValues = (keys) => {
+        const pd = [];
+        const gm = [];
+        keys.forEach((key, index) => {
+            const d = getSiteData(toothData, key);
+            pd.push((d.probingDepth || 0) + OFFSETS[index]);
+            gm.push(Math.abs(d.gingivalMargin || 0) + OFFSETS[index]);
+        });
+        return { pd, gm };
+    };
 
-    const buccalModel = useRef(new WaveInteractionModel()).current;
-    const lingualModel = useRef(new WaveInteractionModel()).current;
+    const models = React.useMemo(() => {
+        const buccalModel = new WaveInteractionModel();
+        const lingualModel = new WaveInteractionModel();
 
-    useEffect(() => {
-        if (!toothData) return;
-        const OFFSETS = [1, 2, 1];
-        const getSiteData = (data, key) => (data?.periodontal?.sites?.[key] || { probingDepth: 0, gingivalMargin: 0 });
-
-        const getDataValues = (keys) => {
-            const pd = [];
-            const gm = [];
-            keys.forEach((key, index) => {
-                const d = getSiteData(toothData, key);
-                pd.push((d.probingDepth || 0) + OFFSETS[index]);
-                gm.push(Math.abs(d.gingivalMargin || 0) + OFFSETS[index]);
-            });
-            return { pd, gm };
-        };
-
-        buccalModel.setValues(getDataValues(['mesioBuccal', 'buccal', 'distoBuccal']));
-        lingualModel.setValues(getDataValues(['mesioLingual', 'lingual', 'distoLingual']));
+        if (toothData) {
+            buccalModel.setValues(getDataValues(['mesioBuccal', 'buccal', 'distoBuccal']));
+            lingualModel.setValues(getDataValues(['mesioLingual', 'lingual', 'distoLingual']));
+        }
+        return { buccal: buccalModel, lingual: lingualModel };
     }, [toothData]);
 
     return (
@@ -68,9 +57,17 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
                         const needsRotation = isLingual && index === 2;
                         const waveDirection = index === 0 ? 'down' : 'up';
 
-                        let modelToUse = isUpper
-                            ? (index === 0 ? buccalModel : (index === 2 ? lingualModel : null))
-                            : (index === 0 ? lingualModel : (index === 2 ? buccalModel : null));
+                        const useBuccal = index === 0;
+                        const useLingual = index === 2;
+
+                        let modelToUse = null;
+                        if (isUpper) {
+                            if (useBuccal) modelToUse = models.buccal;
+                            else if (useLingual) modelToUse = models.lingual;
+                        } else {
+                            if (useBuccal) modelToUse = models.lingual;
+                            else if (useLingual) modelToUse = models.buccal;
+                        }
 
                         const transformStyle = needsRotation
                             ? { transform: 'rotate(180deg) scale(0.6)' }
@@ -95,7 +92,6 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
 
                         const viewContent = shouldShowWave ? (
                             <WaveInteractiveView
-                                viewType={view}
                                 direction={waveDirection}
                                 model={modelToUse}
                                 topOffset={index === 0 ? 10 : 0}
@@ -108,9 +104,6 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
                         return (
                             <React.Fragment key={view}>
                                 {viewContent}
-                                {isExtractionPlanned && index < views.length - 1 && (
-                                    <div className="extraction-text">TO BE EXTRACTED</div>
-                                )}
                             </React.Fragment>
                         );
                     })}
@@ -123,7 +116,9 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
 const ToothVisualization = ({ toothNumber, onSelectTooth, overrideToothData }) => {
     const currentTooth = parseInt(toothNumber);
     const sidebarScrollRef = useRef(null);
-    const teeth = useChartStore(state => state.teeth);
+    const teeth = useAppStore(state => state.teeth);
+
+    console.log(`[ToothVisualization] Render! Current tooth data:`, teeth[currentTooth]?.periodontal?.sites);
 
     const [displayState, setDisplayState] = useState({
         teeth: [currentTooth],
@@ -152,40 +147,32 @@ const ToothVisualization = ({ toothNumber, onSelectTooth, overrideToothData }) =
 
         const isGoingDown = currentIndex > prevIndex;
         const pair = isGoingDown ? [prev, current] : [current, prev];
-        const startTransform = isGoingDown ? 'translateY(0)' : 'translateY(-100%)';
         const endTransform = isGoingDown ? 'translateY(-100%)' : 'translateY(0)';
-
-        // 1. Prepare pair without animation
-        setDisplayState({
-            teeth: pair,
-            transform: startTransform,
-            transition: 'none'
-        });
-
-        // 2. Trigger animation in next frame
-        const animTimeout = setTimeout(() => {
-            setDisplayState(prevS => ({
-                ...prevS,
+        // 1. Trigger animation in next frame
+        let cleanupTimeout;
+        const animationFrame = requestAnimationFrame(() => {
+            setDisplayState({
+                teeth: pair,
                 transform: endTransform,
                 transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-            }));
-        }, 16); // ~1 frame
-
-        // 3. Finalize and clean up after animation completes
-        const cleanupTimeout = setTimeout(() => {
-            setDisplayState({
-                teeth: [current],
-                transform: 'translateY(0)',
-                transition: 'none'
             });
-            prevToothRef.current = current;
-        }, 450);
+
+            // 2. Finalize and clean up after animation completes
+            cleanupTimeout = setTimeout(() => {
+                setDisplayState({
+                    teeth: [current],
+                    transform: 'translateY(0)',
+                    transition: 'none'
+                });
+                prevToothRef.current = current;
+            }, 450);
+        });
 
         return () => {
-            clearTimeout(animTimeout);
-            clearTimeout(cleanupTimeout);
+            cancelAnimationFrame(animationFrame);
+            if (cleanupTimeout) clearTimeout(cleanupTimeout);
         };
-    }, [currentTooth]);
+    }, [currentTooth, setDisplayState]);
 
     return (
         <div className="tooth-visualization-container">

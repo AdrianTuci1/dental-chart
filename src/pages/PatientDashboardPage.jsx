@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import usePatientStore from '../store/patientStore';
+import { useAppStore } from '../core/store/appStore';
 import TreatmentPlan from '../components/Dashboard/TreatmentPlan';
 import History from '../components/Dashboard/History';
 import OralHealthMetrics from '../components/Dashboard/OralHealthMetrics';
@@ -15,7 +15,7 @@ import './PatientDashboardPage.css';
 import { RiToothLine } from 'react-icons/ri';
 
 const PatientDashboardPage = () => {
-    const { selectedPatient, updatePatient } = usePatientStore();
+    const { selectedPatient, updatePatient } = useAppStore();
     const navigate = useNavigate();
     const [activeTab, setActiveTab] = useState('treatment');
 

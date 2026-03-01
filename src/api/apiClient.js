@@ -42,7 +42,7 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
 
         try {
             data = await response.json();
-        } catch (error) {
+        } catch {
             // If response is not JSON (e.g. 500 error html), return text or status text
             if (!response.ok) {
                 throw new Error(response.statusText);

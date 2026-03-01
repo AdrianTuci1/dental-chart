@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import useChartStore from '../../store/chartStore';
-import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
+import { useAppStore } from '../../core/store/appStore';
+import { useOutletContext } from 'react-router-dom';
 
 import NormalView from './views/NormalView';
 import UpperJawView from './views/UpperJawView';
@@ -11,9 +11,7 @@ import DevelopmentDrawer from '../Drawers/DevelopmentDrawer';
 import RestorationDrawer from '../Drawers/RestorationDrawer/RestorationDrawer';
 
 const ChartQuickselect = () => {
-    const { teeth, selectTooth, updateTeeth } = useChartStore();
-    const navigate = useNavigate();
-    const { patientId } = useParams();
+    const { teeth, selectTooth, updateTeeth } = useAppStore();
     const { chartView } = useOutletContext();
     const [selectedTeeth, setSelectedTeeth] = useState(new Set());
 
@@ -32,7 +30,7 @@ const ChartQuickselect = () => {
         selectTooth(toothNumber);
     };
 
-    const handleAction = (action, payload = {}) => {
+    const handleAction = (action) => {
         if (selectedTeeth.size === 0) return;
 
         const updates = {};
@@ -49,7 +47,7 @@ const ChartQuickselect = () => {
                 case 'missing':
                     toothUpdate = { isMissing: !tooth.isMissing };
                     break;
-                case 'veneer':
+                case 'veneer': {
                     const newRestorationVeneer = Object.assign(
                         Object.create(Object.getPrototypeOf(tooth.restoration)),
                         tooth.restoration
@@ -57,7 +55,8 @@ const ChartQuickselect = () => {
                     newRestorationVeneer.addVeneer('Ceramic', 'Sufficient', 'Flush');
                     toothUpdate = { restoration: newRestorationVeneer };
                     break;
-                case 'pontic':
+                }
+                case 'pontic': {
                     const newRestorationPontic = Object.assign(
                         Object.create(Object.getPrototypeOf(tooth.restoration)),
                         tooth.restoration
@@ -65,6 +64,7 @@ const ChartQuickselect = () => {
                     newRestorationPontic.addCrown('Ceramic', 'Sufficient', 'Pontic', 'Natural');
                     toothUpdate = { restoration: newRestorationPontic };
                     break;
+                }
             }
             updates[toothNumber] = toothUpdate;
         });

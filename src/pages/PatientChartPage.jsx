@@ -1,15 +1,13 @@
 import React, { useEffect } from 'react';
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
-import usePatientStore from '../store/patientStore';
-import useChartStore from '../store/chartStore';
+import { useAppStore } from '../core/store/appStore';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import ToothIcon from '../components/UI/ToothIcon';
 
 import './PatientChartPage.css';
 
 const PatientChartPage = () => {
-    const { selectedPatient } = usePatientStore();
-    const { chartView, setChartView, historicalDate, setHistoricalDate } = useChartStore();
+    const { selectedPatient, chartView, setChartView, historicalDate, setHistoricalDate } = useAppStore();
     const [showTimeline, setShowTimeline] = React.useState(false);
     const location = useLocation();
     const navigate = useNavigate();

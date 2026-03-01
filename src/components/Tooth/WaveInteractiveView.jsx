@@ -3,7 +3,7 @@ import './WaveInteractiveView.css';
 import { WaveRenderer } from './WaveRenderer';
 import { WaveInteractionModel } from '../../models/WaveInteractionModel';
 
-const WaveInteractiveView = ({ children, viewType, direction = 'down', alignment = 'center', model: externalModel, topOffset = 0, bottomOffset = 0, ...props }) => {
+const WaveInteractiveView = ({ children, direction = 'down', alignment = 'center', model: externalModel, topOffset = 0, bottomOffset = 0, ...props }) => {
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const rendererRef = useRef(new WaveRenderer());
@@ -21,7 +21,7 @@ const WaveInteractiveView = ({ children, viewType, direction = 'down', alignment
 
     const [dragging, setDragging] = useState(null); // { type: 'gm'|'pd', index: 0|1|2 }
 
-    const draw = () => {
+    const draw = React.useCallback(() => {
         const canvas = canvasRef.current;
         const container = containerRef.current;
         const renderer = rendererRef.current;
@@ -33,8 +33,9 @@ const WaveInteractiveView = ({ children, viewType, direction = 'down', alignment
         renderer.setCanvas(canvas);
         const verticalOffset = (topOffset || 0) + (bottomOffset || 0);
         renderer.update({ width, height, direction, values, verticalOffset });
+        console.log('WaveInteractiveView drawing new values:', values);
         renderer.draw();
-    };
+    }, [direction, values, topOffset, bottomOffset]);
 
     useEffect(() => {
         const container = containerRef.current;
@@ -53,7 +54,7 @@ const WaveInteractiveView = ({ children, viewType, direction = 'down', alignment
         return () => {
             resizeObserver.disconnect();
         };
-    }, [values, direction, topOffset, bottomOffset]);
+    }, [values, direction, topOffset, bottomOffset, draw]);
 
 
     // Interaction

@@ -1,9 +1,9 @@
 import React from 'react';
-import useChartStore from '../../store/chartStore';
+import { useAppStore } from '../../core/store/appStore';
 import './DevelopmentDrawer.css';
 
 const DevelopmentDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
-    const { updateTeeth } = useChartStore();
+    const { updateTeeth } = useAppStore();
 
     if (!selectedTeeth || selectedTeeth.length === 0) return null;
 

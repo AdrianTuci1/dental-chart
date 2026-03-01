@@ -8,17 +8,6 @@ const TreatmentPlan = ({ plan }) => {
     const { patientId } = useParams();
     const treatments = plan?.items || [];
 
-    const totalCost = treatments.reduce((sum, item) => item.status !== 'completed' ? sum + (item.cost || 0) : sum, 0);
-
-    const getPriorityClass = (priority) => {
-        switch (priority) {
-            case 'urgent': return 'priority-urgent';
-            case 'high': return 'priority-high';
-            case 'medium': return 'priority-medium';
-            default: return 'priority-low';
-        }
-    };
-
     // Group treatments by tooth
     const groupedTreatments = treatments.reduce((acc, item) => {
         const toothKey = item.tooth || 'General';

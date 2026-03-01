@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { ChevronLeft, PlusCircle, RefreshCw, XCircle, CheckCircle } from 'lucide-react';
-import useChartStore from '../../store/chartStore';
-import usePatientStore from '../../store/patientStore';
+import { useAppStore } from '../../core/store/appStore';
 import ConfirmationModal from '../UI/ConfirmationModal';
 import './ToothOverview.css';
 import EndodonticSection from './EndodonticSection';
@@ -15,8 +14,8 @@ import DiagnosisModal from './DiagnosisModal';
 const ToothOverview = () => {
     const { tooth } = useOutletContext();
     const navigate = useNavigate();
-    const updateTooth = useChartStore(state => state.updateTooth);
-    const { selectedPatient, completeTreatmentPlanItem } = usePatientStore();
+    const updateTooth = useAppStore(state => state.updateTooth);
+    const { selectedPatient, completeTreatmentPlanItem } = useAppStore();
 
     const [selectedTest, setSelectedTest] = useState(null);
     const [testResults, setTestResults] = useState({});

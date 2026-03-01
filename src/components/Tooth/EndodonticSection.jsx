@@ -1,10 +1,9 @@
 import React from 'react';
 import { Snowflake, Gavel, Hand, Flame, Zap, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+
 
 const EndodonticSection = ({ onTestSelect }) => {
     // navigate is available if we need to add onclick handlers later
-    const navigate = useNavigate();
 
     const getIcon = (test) => {
         switch (test) {

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import useChartStore from '../../store/chartStore';
+import { useAppStore } from '../../core/store/appStore';
 import { Snowflake, Gavel, Hand, Flame, Zap, ChevronRight, ChevronLeft, X } from 'lucide-react';
 import './EndodonticDrawer.css';
 
 const EndodonticDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
-    const { teeth, updateTeeth } = useChartStore();
+    const { teeth, updateTeeth } = useAppStore();
 
     const [activeTest, setActiveTest] = useState(null); // 'Cold', 'Heat', 'Percussion', 'Palpation', 'Electricity'
 
@@ -22,19 +22,7 @@ const EndodonticDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
 
     useEffect(() => {
         if (selectedTeeth && selectedTeeth.length > 0) {
-            const firstTooth = teeth[selectedTeeth[0]];
-            if (firstTooth && firstTooth.endodontic) {
-                setFormState({
-                    hasRootCanal: firstTooth.endodontic.hasRootCanal || false,
-                    tests: {
-                        Cold: firstTooth.endodontic.tests?.Cold || null,
-                        Heat: firstTooth.endodontic.tests?.Heat || null,
-                        Percussion: firstTooth.endodontic.tests?.Percussion || null,
-                        Palpation: firstTooth.endodontic.tests?.Palpation || null,
-                        Electricity: firstTooth.endodontic.tests?.Electricity || ''
-                    }
-                });
-            }
+            // we will let the user trigger the load manually, or load once in state init
         }
     }, [selectedTeeth, teeth]);
 
@@ -81,14 +69,6 @@ const EndodonticDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
                     Electricity: val
                 }
             };
-            persistChanges(newState);
-            return newState;
-        });
-    };
-
-    const handleRootCanalChange = (checked) => {
-        setFormState(prev => {
-            const newState = { ...prev, hasRootCanal: checked };
             persistChanges(newState);
             return newState;
         });

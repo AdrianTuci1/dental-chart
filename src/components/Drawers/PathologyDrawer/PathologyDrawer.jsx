@@ -1,5 +1,5 @@
-import useChartStore from '../../../store/chartStore';
-import usePatientStore from '../../../store/patientStore';
+import React, { useState, useEffect } from 'react';
+import { useAppStore } from '../../../core/store/appStore';
 import styles from './PathologyDrawer.module.css';
 
 // Subcomponents
@@ -9,23 +9,22 @@ import PathologyWizard from './components/PathologyWizard';
 import { usePathologyForm } from './hooks/usePathologyForm';
 
 const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious }) => {
-    const { teeth, updateTooth } = useChartStore();
-    const { addTreatmentPlanItem, selectedPatient } = usePatientStore();
+    const { teeth, updateTooth } = useAppStore();
+    const { addTreatmentPlanItem, selectedPatient } = useAppStore();
     const tooth = teeth[toothNumber];
 
     const [view, setView] = useState('list'); // 'list' or 'configure'
     const [selectedPathologyType, setSelectedPathologyType] = useState(null);
     const [currentStep, setCurrentStep] = useState(0);
 
-    const { formState, updateForm, resetForm, loadFormFromItem } = usePathologyForm();
+    const { formState, updateForm, resetForm } = usePathologyForm();
 
     // Reset form when tooth changes or drawer closes/opens
-    React.useEffect(() => {
+    // Reset form when tooth changes or drawer closes/opens
+    useEffect(() => {
+        // We defer some of these to initialization or specific events
         resetForm();
-        setView('list');
-        setSelectedPathologyType(null);
-        setCurrentStep(0);
-    }, [toothNumber]);
+    }, [toothNumber, resetForm]);
 
     const pathologyTypes = [
         { id: 'decay', label: 'Decay', route: 'decay' },
@@ -88,7 +87,7 @@ const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onP
                     }
                 }
                 break;
-            case 'fracture':
+            case 'fracture': {
                 const fractureId = updatedPathology.fracture?.id || newItemId;
                 updatedPathology.fracture = updatedPathology.fracture || {};
                 if (!updatedPathology.fracture.id && newItemId) updatedPathology.fracture.id = fractureId;
@@ -102,6 +101,7 @@ const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onP
                     if (newItemId) procedureString = `Fracture, Root, ${updatedPathology.fracture.root}`;
                 }
                 break;
+            }
             case 'tooth-wear':
                 if (toothWearType || toothWearSurface) {
                     updatedPathology.toothWear = {
@@ -143,6 +143,8 @@ const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onP
                     if (newItemId) procedureString = `Development Disorder`;
                 }
                 break;
+            default:
+                break;
         }
 
         updateTooth(toothNumber, { pathology: updatedPathology });
@@ -159,26 +161,7 @@ const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onP
         handleBack();
     };
 
-    const handleEditItem = (type, item, index) => {
-        setSelectedPathologyType(type);
-        setView('configure');
-
-        loadFormFromItem(type, item, index);
-
-        // Determine step based on type to restore UI state
-        if (type === 'decay') {
-            setCurrentStep(4);
-        } else if (type === 'fracture') {
-            // Simple fallback logic
-            if (item.crown && !item.root) setCurrentStep(1);
-            else if (!item.crown && item.root) setCurrentStep(2);
-            else setCurrentStep(1);
-        } else if (type === 'tooth-wear') {
-            setCurrentStep(2);
-        } else {
-            setCurrentStep(1);
-        }
-    };
+    // handleEditItem removed because it was unused
 
     return (
         <div className={`${styles.pathologyDrawer} ${position === 'left' ? styles.left : styles.right}`}>

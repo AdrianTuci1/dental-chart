@@ -135,6 +135,11 @@ export const mapToothDataToConditions = (tooth, historicalDate = null) => {
         [ToothZone.DISTO_BUCCAL_CUSP]: 'disto-buccal cusp',
         [ToothZone.MESIO_PALATAL_CUSP]: 'mesio-palatal cusp',
         [ToothZone.DISTO_PALATAL_CUSP]: 'disto-palatal cusp',
+
+        // Premolars/Other custom cusps often use standard 'buccal cusp' / 'lingual cusp'
+        'Buccal Cusp': 'buccal cusp',
+        'Lingual Cusp': 'lingual cusp',
+
         [ToothZone.APICAL]: 'root',
 
         'Class 4 Mesial': 'class4_mesial', // Future proofing

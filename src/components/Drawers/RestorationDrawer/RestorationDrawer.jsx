@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import useChartStore from '../../../store/chartStore';
+import { useAppStore } from '../../../core/store/appStore';
 import styles from './RestorationDrawer.module.css';
 
 // Subcomponents
@@ -9,23 +9,21 @@ import RestorationWizard from './components/RestorationWizard';
 import { useRestorationForm } from './hooks/useRestorationForm';
 
 const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious, initialType = null }) => {
-    const { teeth, updateTooth } = useChartStore();
-    const { addTreatmentPlanItem, selectedPatient } = usePatientStore();
+    const { teeth, updateTooth } = useAppStore();
+    const { addTreatmentPlanItem, selectedPatient } = useAppStore();
     const tooth = teeth[toothNumber];
 
     const [view, setView] = useState(initialType ? 'configure' : 'list'); // 'list' or 'configure'
     const [selectedRestorationType, setSelectedRestorationType] = useState(initialType);
     const [currentStep, setCurrentStep] = useState(initialType ? 1 : 0);
 
-    const { formState, updateForm, resetForm, loadFormFromItem } = useRestorationForm();
+    const { formState, updateForm, resetForm } = useRestorationForm();
 
     // Reset form when tooth changes or drawer closes/opens
     useEffect(() => {
+        // Reset local variables only once on mount or tooth change
         resetForm();
-        setView(initialType ? 'configure' : 'list');
-        setSelectedRestorationType(initialType);
-        setCurrentStep(initialType ? 1 : 0);
-    }, [toothNumber, resetForm, initialType]);
+    }, [toothNumber, resetForm]);
 
     const restorationTypes = [
         { id: 'filling', label: 'Filling', route: 'filling' },
@@ -147,83 +145,7 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
         handleBack();
     };
 
-    const handleEditItem = (type, item, index) => {
-        setSelectedRestorationType(type);
-        setView('configure');
-
-        loadFormFromItem(type, item, index);
-
-        // Determine step based on type to restore UI state
-        if (type === 'filling') {
-            setCurrentStep(3);
-        } else if (type === 'veneer') {
-            setCurrentStep(4);
-        } else if (type === 'crown') {
-            setCurrentStep(item.base === 'Implant' ? 5 : 4); // Logic from original file. 
-            // Wait, original file had: setCurrentStep(item.base === 'Implant' ? 5 : 4);
-            // My steps are: Material(1) -> Type(2) -> Base(3) -> Implant(4)
-            // So if editing, we probably want to show the last step or summary?
-            // Original: 
-            // Filling: Step 3 (Quality)
-            // Veneer: Step 4 (Detail)
-            // Crown: Step 4 or 5 (Implant or Base)
-
-            // My Steps:
-            // Filling: 1(Zone) -> 2(Mat) -> 3(Qual)
-            // Veneer: 1(Zone) -> 2(Mat) -> 3(Qual) -> 4(Detail)
-            // Crown: 1(Mat) -> 2(Type) -> 3(Base) -> 4(Implant)
-
-            if (type === 'crown') {
-                // If implant, go to step 4, else step 3? 
-                // Actually, if we are editing, we usually want to see the filled form. 
-                // The Wizard component renders summary + current step options.
-                // If we want to just show summary, we might want a "Review" step or just set it to the last step.
-                setCurrentStep(item.base === 'Implant' ? 4 : 3);
-            }
-        } else {
-            setCurrentStep(1);
-        }
-    };
-
-    // Helper to render added items list (Only shown in 'list' view)
-    const renderAddedItems = () => {
-        if (!tooth || !tooth.restoration) return null;
-        const r = tooth.restoration;
-        const items = [];
-
-        if (r.fillings && r.fillings.length > 0) {
-            r.fillings.forEach((f, i) => {
-                items.push(
-                    <div key={`filling-${i}`} className={styles.addedItem} onClick={() => handleEditItem('filling', f, i)}>
-                        <div className={styles.addedItemText}>Filling</div>
-                        <div className={styles.addedItemDetails}>{f.material} - {f.quality} - Zones: {f.zones?.join(', ')}</div>
-                    </div>
-                );
-            });
-        }
-        if (r.veneers && r.veneers.length > 0) {
-            r.veneers.forEach((v, i) => {
-                items.push(
-                    <div key={`veneer-${i}`} className={styles.addedItem} onClick={() => handleEditItem('veneer', v, i)}>
-                        <div className={styles.addedItemText}>Veneer</div>
-                        <div className={styles.addedItemDetails}>{v.material} - {v.quality} - {v.detail}</div>
-                    </div>
-                );
-            });
-        }
-        if (r.crowns && r.crowns.length > 0) {
-            r.crowns.forEach((c, i) => {
-                items.push(
-                    <div key={`crown-${i}`} className={styles.addedItem} onClick={() => handleEditItem('crown', c, i)}>
-                        <div className={styles.addedItemText}>Crown</div>
-                        <div className={styles.addedItemDetails}>{c.material} - {c.type} - {c.base} {c.implantType ? `(${c.implantType})` : ''}</div>
-                    </div>
-                );
-            });
-        }
-
-        return items;
-    };
+    // handleEditItem removed because it was unused
 
     return (
         <div className={`${styles.restorationDrawer} ${position === 'left' ? styles.left : styles.right}`}>

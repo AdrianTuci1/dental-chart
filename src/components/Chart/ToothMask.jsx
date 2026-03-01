@@ -49,6 +49,7 @@ const ToothMask = ({
             const overlayData = conditions.map(cond => {
                 let zoneId = cond.zone;
                 if (!zoneId && cond.surface) {
+                    // Fallbacks if cond.zone is missing but cond.surface has exact strings
                     if (cond.surface === 'Buccal') {
                         zoneId = 'Buccal Surf';
                     } else if (cond.surface === 'Lingual' || cond.surface === 'Palatal') {
@@ -60,6 +61,12 @@ const ToothMask = ({
                         }
                     }
                 }
+
+                // If cond.zone is present, it might be the Enum like 'Lingual' or 'Palatal' or 'Buccal'.
+                // SVG mapping requires 'Lingual Surf', 'Palatal Surf', 'Buccal Surf'
+                if (zoneId === 'Lingual') zoneId = 'Lingual Surf';
+                if (zoneId === 'Palatal') zoneId = 'Palatal Surf';
+                if (zoneId === 'Buccal') zoneId = 'Buccal Surf';
 
                 if (!zoneId) return null;
 
@@ -162,13 +169,7 @@ const ToothMask = ({
                     ctx.globalAlpha = apicalCondition.opacity || 1.0;
 
                     const baseCoords = getApicalCoordinates(toothNumber);
-                    const tNum = parseInt(toothNumber, 10);
-                    const quadrant = Math.floor(tNum / 10);
 
-                    const needsHorizontalFlipForApical = [2, 3].includes(quadrant);
-                    const isInsideView = view === 'lingual';
-
-                    // Box dimensions: 48x160 relative to 54x172 logical space
                     const LOGICAL_W = 54;
                     const LOGICAL_H = 172;
                     const BOX_W = 48;
@@ -202,7 +203,7 @@ const ToothMask = ({
     }, [conditions, toothNumber, view, toothImagePath, tNum, isUpperJaw]);
 
     // Handle interactive clicks on canvas
-    const handleCanvasClick = async (e) => {
+    const handleCanvasClick = async () => {
         if (!interactive || !onCanvasClick) return;
 
         const canvas = canvasRef.current;

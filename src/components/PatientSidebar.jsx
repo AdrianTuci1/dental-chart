@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, FileText, Activity, ArrowLeft, Scan, Eye, EyeOff, Home } from 'lucide-react';
-import useChartStore from '../store/chartStore';
+import { useAppStore } from '../core/store/appStore';
 import ToothIcon from './UI/ToothIcon';
 import './PatientSidebar.css';
 import { RiToothLine } from 'react-icons/ri';
@@ -12,7 +12,7 @@ const PatientSidebar = () => {
     const { patientId } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
-    const { showEndo, showPerio, showDental, toggleLayer } = useChartStore();
+    const { showEndo, showPerio, showDental, toggleLayer } = useAppStore();
 
     // Check if we're on a chart route
     const isChartRoute = location.pathname.includes('/chart');

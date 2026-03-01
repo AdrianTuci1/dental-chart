@@ -11,7 +11,7 @@ export class Chart {
         this.initializeTeeth(patientDOB);
     }
 
-    initializeTeeth(dob) {
+    initializeTeeth() {
         // Logic to determine if primary or permanent dentition should be initialized based on age
         // For simplicity, we'll initialize standard permanent teeth (11-18, 21-28, 31-38, 41-48)
         // and primary if needed. 

@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { X, User, Mail, Phone, Calendar, Plus } from 'lucide-react';
-import usePatientStore from '../../store/patientStore';
+import { useAppStore } from '../../core/store/appStore';
 import './AddPatientModal.css';
 
 const AddPatientModal = ({ isOpen, onClose }) => {
-    const { addPatient } = usePatientStore();
+    const { addPatient } = useAppStore();
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',

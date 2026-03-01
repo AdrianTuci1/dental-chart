@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from '../PathologyWizard.module.css';
 
-const DiscolorationFlow = ({ formState, updateForm, currentStep, onNextStep }) => {
+const DiscolorationFlow = ({ formState, updateForm, currentStep }) => {
     const { discolorationColor } = formState;
 
     if (currentStep === 1) {

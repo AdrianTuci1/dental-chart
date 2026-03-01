@@ -1,10 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import useChartStore from '../store/chartStore';
+import { useAppStore } from '../core/store/appStore';
 import ScanView from '../components/Chart/views/ScanView';
 
 const ScanPage = () => {
-    const { teeth, setTeeth, selectTooth } = useChartStore();
+    const { teeth, selectTooth } = useAppStore();
     const { patientId } = useParams();
     const navigate = useNavigate();
 

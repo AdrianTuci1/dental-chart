@@ -1,9 +1,20 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { PlusCircle } from 'lucide-react';
 
 const PeriodontalSection = () => {
     const navigate = useNavigate();
+    const { tooth } = useOutletContext();
+
+    // Map sites exactly as they were in the mock, but using real values
+    const periodontalMap = [
+        { key: 'distoLingual', label: 'Disto Lingual', route: 'disto-lingual' },
+        { key: 'lingual', label: 'Lingual', route: 'lingual' },
+        { key: 'mesioLingual', label: 'Mesio Lingual', route: 'mesio-lingual' },
+        { key: 'distoBuccal', label: 'Disto Buccal', route: 'disto-buccal' },
+        { key: 'buccal', label: 'Buccal', route: 'buccal' },
+        { key: 'mesioBuccal', label: 'Mesio Buccal', route: 'mesio-buccal' },
+    ];
 
     return (
         <div className="section-card">
@@ -17,25 +28,23 @@ const PeriodontalSection = () => {
                 </button>
             </div>
             <div className="perio-grid">
-                {/* Mock Data for Periodontal - In real app, map from tooth.periodontal.sites */}
-                {[
-                    { label: 'Disto Lingual', val: 2, sub: 0, route: 'disto-lingual' },
-                    { label: 'Lingual', val: 2, sub: 0, route: 'lingual' },
-                    { label: 'Mesio Lingual', val: 1, sub: 0, route: 'mesio-lingual' },
-                    { label: 'Disto Buccal', val: 1, sub: 0, route: 'disto-buccal' },
-                    { label: 'Buccal', val: 1, sub: 0, route: 'buccal' },
-                    { label: 'Mesio Buccal', val: 1, sub: 0, route: 'mesio-buccal' },
-                ].map((site, idx) => (
-                    <div
-                        key={idx}
-                        className="perio-card"
-                        onClick={() => navigate(`periodontal/${site.route}`)}
-                    >
-                        <div className="perio-value">{site.val}</div>
-                        <div className="perio-sub">{site.sub}</div>
-                        <div className="perio-label">{site.label}</div>
-                    </div>
-                ))}
+                {periodontalMap.map((siteInfo, idx) => {
+                    const siteData = tooth?.periodontal?.sites?.[siteInfo.key] || {};
+                    const val = siteData.probingDepth !== undefined ? siteData.probingDepth : '-';
+                    const sub = siteData.gingivalMargin !== undefined ? siteData.gingivalMargin : '-';
+
+                    return (
+                        <div
+                            key={idx}
+                            className="perio-card"
+                            onClick={() => navigate(`periodontal/${siteInfo.route}`)}
+                        >
+                            <div className="perio-value">{val}</div>
+                            <div className="perio-sub">{sub}</div>
+                            <div className="perio-label">{siteInfo.label}</div>
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );

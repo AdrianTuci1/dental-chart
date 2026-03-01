@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { X, Volume2 } from 'lucide-react';
-import useChartStore from '../../store/chartStore';
-import usePatientStore from '../../store/patientStore';
+import { useAppStore } from '../../core/store/appStore';
 import ToothZones from './ToothZones';
 import './ToothPathology.css';
 
@@ -10,8 +9,8 @@ const ToothPathology = () => {
     const { type } = useParams();
     const navigate = useNavigate();
     const { tooth } = useOutletContext();
-    const { updateTooth } = useChartStore();
-    const { selectedPatient, addTreatmentPlanItem, addToHistory } = usePatientStore();
+    const { updateTooth } = useAppStore();
+    const { selectedPatient, addTreatmentPlanItem, addToHistory } = useAppStore();
 
     // Track if a pathology type is selected (null means none selected)
     const [selectedPathologyType, setSelectedPathologyType] = useState(type || null);
@@ -265,7 +264,7 @@ const ToothPathology = () => {
                     hasChanges = true;
                 }
                 break;
-            case 'fracture':
+            case 'fracture': {
                 const fractureBase = updatedPathology.fracture || {};
                 updatedPathology.fracture = attachMeta(fractureBase);
                 if (fractureLocation === 'crown') {
@@ -276,6 +275,7 @@ const ToothPathology = () => {
                     hasChanges = true;
                 }
                 break;
+            }
             case 'tooth-wear':
                 if (toothWearType || toothWearSurface) {
                     updatedPathology.toothWear = attachMeta({

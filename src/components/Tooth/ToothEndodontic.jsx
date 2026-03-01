@@ -1,10 +1,10 @@
 import React from 'react';
 import { useOutletContext } from 'react-router-dom';
-import useChartStore from '../../store/chartStore';
+import { useAppStore } from '../../core/store/appStore';
 
 const ToothEndodontic = () => {
     const { tooth } = useOutletContext();
-    const { updateTooth } = useChartStore();
+    const { updateTooth } = useAppStore();
 
     const handleTestChange = (test, value) => {
         updateTooth(tooth.toothNumber, {

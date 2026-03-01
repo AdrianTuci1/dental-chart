@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Hourglass } from 'lucide-react';
 import ToothRenderer from '../ToothRenderer';
 import WaveInteractiveView from '../../Tooth/WaveInteractiveView';
@@ -6,8 +6,7 @@ import { WaveInteractionModel } from '../../../models/WaveInteractionModel';
 import { mapToothDataToConditions } from '../../../utils/toothUtils';
 import PerioGrid from './PerioGrid';
 import { TOOTH_TRANSFORMS } from './JawToothConfig';
-import usePatientStore from '../../../store/patientStore';
-import useChartStore from '../../../store/chartStore';
+import { useAppStore } from '../../../core/store/appStore';
 const JawTooth = ({
     toothNumber,
     toothData,
@@ -22,8 +21,8 @@ const JawTooth = ({
 }) => {
     // Determine if tooth is in upper or lower jaw
     const isUpperJaw = toothNumber >= 11 && toothNumber <= 28;
-    const { selectedPatient } = usePatientStore();
-    const historicalDate = useChartStore(state => state.historicalDate);
+    const { selectedPatient } = useAppStore();
+    const historicalDate = useAppStore(state => state.historicalDate);
 
     // Determine status class
     const treatments = selectedPatient?.treatmentPlan?.items?.filter(item => parseInt(item.tooth) === parseInt(toothNumber)) || [];
@@ -38,9 +37,10 @@ const JawTooth = ({
         item => item.procedure === 'Extraction' && item.status === 'planned'
     ) || toothData?.toBeExtracted;
 
-    // Use refs to hold stable models
-    const buccalModel = useRef(new WaveInteractionModel()).current;
-    const lingualModel = useRef(new WaveInteractionModel()).current;
+    const [models] = useState({
+        buccal: new WaveInteractionModel(),
+        lingual: new WaveInteractionModel()
+    });
 
     // Update models when data changes
     useEffect(() => {
@@ -49,8 +49,14 @@ const JawTooth = ({
         const OFFSETS = [1, 2, 1];
 
         const getSiteData = (data, key) => {
-            if (data && data.periodontal && data.periodontal.sites && data.periodontal.sites[key]) {
-                return data.periodontal.sites[key];
+            let actualKey = key;
+            if (isUpperJaw) {
+                if (key === 'distoLingual') actualKey = 'distoPalatal';
+                if (key === 'lingual') actualKey = 'palatal';
+                if (key === 'mesioLingual') actualKey = 'mesioPalatal';
+            }
+            if (data && data.periodontal && data.periodontal.sites && data.periodontal.sites[actualKey]) {
+                return data.periodontal.sites[actualKey];
             }
             return { probingDepth: 0, gingivalMargin: 0 };
         };
@@ -71,13 +77,21 @@ const JawTooth = ({
         const buccalKeys = ['mesioBuccal', 'buccal', 'distoBuccal'];
         const lingualKeys = ['mesioLingual', 'lingual', 'distoLingual'];
 
-        buccalModel.setValues(getDataValues(buccalKeys));
-        lingualModel.setValues(getDataValues(lingualKeys));
+        models.buccal.setValues(getDataValues(buccalKeys));
+        models.lingual.setValues(getDataValues(lingualKeys));
 
-    }, [toothData]);
+    }, [toothData, models, JSON.stringify(toothData?.periodontal?.sites)]);
 
     // Extract site data for PerioGrid
-    const getSite = (key) => toothData?.periodontal?.sites?.[key] || {};
+    const getSite = (key) => {
+        let actualKey = key;
+        if (isUpperJaw) {
+            if (key === 'distoLingual') actualKey = 'distoPalatal';
+            if (key === 'lingual') actualKey = 'palatal';
+            if (key === 'mesioLingual') actualKey = 'mesioPalatal';
+        }
+        return toothData?.periodontal?.sites?.[actualKey] || {};
+    };
 
     const buccalSites = [
         getSite('mesioBuccal'),
@@ -157,12 +171,10 @@ const JawTooth = ({
             {visualViews.map((view, index) => {
                 const isBuccal = view === 'frontal';
                 const isLingual = view === 'lingual';
-                const isOcclusal = view === 'topview';
-
                 const isFirst = index === 0;
                 const isLast = index === visualViews.length - 1;
 
-                const shouldShowWave = index === 0 || index === 2; // Original logic based on full index?
+                // const shouldShowWave = index === 0 || index === 2; // Original logic based on full index?
 
                 let modelToUse = null;
                 let waveDirection = 'down';
@@ -171,22 +183,22 @@ const JawTooth = ({
 
                 // Recover wave logic based on view type + jaw
                 if (isUpperJaw) {
-                    if (view === 'frontal') { // Top
-                        modelToUse = buccalModel;
+                    if (view === 'frontal') { // Top (Outside view of chart) -> Palatal
+                        modelToUse = models.lingual;
                         waveDirection = 'down';
                         waveTopOffset = 25;
-                    } else if (view === 'lingual') { // Bottom
-                        modelToUse = lingualModel;
+                    } else if (view === 'lingual') { // Bottom (Inside view of chart) -> Buccal
+                        modelToUse = models.buccal;
                         waveDirection = 'up';
                         waveBottomOffset = -25;
                     }
                 } else {
                     if (view === 'lingual') { // Top
-                        modelToUse = lingualModel;
+                        modelToUse = models.lingual;
                         waveDirection = 'down';
                         waveTopOffset = 25;
                     } else if (view === 'frontal') { // Bottom
-                        modelToUse = buccalModel;
+                        modelToUse = models.buccal;
                         waveDirection = 'up';
                         waveBottomOffset = -25;
                     }
@@ -276,8 +288,8 @@ const JawTooth = ({
     return (
         <div className={`tooth ${isSelected ? 'selected' : ''} ${isDimmed ? 'dimmed' : ''}`} data-number={toothNumber}>
             {/* Perio Status Grid (Top) */}
-            {/* Upper Jaw: Buccal, Lower Jaw: Lingual */}
-            {renderPerioGrid(isUpperJaw ? buccalSites : lingualSites)}
+            {/* Upper Jaw: Lingual(Palatal), Lower Jaw: Lingual */}
+            {renderPerioGrid(isUpperJaw ? lingualSites : lingualSites)}
 
             {!numberIsLast && numberView && renderNumber()}
 
@@ -286,8 +298,8 @@ const JawTooth = ({
             {numberIsLast && numberView && renderNumber()}
 
             {/* Perio Status Grid (Bottom) */}
-            {/* Upper Jaw: Lingual, Lower Jaw: Buccal */}
-            {renderPerioGrid(isUpperJaw ? lingualSites : buccalSites)}
+            {/* Upper Jaw: Buccal, Lower Jaw: Buccal */}
+            {renderPerioGrid(isUpperJaw ? buccalSites : buccalSites)}
 
             {/* Tooth Number (Bottom) - Conditional Prop */}
             {showNumberAtBottom && !numberView && (

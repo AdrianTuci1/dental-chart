@@ -1,5 +1,5 @@
 import React from 'react';
-import { getToothType } from '../../utils/toothUtils';
+
 import { ToothZone } from '../../models/Enums';
 import './ToothZones.css';
 

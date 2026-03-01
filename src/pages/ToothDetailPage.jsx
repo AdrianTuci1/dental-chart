@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
-import useChartStore from '../store/chartStore';
+import { useAppStore } from '../core/store/appStore';
 import ToothVisualization from '../components/Tooth/ToothVisualization';
 import { mapToothDataToConditions } from '../utils/toothUtils';
 
@@ -9,7 +9,7 @@ import './ToothDetailPage.css';
 const ToothDetailPage = () => {
     const { toothNumber } = useParams();
     const navigate = useNavigate();
-    const { teeth, selectTooth } = useChartStore();
+    const { teeth, selectTooth } = useAppStore();
 
 
 
@@ -20,7 +20,6 @@ const ToothDetailPage = () => {
     useEffect(() => {
         if (toothNumber) {
             selectTooth(toothNumber);
-            setPreviewData(null); // Reset preview when changing tooth
         }
     }, [toothNumber, selectTooth]);
 

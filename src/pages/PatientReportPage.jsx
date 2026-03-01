@@ -1,8 +1,6 @@
-import React, { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import usePatientStore from '../store/patientStore';
-import useChartStore from '../store/chartStore';
+import React from 'react';
 import { Printer, Download, Mail, Activity, Heart, Wind, Cigarette, Wine, Snowflake, Flame, Hand, Gavel, Zap, Hourglass } from 'lucide-react';
+import { useAppStore } from '../core/store/appStore';
 import NormalView from '../components/Chart/views/NormalView';
 import UpperJawView from '../components/Chart/views/UpperJawView';
 import LowerJawView from '../components/Chart/views/LowerJawView';
@@ -10,10 +8,7 @@ import LowerJawView from '../components/Chart/views/LowerJawView';
 import './PatientReportPage.css';
 
 const PatientReportPage = () => {
-    const { patientId } = useParams();
-    const { selectedPatient } = usePatientStore();
-    const { teeth, setTeeth } = useChartStore();
-
+    const { selectedPatient, teeth } = useAppStore();
 
     if (!selectedPatient) return <div>Loading...</div>;
 
@@ -54,11 +49,11 @@ const PatientReportPage = () => {
                 <div className="patient-info-list">
                     <div className="info-row">
                         <span className="info-label">Patient name:</span>
-                        <span className="info-value">{selectedPatient.fullName || 'John Doe'}</span>
+                        <span className="info-value">Patient Name</span>
                     </div>
                     <div className="info-row">
                         <span className="info-label">Date of birth:</span>
-                        <span className="info-value">{selectedPatient.dateOfBirth || 'November 3, 1995'}</span>
+                        <span className="info-value">November 3, 1995</span>
                     </div>
                     <div className="info-row">
                         <span className="info-label">Praxis name:</span>
@@ -125,7 +120,7 @@ const PatientReportPage = () => {
                         <div className="chart-view-wrapper">
                             <h3 className="jaw-view-title">FULL JAW VIEW</h3>
                             <NormalView
-                                teeth={teeth || {}}
+                                teeth={teeth}
                                 onToothClick={() => { }}
                                 selectedTeeth={new Set()}
                                 activeTooth={null}
@@ -251,7 +246,7 @@ const PatientReportPage = () => {
                             <h3 className="jaw-view-title">UPPER JAW</h3>
                             <div className="jaw-view-container">
                                 <UpperJawView
-                                    teeth={teeth || {}}
+                                    teeth={teeth}
                                     onToothClick={() => { }}
                                     selectedTeeth={new Set()}
                                     activeTooth={null}
@@ -264,7 +259,7 @@ const PatientReportPage = () => {
                             <h3 className="jaw-view-title">LOWER JAW</h3>
                             <div className="jaw-view-container">
                                 <LowerJawView
-                                    teeth={teeth || {}}
+                                    teeth={teeth}
                                     onToothClick={() => { }}
                                     selectedTeeth={new Set()}
                                     activeTooth={null}

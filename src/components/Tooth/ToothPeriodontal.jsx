@@ -1,19 +1,22 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { X, Volume2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
-import useChartStore from '../../store/chartStore';
+import { useAppStore } from '../../core/store/appStore';
 import { PeriodontalFacade } from '../../models/PeriodontalFacade';
 import { WaveInteractionModel } from '../../models/WaveInteractionModel';
 import './ToothPeriodontal.css';
 
 const ToothPeriodontal = () => {
-    const { site } = useParams();
+    const { site, toothNumber } = useParams();
     const navigate = useNavigate();
     const { tooth: outletContextTooth } = useOutletContext();
-    const { teeth, updateTooth } = useChartStore();
+    const { teeth, updateTooth } = useAppStore();
 
-    const facade = new PeriodontalFacade(outletContextTooth?.toothNumber, teeth, updateTooth);
-    const tooth = facade.tooth;
+    // Use useParams directly, fallback to isoNumber if params not matched
+    const currentToothNumber = toothNumber || outletContextTooth?.isoNumber;
+    const tooth = teeth[currentToothNumber]; // always fresh from store
+
+    const facade = React.useMemo(() => new PeriodontalFacade(currentToothNumber, teeth, updateTooth), [currentToothNumber, teeth, updateTooth]);
 
     // Default to 'disto-lingual' if no site is selected
     const currentSiteKey = site || 'disto-lingual';
@@ -59,12 +62,12 @@ const ToothPeriodontal = () => {
     // Assuming standard chart order: Mesial -> Central -> Distal
     // But visual might depend on quadrant/jaw. For now, let's map consistently:
     // [Mesial, Central, Distal]
-    const relevantKeys = isBuccal
+    const relevantKeys = React.useMemo(() => isBuccal
         ? ['mesioBuccal', 'buccal', 'distoBuccal']
-        : ['mesioLingual', 'lingual', 'distoLingual'];
+        : ['mesioLingual', 'lingual', 'distoLingual'], [isBuccal]);
 
     // Get current values for the model
-    const getWaveValues = () => {
+    const getWaveValues = React.useCallback(() => {
         const pd = [];
         const gm = [];
         const OFFSETS = [1, 2, 1];
@@ -75,61 +78,59 @@ const ToothPeriodontal = () => {
             gm.push(Math.abs(data.gingivalMargin || 0) + offset);
         });
         return { pd, gm };
-    };
+    }, [facade, relevantKeys]);
 
     // Create the model instance. Re-create only if the side changes (Buccal <-> Lingual).
-    const waveModel = useMemo(() => {
+    const waveModel = React.useMemo(() => {
         return new WaveInteractionModel(getWaveValues());
-    }, [viewSide]); // Re-init primarily on side switch
+    }, [getWaveValues]); // Re-init primarily on side switch
 
     // Sync Store -> Model
     // When `tooth` data changes (e.g. from Keypad or external), update visual model
-    useEffect(() => {
+    React.useEffect(() => {
         const currentVals = getWaveValues();
-        // We could implement a deep equality check here to avoid unnecessary updates if needed
         waveModel.setValues(currentVals);
-    }, [tooth, viewSide]); // Dependencies: tooth data or side switch
+    }, [tooth, viewSide, waveModel, getWaveValues]); // Dependencies: tooth data or side switch
 
     // Sync Model -> Store
-    useEffect(() => {
+    React.useEffect(() => {
         // Subscribe to model changes driven by interaction
         const unsubscribe = waveModel.subscribe(() => {
             if (!tooth?.periodontal?.sites) return;
-
             const snapshot = waveModel.getSnapshot();
-            // snapshot has { pd: [3,4,5], gm: [1,2,3] } matching relevantKeys order
 
-            const newSites = { ...tooth.periodontal.sites };
+            const sitesMap = {};
             let hasChanges = false;
 
             relevantKeys.forEach((key, index) => {
                 const offset = [1, 2, 1][index];
 
-                // Convert Visual to Stored
+                // Retrieve visual levels. Remember: level 1 is highest (coronal), 12 is deepest (apical)
+                // PD values in DB: 0 is healthy, positive numbers are deeper
                 let newPD = snapshot.pd[index] - offset;
                 if (newPD < 0) newPD = 0;
 
-                // For GM: Visual = Abs(Stored) + Offset
+                // GM values in DB: negative = recession, positive = hyperplasia. 
+                // We map Visual level 0 to GM 0. Visual level 1 -> GM -1 (recession)
                 let visualGMBase = snapshot.gm[index] - offset;
                 if (visualGMBase < 0) visualGMBase = 0;
-
                 const newGM = visualGMBase === 0 ? 0 : -visualGMBase;
-                const current = newSites[key] || {};
+
+                const current = tooth.periodontal.sites[key] || {};
 
                 if (current.probingDepth !== newPD || current.gingivalMargin !== newGM) {
-                    newSites[key] = {
-                        ...current,
-                        probingDepth: newPD,
-                        gingivalMargin: newGM
-                    };
+                    sitesMap[key] = { probingDepth: newPD, gingivalMargin: newGM };
                     hasChanges = true;
-                    facade.updateSiteData(key, { probingDepth: newPD, gingivalMargin: newGM });
                 }
             });
+
+            if (hasChanges) {
+                facade.updateMultipleSitesData(sitesMap);
+            }
         });
 
         return unsubscribe;
-    }, [waveModel, tooth]); // Re-sub if model or tooth identity changes (though tooth ID shouldn't change)
+    }, [waveModel, tooth, facade, relevantKeys]); // Re-sub if model or tooth identity changes (though tooth ID shouldn't change)
 
 
     const handleMobilityChange = (cls) => {
@@ -151,7 +152,10 @@ const ToothPeriodontal = () => {
                 {special.map(val => (
                     <button
                         key={val}
-                        onClick={() => handleSiteDataUpdate({ [type]: val })}
+                        onClick={() => {
+                            let parsedVal = val === '>12' ? 13 : val === '<-12' ? -13 : val === '+/-' ? 0 : val;
+                            handleSiteDataUpdate({ [type]: parsedVal });
+                        }}
                         className={`num-btn ${currentData[type] === val ? 'active' : 'default'}`}
                     >
                         {val}
@@ -246,8 +250,8 @@ const ToothPeriodontal = () => {
                         ].map(cls => (
                             <button
                                 key={cls.val}
-                                onClick={() => handleMobilityChange(cls.val === tooth.periodontal.mobility ? null : cls.val)}
-                                className={`mobility-btn ${tooth.periodontal.mobility === cls.val ? 'active' : 'inactive'}`}
+                                onClick={() => handleMobilityChange(cls.val === tooth?.periodontal?.mobility ? null : cls.val)}
+                                className={`mobility-btn ${tooth?.periodontal?.mobility === cls.val ? 'active' : 'inactive'}`}
                             >
                                 {cls.label}
                                 <span className="mobility-icon">{cls.icon}</span>

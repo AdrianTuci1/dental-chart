@@ -1,9 +1,9 @@
 import React from 'react';
-import useChartStore from '../../store/chartStore';
+import { useAppStore } from '../../core/store/appStore';
 import { Layers, Eye, EyeOff } from 'lucide-react';
 
 const LayerManager = () => {
-    const { showEndo, showPerio, showDental, toggleLayer } = useChartStore();
+    const { showEndo, showPerio, showDental, toggleLayer } = useAppStore();
 
     return (
         <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-4">

@@ -1,5 +1,4 @@
 import { ToothZone } from '../models/Enums';
-import { getToothType } from './toothUtils';
 
 // Base paths
 const PATH_INCISORS = '/src/assets/overlays/incisors';
@@ -34,6 +33,8 @@ const PREMOLAR_MAP = {
     // Dynamic zones
     'Buccal Cusp': 'molar-buccal-cusp.svg',
     'Lingual Cusp': 'molar-palatal-cusp.svg',
+    'buccal cusp': 'molar-buccal-cusp.svg',
+    'lingual cusp': 'molar-palatal-cusp.svg',
     'Buccal Surf': 'molar-buccal-surface.svg',
     'Lingual Surf': 'molar-palatal-surface.svg'
 };

@@ -1,6 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate, useParams, useOutletContext } from 'react-router-dom';
-import useChartStore from '../../store/chartStore';
+import { useAppStore } from '../../core/store/appStore';
 
 import './ChartOverview.css';
 import NormalView from './views/NormalView';
@@ -8,7 +8,7 @@ import UpperJawView from './views/UpperJawView';
 import LowerJawView from './views/LowerJawView';
 
 const ChartOverview = () => {
-    const { teeth, setTeeth, selectTooth } = useChartStore();
+    const { teeth, selectTooth } = useAppStore();
     const navigate = useNavigate();
     const { patientId } = useParams();
     const { chartView } = useOutletContext();

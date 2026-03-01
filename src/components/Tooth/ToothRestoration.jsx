@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { X } from 'lucide-react';
-import useChartStore from '../../store/chartStore';
-import usePatientStore from '../../store/patientStore';
+import { useAppStore } from '../../core/store/appStore';
 import ToothZones from './ToothZones';
 import { getToothType } from '../../utils/toothUtils';
 import './ToothRestoration.css';
@@ -11,8 +10,8 @@ const ToothRestoration = () => {
     const { type } = useParams();
     const navigate = useNavigate();
     const { tooth } = useOutletContext();
-    const { updateTooth } = useChartStore();
-    const { selectedPatient, addTreatmentPlanItem, addToHistory } = usePatientStore();
+    const { updateTooth } = useAppStore();
+    const { selectedPatient, addTreatmentPlanItem, addToHistory } = useAppStore();
 
     // Track if a restoration type is selected (null means none selected)
     const [selectedRestorationType, setSelectedRestorationType] = useState(type || null);

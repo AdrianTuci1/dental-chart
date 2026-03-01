@@ -1,13 +1,12 @@
 import React from 'react';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Calendar } from 'lucide-react';
-import usePatientStore from '../../store/patientStore';
+import { useAppStore } from '../../core/store/appStore';
 
 const ChartHeaderOverlay = ({ isScanView = false }) => {
-    const { selectedPatient } = usePatientStore();
+    const { selectedPatient } = useAppStore();
     const { patientId } = useParams();
     const navigate = useNavigate();
-    const location = useLocation();
 
     const toggleScanView = () => {
         if (isScanView) {

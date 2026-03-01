@@ -1,5 +1,5 @@
 import React from 'react';
-import useChartStore from '../../store/chartStore';
+import { useAppStore } from '../../core/store/appStore';
 import { useOutletContext } from 'react-router-dom';
 
 import NormalView from './views/NormalView';
@@ -8,7 +8,7 @@ import LowerJawView from './views/LowerJawView';
 import RestorationDrawer from '../Drawers/RestorationDrawer/RestorationDrawer';
 
 const ChartRestoration = () => {
-    const { teeth, selectTooth, selectedTooth } = useChartStore();
+    const { teeth, selectTooth, selectedTooth } = useAppStore();
     const { chartView } = useOutletContext();
 
     const handleToothClick = (toothNumber) => {

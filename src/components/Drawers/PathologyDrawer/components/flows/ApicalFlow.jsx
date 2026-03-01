@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from '../PathologyWizard.module.css';
 
-const ApicalFlow = ({ formState, updateForm, currentStep, onNextStep }) => {
+const ApicalFlow = ({ formState, updateForm, currentStep }) => {
     const { apicalPresent } = formState;
 
     if (currentStep === 1) {

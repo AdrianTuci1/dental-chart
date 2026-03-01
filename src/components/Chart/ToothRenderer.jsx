@@ -1,5 +1,5 @@
 import React from 'react';
-import { shouldMirror, getToothImage, mapViewToImageView, getToothCondition, getToothType } from '../../utils/toothUtils';
+import { getToothImage, mapViewToImageView, getToothCondition } from '../../utils/toothUtils';
 import ToothMask from './ToothMask';
 import './ToothRenderer.css';
 
@@ -19,19 +19,25 @@ const ToothRenderer = ({
     const isLower = !isUpperJaw;
     const jawClass = isUpperJaw ? 'upper-jaw' : 'lower-jaw';
 
-    const isMirrored = shouldMirror(toothNumber);
-    const type = getToothType(toothNumber);
-
     const imageView = mapViewToImageView(view, toothNumber);
     const condition = toothData ? getToothCondition(toothData, historicalDate) : 'withRoots';
     const toothImagePath = getToothImage(toothNumber, condition, imageView);
+
+    // For the overlay mask, we need a shape that includes the coronal part.
+    // If the tooth relies on an implant image, the implant image itself doesn't have a crown shape
+    // to mask against, so the fillings get clipped out. We use the 'crown' shape for masks on implants/pontics,
+    // or 'withRoots' for standard/missing.
+    let maskCondition = condition;
+    if (condition === 'implant') maskCondition = 'crown';
+    if (condition === 'missing') maskCondition = 'withRoots'; // Allow drawing on empty space if needed
+
+    const maskImagePath = getToothImage(toothNumber, maskCondition, imageView);
     const imageScale = 0.9;
 
 
     // Rotation Logic (Reverted for Lingual based on user feedback)
     // Only Frontal/Buccal Lower Jaw are rotated 180 (Roots Up -> Roots Down).
     const shouldRotateImage = isLower && (view === 'frontal' || view === 'buccal');
-    const shouldRotateCanvas = shouldRotateImage;
 
     // User Logic:
     // Right Side (11-18, 41-48): INSIDE (lingual) -> FLIP.
@@ -54,7 +60,7 @@ const ToothRenderer = ({
 
 
     // Handle interactive clicks on canvas
-    const handleCanvasClick = async (e) => {
+    const handleCanvasClick = async () => {
         if (!interactive || !onSurfaceClick) return;
 
         console.warn("Detailed zone hit detection is disabled after removing geometry constants.");
@@ -91,7 +97,7 @@ const ToothRenderer = ({
                             conditions={conditions}
                             interactive={interactive}
                             onCanvasClick={handleCanvasClick}
-                            toothImagePath={toothImagePath}
+                            toothImagePath={maskImagePath}
                             imageScale={imageScale}
                         />
                     </>

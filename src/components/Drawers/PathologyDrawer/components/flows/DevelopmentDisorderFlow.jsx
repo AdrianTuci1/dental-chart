@@ -1,7 +1,7 @@
 import React from 'react';
 import styles from '../PathologyWizard.module.css';
 
-const DevelopmentDisorderFlow = ({ formState, updateForm, currentStep, onNextStep }) => {
+const DevelopmentDisorderFlow = ({ formState, updateForm, currentStep }) => {
     const { developmentDisorderPresent } = formState;
 
     if (currentStep === 1) {
