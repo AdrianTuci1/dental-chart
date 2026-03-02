@@ -6,6 +6,7 @@ import { Search, Plus, User, Settings, Loader2 } from 'lucide-react';
 import SettingsModal from '../components/UI/SettingsModal';
 import AddPatientModal from '../components/UI/AddPatientModal';
 
+import { user0profile } from '../utils/mockData';
 import './PatientsListPage.css';
 
 const PatientsListPage = () => {
@@ -54,7 +55,7 @@ const PatientsListPage = () => {
                         <img src="/logo.png" alt="logo" style={{ width: '30px', height: '30px' }} />
                         Patients</h1>
                     <div className="user-profile">
-                        <span className="user-name">Adrian Tuci</span>
+                        <span className="user-name">{user0profile.name}</span>
                         <button className="settings-btn" onClick={() => setIsSettingsOpen(true)}>
                             <Settings size={20} />
                         </button>
@@ -162,6 +163,7 @@ const PatientsListPage = () => {
             <SettingsModal
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
+                userProfile={user0profile}
             />
 
             <AddPatientModal

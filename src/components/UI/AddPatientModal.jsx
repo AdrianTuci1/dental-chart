@@ -9,7 +9,8 @@ const AddPatientModal = ({ isOpen, onClose }) => {
         fullName: '',
         email: '',
         phone: '',
-        dateOfBirth: ''
+        dateOfBirth: '',
+        gender: ''
     });
 
     if (!isOpen) return null;
@@ -35,7 +36,8 @@ const AddPatientModal = ({ isOpen, onClose }) => {
             fullName: '',
             email: '',
             phone: '',
-            dateOfBirth: ''
+            dateOfBirth: '',
+            gender: ''
         });
         onClose();
     };
@@ -58,65 +60,74 @@ const AddPatientModal = ({ isOpen, onClose }) => {
                         <div className="form-grid">
                             <div className="form-group">
                                 <label htmlFor="fullName">Full Name</label>
-                                <div className="input-wrapper">
-                                    <User size={18} className="input-icon" />
-                                    <input
-                                        type="text"
-                                        id="fullName"
-                                        name="fullName"
-                                        placeholder="John Doe"
-                                        value={formData.fullName}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </div>
+                                <input
+                                    type="text"
+                                    id="fullName"
+                                    name="fullName"
+                                    placeholder="John Doe"
+                                    value={formData.fullName}
+                                    onChange={handleChange}
+                                    required
+                                    className="modal-input"
+                                />
                             </div>
 
                             <div className="form-group">
                                 <label htmlFor="email">Email Address</label>
-                                <div className="input-wrapper">
-                                    <Mail size={18} className="input-icon" />
-                                    <input
-                                        type="email"
-                                        id="email"
-                                        name="email"
-                                        placeholder="john.doe@example.com"
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </div>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    name="email"
+                                    placeholder="john.doe@example.com"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    required
+                                    className="modal-input"
+                                />
                             </div>
 
                             <div className="form-group">
                                 <label htmlFor="phone">Phone Number</label>
-                                <div className="input-wrapper">
-                                    <Phone size={18} className="input-icon" />
-                                    <input
-                                        type="tel"
-                                        id="phone"
-                                        name="phone"
-                                        placeholder="+40 7xx xxx xxx"
-                                        value={formData.phone}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </div>
+                                <input
+                                    type="tel"
+                                    id="phone"
+                                    name="phone"
+                                    placeholder="+40 7xx xxx xxx"
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    required
+                                    className="modal-input"
+                                />
                             </div>
 
                             <div className="form-group">
                                 <label htmlFor="dateOfBirth">Date of Birth</label>
-                                <div className="input-wrapper">
-                                    <Calendar size={18} className="input-icon" />
-                                    <input
-                                        type="date"
-                                        id="dateOfBirth"
-                                        name="dateOfBirth"
-                                        value={formData.dateOfBirth}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </div>
+                                <input
+                                    type="date"
+                                    id="dateOfBirth"
+                                    name="dateOfBirth"
+                                    value={formData.dateOfBirth}
+                                    onChange={handleChange}
+                                    required
+                                    className="modal-input"
+                                />
+                            </div>
+
+                            <div className="form-group">
+                                <label htmlFor="gender">Gender</label>
+                                <select
+                                    id="gender"
+                                    name="gender"
+                                    value={formData.gender}
+                                    onChange={handleChange}
+                                    required
+                                    className="modal-input"
+                                >
+                                    <option value="" disabled>Select</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
                             </div>
                         </div>
 

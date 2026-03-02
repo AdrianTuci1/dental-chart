@@ -30,8 +30,8 @@ const PeriodontalSection = () => {
             <div className="perio-grid">
                 {periodontalMap.map((siteInfo, idx) => {
                     const siteData = tooth?.periodontal?.sites?.[siteInfo.key] || {};
-                    const val = siteData.probingDepth !== undefined ? siteData.probingDepth : '-';
-                    const sub = siteData.gingivalMargin !== undefined ? siteData.gingivalMargin : '-';
+                    const val = siteData.probingDepth !== undefined ? siteData.probingDepth : '0';
+                    const sub = siteData.gingivalMargin !== undefined ? siteData.gingivalMargin : '0';
 
                     return (
                         <div

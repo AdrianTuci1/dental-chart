@@ -102,7 +102,27 @@ export class ChartModel {
                     }
                     break;
                 case 'endodontic':
-                    tooth.endodontic = { ...tooth.endodontic, ...data, id: item.id };
+                    const endoData = { ...tooth.endodontic, ...data, id: item.id };
+
+                    // 1. Handle structured tests (from UI)
+                    if (data.tests) {
+                        if (data.tests.cold) endoData.cold = true;
+                        if (data.tests.heat) endoData.heat = true;
+                        if (data.tests.percussion) endoData.percussion = true;
+                        if (data.tests.palpation) endoData.palpation = true;
+                        if (data.tests.electricity) endoData.electricity = true;
+                    }
+                    // 2. Fallback: Parse procedure string (from mockData)
+                    else if (typeof data.procedure === 'string') {
+                        const proc = data.procedure.toLowerCase();
+                        if (proc.includes('cold')) endoData.cold = true;
+                        if (proc.includes('heat')) endoData.heat = true;
+                        if (proc.includes('percussion')) endoData.percussion = true;
+                        if (proc.includes('palpation')) endoData.palpation = true;
+                        if (proc.includes('electricity')) endoData.electricity = true;
+                    }
+
+                    tooth.endodontic = endoData;
                     break;
                 case 'periodontal':
                     if (data.probingDepth) {

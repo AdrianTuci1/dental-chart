@@ -10,7 +10,7 @@ import './PatientLayout.css';
 
 const PatientLayout = () => {
     const { patientId } = useParams();
-    const { selectedPatient, selectPatient, patients, setPatients, updatePatient, teeth } = useAppStore();
+    const { selectedPatient, selectPatient } = useAppStore();
     const { setTeeth } = useAppStore();
 
     const [isLoading, setIsLoading] = useState(true);

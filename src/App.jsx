@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import OrientationGuard from './components/UI/OrientationGuard';
 import HomePage from './pages/HomePage';
 import PatientsListPage from './pages/PatientsListPage';
 import PatientLayout from './components/PatientLayout';
@@ -31,6 +32,7 @@ import SignupPage from './pages/SignupPage';
 function App() {
   return (
     <BrowserRouter>
+      <OrientationGuard />
       <div className="application">
         <div className="">
           <Routes>

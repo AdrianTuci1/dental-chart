@@ -3,7 +3,7 @@ import { User, Settings, CreditCard, FileText, Shield, Mail, LogOut, X, Moon, Gl
 import MyProfile from './MyProfile';
 import './SettingsModal.css';
 
-const SettingsModal = ({ isOpen, onClose }) => {
+const SettingsModal = ({ isOpen, onClose, userProfile }) => {
     const [activeView, setActiveView] = useState('profile');
 
     if (!isOpen) return null;
@@ -23,7 +23,7 @@ const SettingsModal = ({ isOpen, onClose }) => {
     const renderContent = () => {
         switch (activeView) {
             case 'profile':
-                return <MyProfile />;
+                return <MyProfile initialProfile={userProfile} />;
             case 'settings':
                 return (
                     <div className="modal-settings-groups">
@@ -134,11 +134,13 @@ const SettingsModal = ({ isOpen, onClose }) => {
                 <aside className="modal-sidebar">
                     <div className="sidebar-profile">
                         <div className="sidebar-avatar">
-                            <div className="avatar-circle">AT</div>
+                            <div className="avatar-circle" style={{ backgroundColor: userProfile?.avatarInfo?.color }}>
+                                {userProfile?.avatarInfo?.initials || '??'}
+                            </div>
                         </div>
                         <div className="sidebar-profile-info">
-                            <h4>Tucico</h4>
-                            <span>adrian.tuci@example.com</span>
+                            <h4>{userProfile?.name?.split(' ').pop()}</h4>
+                            <span>{userProfile?.email}</span>
                         </div>
                     </div>
 

@@ -74,7 +74,7 @@ const PatientChartPage = () => {
         <main className="chart-page-container" data-view="chart">
             {/* Patient Name - Top Left (Absolute) */}
             <div className="chart-patient-name">
-                {selectedPatient?.name || 'Patient'}
+                {selectedPatient?.fullName || 'Patient'}
             </div>
 
             {/* Chart Navigation - Top Center (Absolute) */}

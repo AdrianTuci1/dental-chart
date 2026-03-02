@@ -70,43 +70,30 @@
     letter-spacing: 0.05em;
 }
 
-.input-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.input-icon {
-    position: absolute;
-    left: 12px;
-    color: rgba(255, 255, 255, 0.3);
-    pointer-events: none;
-}
-
-.input-wrapper input {
+.modal-input {
     width: 100%;
     background-color: #121212;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 8px;
-    padding: 10px 12px 10px 40px;
+    padding: 10px 14px;
     color: #fff;
     font-size: 0.9375rem;
     outline: none;
     transition: all 0.2s;
 }
 
-.input-wrapper input:focus {
+.modal-input:focus {
     border-color: #a855f7;
     background-color: #161616;
     box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.1);
 }
 
-.input-wrapper input::placeholder {
+.modal-input::placeholder {
     color: rgba(255, 255, 255, 0.2);
 }
 
-/* Calendar icon specifically for date input if needed, though browser might override */
-.input-wrapper input[type="date"]::-webkit-calendar-picker-indicator {
+/* Calendar icon specifically for date input */
+.modal-input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(1);
     opacity: 0.5;
     cursor: pointer;
@@ -116,7 +103,7 @@
     display: flex;
     justify-content: center;
     gap: var(--spacing-3);
-    margin-top: var(--spacing-4);
+    margin-top: var(--spacing-2);
     padding-top: var(--spacing-6);
     border-top: 1px solid rgba(255, 255, 255, 0.05);
 }

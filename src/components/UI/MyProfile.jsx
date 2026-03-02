@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Mail, Globe, Phone, ShieldCheck, Star, Save, X } from 'lucide-react';
 
-const MyProfile = () => {
+const MyProfile = ({ initialProfile }) => {
     const [isEditing, setIsEditing] = useState(false);
-    const [profile, setProfile] = useState({
+    const [profile, setProfile] = useState(initialProfile || {
         name: 'Adrian Tuci',
         title: 'Senior Dental Surgeon',
         bio: 'Dedicated to providing high-quality dental care with over 12 years of experience.',
@@ -11,7 +11,8 @@ const MyProfile = () => {
         phone: '+40 722 000 000',
         location: 'Bucharest Regional Clinic',
         license: 'DS-99021-XPR',
-        specialization: 'Oral Surgery & Implants'
+        specialization: 'Oral Surgery & Implants',
+        avatarInfo: { initials: 'AT', color: '#4f46e5' }
     });
 
     const [editData, setEditData] = useState({ ...profile });
@@ -29,7 +30,9 @@ const MyProfile = () => {
     return (
         <div className="profile-simple">
             <div className="profile-header-simple">
-                <div className="profile-avatar-simple">AT</div>
+                <div className="profile-avatar-simple" style={{ backgroundColor: profile.avatarInfo?.color }}>
+                    {profile.avatarInfo?.initials || '??'}
+                </div>
                 <div className="profile-intro">
                     <h3>{profile.name}</h3>
                     <p>{profile.title}</p>

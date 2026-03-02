@@ -269,6 +269,50 @@
     align-items: center;
 }
 
+/* Endodontic Test Badges */
+.test-badge {
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.test-badge.positive {
+    background-color: #fee2e2;
+    color: #ef4444;
+}
+
+.test-badge.negative {
+    background-color: #dcfce7;
+    color: #22c55e;
+}
+
+.test-badge.uncertain {
+    background-color: #fef9c3;
+    color: #ca8a04;
+}
+
+.test-badge.not {
+    background-color: #f3f4f6;
+    color: #6b7280;
+}
+
+.test-detail {
+    font-weight: 500;
+    text-transform: none;
+    opacity: 0.8;
+}
+
+.endo-item.has-result {
+    border-left: 3px solid #3b82f6;
+}
+
+.test-name {
+    margin-right: 4px;
+}
+
 .perio-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);

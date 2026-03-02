@@ -80,3 +80,18 @@ export const MOCK_HIERARCHY_DATA = [
         ]
     }
 ];
+
+export const user0profile = {
+    name: 'Daniel Smith',
+    title: 'Senior Dental Surgeon',
+    bio: 'Dedicated to providing high-quality dental care with over 12 years of experience.',
+    email: 'daniel.smith@example.com',
+    phone: '+40 722 000 000',
+    location: 'Bucharest Regional Clinic',
+    license: 'DS-99021-XPR',
+    specialization: 'Oral Surgery & Implants',
+    avatarInfo: {
+        initials: 'DS',
+        color: '#4f46e5'
+    }
+};

@@ -18,7 +18,7 @@ const ToothOverview = () => {
     const { selectedPatient, completeTreatmentPlanItem } = useAppStore();
 
     const [selectedTest, setSelectedTest] = useState(null);
-    const [testResults, setTestResults] = useState({});
+    const [testResults, setTestResults] = useState(tooth?.endodontic?.tests || {});
     const [suggestedDiagnosis, setSuggestedDiagnosis] = useState(null);
 
     const handleTestSelect = (testName) => {
@@ -32,13 +32,25 @@ const ToothOverview = () => {
     const [showDiagnosisModal, setShowDiagnosisModal] = useState(false);
 
     const handleSaveTest = (testName, data) => {
-        const newResults = { ...testResults, [testName]: data };
+        const testKey = testName.toLowerCase();
+        const newResults = { ...testResults, [testKey]: data };
         if (!data) {
-            delete newResults[testName];
+            delete newResults[testKey];
         }
         setTestResults(newResults);
 
+        // Update tooth in store with structured data
+        // We also set boolean flags (cold, heat, etc) for NormalView icons
+        const endoUpdate = {
+            tests: newResults,
+            [testKey]: !!data // flag for icons
+        };
+
+        const updatedEndo = { ...tooth.endodontic, ...endoUpdate };
+        updateTooth(tooth.isoNumber, { endodontic: updatedEndo });
+
         const diagnosis = suggestPulpalDiagnosis(newResults);
+        // ... rest of diagnosis logic
 
         // Only show modal if diagnosis changed and is not null
         if (diagnosis && diagnosis !== suggestedDiagnosis) {
@@ -183,7 +195,7 @@ const ToothOverview = () => {
             {/* Bottom Half: Content Grid */}
             <div className="content-grid">
                 {/* Endodontic Section (Left) */}
-                <EndodonticSection onTestSelect={handleTestSelect} />
+                <EndodonticSection onTestSelect={handleTestSelect} tooth={tooth} />
 
                 {/* Periodontal Section (Right) OR Endo Detail */}
                 {selectedTest ? (
