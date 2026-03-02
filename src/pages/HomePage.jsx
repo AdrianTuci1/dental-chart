@@ -36,7 +36,7 @@ const HomePage = () => {
                         <label className="form-label">Email Address</label>
                         <div className="input-wrapper">
                             <div className="input-icon-wrapper">
-                                <User className="input-icon" />
+                                <User size={18} />
                             </div>
                             <input
                                 type="email"
@@ -53,7 +53,7 @@ const HomePage = () => {
                         <label className="form-label">Password</label>
                         <div className="input-wrapper">
                             <div className="input-icon-wrapper">
-                                <Lock className="input-icon" />
+                                <Lock size={18} />
                             </div>
                             <input
                                 type="password"

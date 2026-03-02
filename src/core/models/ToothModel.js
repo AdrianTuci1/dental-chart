@@ -11,6 +11,7 @@ export class ToothModel {
      */
     static initializeData(tooth, toothNumber) {
         if (!tooth.toothNumber) tooth.toothNumber = toothNumber;
+        if (!tooth.isoNumber) tooth.isoNumber = toothNumber;
 
         // Ensure Pathology structure
         if (!tooth.pathology) tooth.pathology = {};

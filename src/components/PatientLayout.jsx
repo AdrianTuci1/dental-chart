@@ -10,7 +10,7 @@ import './PatientLayout.css';
 
 const PatientLayout = () => {
     const { patientId } = useParams();
-    const { selectedPatient, selectPatient, patients, setPatients, updatePatient } = useAppStore();
+    const { selectedPatient, selectPatient, patients, setPatients, updatePatient, teeth } = useAppStore();
     const { setTeeth } = useAppStore();
 
     const [isLoading, setIsLoading] = useState(true);
@@ -28,8 +28,8 @@ const PatientLayout = () => {
 
                 if (isMounted && patientData) {
                     const projectedTeeth = ChartModel.projectTeethFromInterventions(
-                        patientData.history,
-                        patientData.treatmentPlan
+                        patientData.history || [],
+                        patientData.treatmentPlan || []
                     );
 
                     selectPatient(patientData);
@@ -44,16 +44,23 @@ const PatientLayout = () => {
             }
         };
 
-        if (!selectedPatient || selectedPatient.id !== patientId) {
-            loadPatientData();
-        } else {
+        // If we have the patient (likely set by PatientsListPage), project teeth immediately
+        if (selectedPatient?.id === patientId) {
+            const projectedTeeth = ChartModel.projectTeethFromInterventions(
+                selectedPatient.history || [],
+                selectedPatient.treatmentPlan || []
+            );
+            setTeeth(projectedTeeth);
             setIsLoading(false);
+        } else {
+            // Otherwise, fetch everything
+            loadPatientData();
         }
 
         return () => {
             isMounted = false;
         };
-    }, [patientId, selectedPatient, selectPatient, setTeeth]);
+    }, [patientId, selectPatient, setTeeth]); // Trigger when patient switching happens via URL
 
     if (isLoading || !selectedPatient) {
         return (

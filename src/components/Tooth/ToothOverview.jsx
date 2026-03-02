@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
-import { ChevronLeft, PlusCircle, RefreshCw, XCircle, CheckCircle } from 'lucide-react';
+import { ChevronLeft, PlusCircle, RefreshCw, XCircle, CheckCircle, Check } from 'lucide-react';
 import { useAppStore } from '../../core/store/appStore';
 import ConfirmationModal from '../UI/ConfirmationModal';
 import './ToothOverview.css';
@@ -125,11 +125,10 @@ const ToothOverview = () => {
     };
 
     // Filter treatment plan items for this tooth
+    // Making it more robust by checking item.tooth against tooth.isoNumber, tooth.toothNumber, or the param itself
     const toothTreatments = selectedPatient?.treatmentPlan?.items?.filter(
-        item => parseInt(item.tooth) === parseInt(tooth.isoNumber)
+        item => parseInt(item.tooth) === parseInt(tooth.isoNumber || tooth.toothNumber)
     ) || [];
-
-
 
     return (
         <div className="tooth-overview-container">
@@ -158,27 +157,27 @@ const ToothOverview = () => {
                 <div className="status-message">
                     {toothTreatments.length > 0 ? (
                         <div className="tooth-treatment-list">
-                            <div className="treatment-grouped">
-                                {toothTreatments.map((item) => (
-                                    <div key={item.id} className={`tooth-treatment-item ${item.status}`}>
-                                        <button className="done-btn" onClick={() => handleDone(item.id)}>
-                                            Done
-                                        </button>
-                                        <span className="tooth-card-number">{tooth.isoNumber}</span>
-                                        <div className="treatment-info">
-                                            <span className="treatment-name">
+                            {toothTreatments.map((item) => (
+                                <div key={item.id} className="plan-item-grouped">
+                                    <button className="done-btn-premium" onClick={() => handleDone(item.id)}>
+                                        <Check size={14} />
+                                        <span>DONE</span>
+                                    </button>
+                                    <div className="item-details">
+                                        <p className="item-text">
+                                            <span className="tooth-number-label">{tooth.isoNumber || tooth.toothNumber}, </span>
+                                            <span className={`procedure-item ${item.status}`}>
                                                 {item.procedure}
                                             </span>
-                                        </div>
+                                        </p>
                                     </div>
-                                ))}
-                            </div>
+                                </div>
+                            ))}
                         </div>
                     ) : (
                         "Currently there are no treatments pending"
                     )}
                 </div>
-
             </div>
 
             {/* Bottom Half: Content Grid */}

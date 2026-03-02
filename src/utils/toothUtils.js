@@ -175,30 +175,32 @@ export const mapToothDataToConditions = (tooth, historicalDate = null) => {
     // Map Restorations (Fillings)
     if (tooth.restoration && tooth.restoration.fillings) {
         tooth.restoration.fillings.filter(f => isBeforeOrAtHistoricalDate(f)).forEach(filling => {
-            filling.zones.forEach(zone => {
-                let surface = zoneMap[zone];
-                // Fallback for direct string matches if enum fails
-                if (!surface && typeof zone === 'string') {
-                    surface = zone;
-                }
+            if (filling.zones && Array.isArray(filling.zones)) {
+                filling.zones.forEach(zone => {
+                    let surface = zoneMap[zone];
+                    // Fallback for direct string matches if enum fails
+                    if (!surface && typeof zone === 'string') {
+                        surface = zone;
+                    }
 
-                if (surface) {
-                    const baseColor = materialColorMap[filling.material] || '#3B82F6';
-                    conditions.push({
-                        surface: surface,
-                        zone: zone, // Preserve original zone for filtering (e.g. Buccal vs Palatal)
-                        color: getColor(surface, baseColor),
-                        opacity: 0.6
-                    });
-                }
-            });
+                    if (surface) {
+                        const baseColor = materialColorMap[filling.material] || '#3B82F6';
+                        conditions.push({
+                            surface: surface,
+                            zone: zone, // Preserve original zone for filtering (e.g. Buccal vs Palatal)
+                            color: getColor(surface, baseColor),
+                            opacity: 0.6
+                        });
+                    }
+                });
+            }
         });
     }
 
     // Map Advanced Restorations (Inlay, Onlay, Partial Crown)
     if (tooth.restoration && tooth.restoration.advancedRestorations) {
         tooth.restoration.advancedRestorations.filter(r => isBeforeOrAtHistoricalDate(r)).forEach(rest => {
-            if (rest.zones) {
+            if (rest.zones && Array.isArray(rest.zones)) {
                 rest.zones.forEach(zone => {
                     let surface = zoneMap[zone];
                     if (!surface && typeof zone === 'string') {
@@ -222,7 +224,7 @@ export const mapToothDataToConditions = (tooth, historicalDate = null) => {
     // Map Pathology (Decay)
     if (tooth.pathology && tooth.pathology.decay) {
         tooth.pathology.decay.filter(d => isBeforeOrAtHistoricalDate(d)).forEach(decay => {
-            if (decay.zones) {
+            if (decay.zones && Array.isArray(decay.zones)) {
                 decay.zones.forEach(zone => {
                     // Normalize zone to string if it's an object (though usually strings here)
                     const zoneKey = typeof zone === 'string' ? zone : (zone?.id || zone?.value || zone);

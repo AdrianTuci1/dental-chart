@@ -66,83 +66,84 @@
 }
 
 .status-message {
-    color: var(--color-secondary);
     padding: 1rem 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    /* Ensure start alignment vertically */
     flex: 1;
-    /* Allow it to fill space if needed, but justify-start keeps it at top */
 }
 
 .tooth-treatment-list {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.75rem;
     width: 100%;
-    padding: 0px 12px;
+    padding: 0 12px;
 }
 
-.treatment-grouped {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    width: 100%;
-}
-
-.tooth-card-number {
-    font-weight: 700;
-    color: var(--text-primary);
-    font-size: 0.875rem;
-    min-width: 24px;
-}
-
-.tooth-treatment-item {
+.plan-item-grouped {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     background: var(--background-elevated);
-    padding: 0.5rem 1rem;
+    padding: 0.625rem 1rem;
     border-radius: var(--radius-sm);
-    border-left: 4px solid transparent;
     gap: 1rem;
-    width: 100%;
+    transition: background-color 0.2s;
+    border: 1px solid var(--border-color);
 }
 
-.tooth-treatment-item.monitoring {
-    border-left-color: var(--color-warning);
+.plan-item-grouped:hover {
+    background-color: var(--background-tertiary);
 }
 
-.tooth-treatment-item.planned {
-    border-left-color: var(--color-error);
+.tooth-number-label {
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-right: 4px;
 }
 
-.treatment-info {
+.item-details {
     display: flex;
     align-items: center;
     flex: 1;
 }
 
-.treatment-name {
+.item-text {
     font-size: 0.875rem;
     color: var(--text-secondary);
 }
 
-.done-btn {
-    background: var(--color-gray-100);
-    color: var(--color-gray-800);
-    border: 1px solid var(--color-gray-300);
-    padding: 4px 12px;
-    border-radius: var(--radius-sm);
-    font-size: 0.75rem;
-    font-weight: 500;
+.procedure-item {
+    color: var(--text-secondary);
+}
+
+.procedure-item.planned {
+    color: var(--color-error);
+}
+
+.procedure-item.monitoring {
+    color: var(--color-warning);
+}
+
+.done-btn-premium {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
     cursor: pointer;
     transition: all 0.2s;
 }
 
-.done-btn:hover {
-    background: var(--color-white);
-    color: var(--color-gray-900);
+.done-btn-premium:hover {
+    background: #059669;
+}
+
+.done-btn-premium:active {
+    transform: translateY(0);
 }
 
 .content-grid {

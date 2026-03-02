@@ -58,7 +58,12 @@ export class ChartModel {
      */
     static projectTeethFromInterventions(history = [], treatmentPlan = []) {
         const teeth = {};
-        const allItems = [...history, ...treatmentPlan];
+
+        // Handle both array and object formats (aligned with PatientModels.js)
+        const completedList = Array.isArray(history) ? history : (history?.completedItems || []);
+        const plannedList = Array.isArray(treatmentPlan) ? treatmentPlan : (treatmentPlan?.items || []);
+
+        const allItems = [...completedList, ...plannedList];
 
         // Pre-initialize all 32 teeth so that healthy teeth also exist in state
         const ALL_VALID_TEETH = [
@@ -72,10 +77,11 @@ export class ChartModel {
         });
 
         allItems.forEach(item => {
-            const { isoNumber, type, subtype, ...data } = item;
-            if (!isoNumber) return;
+            const { isoNumber, tooth: toothNumber, type, subtype, ...data } = item;
+            const targetToothNumber = isoNumber || toothNumber;
+            if (!targetToothNumber) return;
 
-            const tooth = teeth[isoNumber];
+            const tooth = teeth[targetToothNumber];
             if (!tooth) return; // Should not happen with pre-initialization
 
             switch (type) {
