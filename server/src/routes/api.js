@@ -1,13 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
 
 const clinicController = require('../controllers/clinicController');
 const medicController = require('../controllers/medicController');
 const patientController = require('../controllers/patientController');
-const scanController = require('../controllers/scanController');
-
+const historyController = require('../controllers/historyController');
+const treatmentPlanController = require('../controllers/treatmentPlanController');
 // Clinic Routes
 router.post('/clinics', clinicController.createClinic);
 router.get('/clinics/:id', clinicController.getClinic);
@@ -21,9 +19,11 @@ router.get('/medics/:id/patients', medicController.getMedicPatients);
 router.post('/patients', patientController.createPatient);
 router.get('/patients/:id', patientController.getPatient);
 router.get('/patients/:id/chart', patientController.getPatientChart);
+router.post('/patients/:patientId/history', historyController.addHistoryRecord);
+router.get('/patients/:patientId/history', historyController.getPatientHistory);
 
-// Scan Routes
-router.post('/scans/upload', upload.single('file'), scanController.uploadScan);
-router.post('/scans/webhook', scanController.updateScanStatus);
+// Treatment Plan Routes
+router.post('/patients/:patientId/treatment-plans', treatmentPlanController.addTreatmentPlanItem);
+router.get('/patients/:patientId/treatment-plans', treatmentPlanController.getPatientTreatmentPlans);
 
 module.exports = router;

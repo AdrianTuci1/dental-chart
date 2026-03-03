@@ -1,37 +1,33 @@
-const db = require('../models/db');
+const MedicService = require('../services/MedicService');
+const medicService = new MedicService();
 
 exports.createMedic = async (req, res) => {
-    const { clinic_id, full_name, specialization, email, phone } = req.body;
     try {
-        const result = await db.query(
-            'INSERT INTO medics (clinic_id, full_name, specialization, email, phone) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [clinic_id, full_name, specialization, email, phone]
-        );
-        res.status(201).json(result.rows[0]);
+        const medicData = req.body;
+        const newMedic = await medicService.createMedic(medicData);
+        res.status(201).json(newMedic);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
 exports.getMedic = async (req, res) => {
-    const { id } = req.params;
     try {
-        const result = await db.query('SELECT * FROM medics WHERE id = $1', [id]);
-        if (result.rows.length === 0) {
+        const { id } = req.params;
+        const medic = await medicService.getMedic(id);
+
+        if (!medic) {
             return res.status(404).json({ error: 'Medic not found' });
         }
-        res.json(result.rows[0]);
+        res.json(medic);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 };
 
 exports.getMedicPatients = async (req, res) => {
-    const { id } = req.params;
-    try {
-        const result = await db.query('SELECT * FROM patients WHERE medic_id = $1', [id]);
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+    // Note: To implement this properly we need to query patients by medic_id.
+    // In DynamoDB Single-Table Design with our current access patterns,
+    // we would likely need a Global Secondary Index (GSI) like GSI1PK = MEDIC#123 to query all patients for a medic.
+    res.status(501).json({ error: 'Not implemented (Requires GSI on Patient Table)' });
 };
