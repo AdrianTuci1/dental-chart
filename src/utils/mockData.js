@@ -62,21 +62,21 @@ export const MOCK_HIERARCHY_DATA = [
                         { id: 'h-1', tooth: 11, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: [ToothZone.INCISAL, ToothZone.CERVICAL_BUCCAL], status: 'completed', date: '2024-05-10', procedure: 'Composite Filling' },
                         { id: 'h-2', tooth: 12, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: ['Class 4 Mesial', 'Class 4 Distal'], status: 'completed', date: '2024-05-10', procedure: 'Composite Filling' },
                         { id: 'h-3', tooth: 12, type: 'restoration', subtype: 'filling', material: Material.GOLD, zones: [ToothZone.PALATAL], status: 'completed', date: '2023-11-20', procedure: 'Gold Filling' },
-                        { id: 'h-6', tooth: 26, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: [ToothZone.CERVICAL_BUCCAL], status: 'completed', procedure: 'Composite Filling' },
-                        { id: 'h-7', tooth: 46, type: 'missing', status: 'completed', procedure: 'Missing Tooth' },
-                        { id: 'h-8', tooth: 24, type: 'restoration', subtype: 'crown', material: Material.CERAMIC, base: 'Natural', quality: 'Sufficient', status: 'completed', procedure: 'Ceramic Crown' },
-                        { id: 'h-9', tooth: 21, type: 'restoration', subtype: 'crown', material: Material.CERAMIC, base: 'Implant', quality: 'Sufficient', status: 'completed', procedure: 'Implant Supported Crown' },
-                        { id: 'h-imp-1', tooth: 35, type: 'restoration', subtype: 'crown', material: Material.GOLD, base: 'Implant', status: 'completed', procedure: 'Gold Implant Crown' },
-                        { id: 'h-imp-2', tooth: 36, type: 'restoration', subtype: 'crown', material: Material.NON_PRECIOUS, base: 'Implant', status: 'completed', procedure: 'Non-Precious Implant Crown' },
-                        { id: 'h-imp-3', tooth: 16, type: 'restoration', subtype: 'crown', material: Material.CERAMIC, base: 'Implant', status: 'completed', procedure: 'Ceramic Implant Crown' },
-                        { id: 'h-imp-fill-1', tooth: 35, type: 'restoration', subtype: 'filling', material: Material.CERAMIC, zones: [ToothZone.MESIAL, ToothZone.OCCLUSAL, ToothZone.DISTAL, 'Buccal Cusp', 'Lingual Cusp', 'Buccal Surf', 'Lingual Surf', ToothZone.BUCCAL, ToothZone.LINGUAL], status: 'completed', procedure: 'Surface Restoration' },
-                        { id: 'h-imp-fill-2', tooth: 36, type: 'restoration', subtype: 'filling', material: Material.CERAMIC, zones: [ToothZone.MESIAL, ToothZone.OCCLUSAL, ToothZone.DISTAL, 'Buccal Cusp', 'Lingual Cusp', 'Buccal Surf', 'Lingual Surf', ToothZone.BUCCAL, ToothZone.LINGUAL], status: 'completed', procedure: 'Surface Restoration' },
-                        { id: 'h-imp-fill-3', tooth: 16, type: 'restoration', subtype: 'filling', material: Material.CERAMIC, zones: [ToothZone.MESIAL, ToothZone.DISTAL, ToothZone.MESIO_BUCCAL_CUSP, ToothZone.DISTO_BUCCAL_CUSP, ToothZone.MESIO_PALATAL_CUSP, ToothZone.DISTO_PALATAL_CUSP], status: 'completed', procedure: 'Surface Restoration' },
-                        { id: 'h-miss-1', tooth: 38, type: 'missing', status: 'completed', procedure: 'Missing Tooth' },
-                        { id: 'h-pon-1', tooth: 46, type: 'restoration', subtype: 'crown', crownType: 'Pontic', material: Material.CERAMIC, status: 'completed', procedure: 'Ceramic Pontic' },
-                        { id: 'h-pon-2', tooth: 45, type: 'restoration', subtype: 'crown', crownType: 'Pontic', material: Material.COMPOSITE, status: 'completed', procedure: 'Composite Pontic' },
-                        { id: 'h-pon-fill-2', tooth: 45, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: [ToothZone.DISTAL, ToothZone.MESIAL], status: 'completed', procedure: 'Pontic Filling' },
-                        { id: 'h-fill-47', tooth: 47, type: 'restoration', subtype: 'filling', material: Material.GOLD, zones: [ToothZone.OCCLUSAL, ToothZone.LINGUAL], status: 'completed', procedure: 'Gold Filling' }
+                        { id: 'h-6', tooth: 26, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: [ToothZone.CERVICAL_BUCCAL], status: 'completed', date: '2022-04-12', procedure: 'Composite Filling' },
+                        { id: 'h-7', tooth: 46, type: 'missing', status: 'completed', date: '2020-08-15', procedure: 'Missing Tooth' },
+                        { id: 'h-8', tooth: 24, type: 'restoration', subtype: 'crown', material: Material.CERAMIC, base: 'Natural', quality: 'Sufficient', status: 'completed', date: '2023-01-22', procedure: 'Ceramic Crown' },
+                        { id: 'h-9', tooth: 21, type: 'restoration', subtype: 'crown', material: Material.CERAMIC, base: 'Implant', quality: 'Sufficient', status: 'completed', date: '2024-02-15', procedure: 'Implant Supported Crown' },
+                        { id: 'h-imp-1', tooth: 35, type: 'restoration', subtype: 'crown', material: Material.GOLD, base: 'Implant', status: 'completed', date: '2021-06-10', procedure: 'Gold Implant Crown' },
+                        { id: 'h-imp-2', tooth: 36, type: 'restoration', subtype: 'crown', material: Material.NON_PRECIOUS, base: 'Implant', status: 'completed', date: '2021-06-10', procedure: 'Non-Precious Implant Crown' },
+                        { id: 'h-imp-3', tooth: 16, type: 'restoration', subtype: 'crown', material: Material.CERAMIC, base: 'Implant', status: 'completed', date: '2022-09-05', procedure: 'Ceramic Implant Crown' },
+                        { id: 'h-imp-fill-1', tooth: 35, type: 'restoration', subtype: 'filling', material: Material.CERAMIC, zones: [ToothZone.MESIAL, ToothZone.OCCLUSAL, ToothZone.DISTAL, 'Buccal Cusp', 'Lingual Cusp', 'Buccal Surf', 'Lingual Surf', ToothZone.BUCCAL, ToothZone.LINGUAL], status: 'completed', date: '2021-06-10', procedure: 'Surface Restoration' },
+                        { id: 'h-imp-fill-2', tooth: 36, type: 'restoration', subtype: 'filling', material: Material.CERAMIC, zones: [ToothZone.MESIAL, ToothZone.OCCLUSAL, ToothZone.DISTAL, 'Buccal Cusp', 'Lingual Cusp', 'Buccal Surf', 'Lingual Surf', ToothZone.BUCCAL, ToothZone.LINGUAL], status: 'completed', date: '2021-06-10', procedure: 'Surface Restoration' },
+                        { id: 'h-imp-fill-3', tooth: 16, type: 'restoration', subtype: 'filling', material: Material.CERAMIC, zones: [ToothZone.MESIAL, ToothZone.DISTAL, ToothZone.MESIO_BUCCAL_CUSP, ToothZone.DISTO_BUCCAL_CUSP, ToothZone.MESIO_PALATAL_CUSP, ToothZone.DISTO_PALATAL_CUSP], status: 'completed', date: '2022-09-05', procedure: 'Surface Restoration' },
+                        { id: 'h-miss-1', tooth: 38, type: 'missing', status: 'completed', date: '2019-11-20', procedure: 'Missing Tooth' },
+                        { id: 'h-pon-1', tooth: 46, type: 'restoration', subtype: 'crown', crownType: 'Pontic', material: Material.CERAMIC, status: 'completed', date: '2024-01-15', procedure: 'Ceramic Pontic' },
+                        { id: 'h-pon-2', tooth: 45, type: 'restoration', subtype: 'crown', crownType: 'Pontic', material: Material.COMPOSITE, status: 'completed', date: '2024-01-15', procedure: 'Composite Pontic' },
+                        { id: 'h-pon-fill-2', tooth: 45, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: [ToothZone.DISTAL, ToothZone.MESIAL], status: 'completed', date: '2024-01-15', procedure: 'Pontic Filling' },
+                        { id: 'h-fill-47', tooth: 47, type: 'restoration', subtype: 'filling', material: Material.GOLD, zones: [ToothZone.OCCLUSAL, ToothZone.LINGUAL], status: 'completed', date: '2023-03-30', procedure: 'Gold Filling' }
                     ]
                 },
                 chart: { id: 'chart-1', lastUpdated: '2024-10-01', teeth: [] }
@@ -99,3 +99,15 @@ export const user0profile = {
         color: '#4f46e5'
     }
 };
+
+export const MOCK_DETECTIONS = [
+    { id: 'det-1', tooth: 17, type: 'Filling', category: 'restoration', color: 'blue', status: 'detected' },
+    { id: 'det-2', tooth: 16, type: 'Filling', category: 'restoration', color: 'blue', status: 'detected' },
+    { id: 'det-3', tooth: 15, type: 'Root-canal filling | Crown', category: 'restoration', color: 'dark-blue', status: 'detected' },
+    { id: 'det-4', tooth: 14, type: 'Filling', category: 'restoration', color: 'blue', status: 'detected' },
+    { id: 'det-5', tooth: 13, type: 'Filling', category: 'restoration', color: 'blue', status: 'detected' },
+    { id: 'det-6', tooth: 12, type: 'Crown', category: 'restoration', color: 'dark-blue', status: 'detected' },
+    { id: 'det-7', tooth: 11, type: 'Root-canal filling | Crown', category: 'restoration', color: 'dark-blue', status: 'detected' },
+    { id: 'det-8', tooth: 21, type: "Periapical radiolucency\nCrown", category: 'pathology', color: 'orange', status: 'detected' },
+    { id: 'det-9', tooth: 22, type: "Periapical radiolucency\nRoot-canal filling | Crown", category: 'pathology', color: 'orange', status: 'detected' },
+];

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Printer, Download, Mail, Activity, Heart, Wind, Cigarette, Wine, Snowflake, Flame, Hand, Gavel, Zap, Hourglass } from 'lucide-react';
+import { Printer, Download, Mail, Activity, Heart, Wind, Cigarette, Wine, Snowflake, Flame, Hand, Gavel, Zap, Hourglass, AlertCircle } from 'lucide-react';
 import { useAppStore } from '../core/store/appStore';
 import NormalView from '../components/Chart/views/NormalView';
 import UpperJawView from '../components/Chart/views/UpperJawView';
@@ -12,19 +12,55 @@ const PatientReportPage = () => {
 
     if (!selectedPatient) return <div>Loading...</div>;
 
-    // Mock data for new sections to match mockup
-    const medicalIssues = [
-        { id: 1, name: 'High blood pressure', icon: Heart },
-        { id: 2, name: 'Asthma', icon: Wind },
-        { id: 3, name: 'Acid reflux', icon: Activity },
-        { id: 4, name: 'Tobacco use', icon: Cigarette },
-        { id: 5, name: 'Alcohol use', icon: Wine },
-    ];
+    // Helper to calculate age
+    const calculateAge = (dob) => {
+        if (!dob) return '';
+        const birthDate = new Date(dob);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    };
 
-    const treatmentPlan = [
-        { id: 1, tooth: '13', procedure: 'Fracture, Crown Fracture, Vertical', date: 'FEBRUARY 4, 2026', status: 'planned' },
-        { id: 2, tooth: '24', procedure: 'Caries, Distal', date: 'FEBRUARY 4, 2026', status: 'planned' },
-    ];
+    // Process medical issues from store
+    const getIssueDetails = (key) => {
+        switch (key) {
+            case 'highBloodPressure': return { icon: Heart, label: 'High blood pressure' };
+            case 'asthma': return { icon: Wind, label: 'Asthma' };
+            case 'acidReflux': return { icon: Activity, label: 'Acid reflux' };
+            case 'tobaccoUse': return { icon: Cigarette, label: 'Tobacco use' };
+            case 'alcoholUse': return { icon: Wine, label: 'Alcohol use' };
+            default: return { icon: AlertCircle, label: key };
+        }
+    };
+
+    const medicalIssuesList = [];
+    if (selectedPatient.medicalIssues) {
+        const { highBloodPressure, asthma, acidReflux, tobaccoUse, alcoholUse, other } = selectedPatient.medicalIssues;
+        if (highBloodPressure) medicalIssuesList.push({ id: 'hbp', ...getIssueDetails('highBloodPressure') });
+        if (asthma) medicalIssuesList.push({ id: 'asthma', ...getIssueDetails('asthma') });
+        if (acidReflux) medicalIssuesList.push({ id: 'ar', ...getIssueDetails('acidReflux') });
+        if (tobaccoUse) medicalIssuesList.push({ id: 'tu', ...getIssueDetails('tobaccoUse') });
+        if (alcoholUse) medicalIssuesList.push({ id: 'au', ...getIssueDetails('alcoholUse') });
+
+        if (Array.isArray(other)) {
+            other.forEach((issue, idx) => {
+                medicalIssuesList.push({ id: `other-${idx}`, icon: AlertCircle, label: issue });
+            });
+        }
+    }
+
+    // Group treatments by tooth (same logic as TreatmentPlan.jsx)
+    const treatments = selectedPatient.treatmentPlan?.items || [];
+    const groupedTreatments = treatments.reduce((acc, item) => {
+        const toothKey = item.tooth || 'General';
+        if (!acc[toothKey]) acc[toothKey] = [];
+        acc[toothKey].push(item);
+        return acc;
+    }, {});
 
     return (
         <div className="report-page-layout">
@@ -40,8 +76,10 @@ const PatientReportPage = () => {
                 <div className="report-header-section">
                     <h1 className="report-main-title">Patient information</h1>
                     <div className="clinic-logo-placeholder">
-                        <div className="logo-icon">🦷</div>
-                        <div className="logo-text">Dental Clinic</div>
+                        <div className="logo-icon">
+                            <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px' }} />
+                        </div>
+                        <div className="logo-text">Pixtooth</div>
                     </div>
                 </div>
 
@@ -49,11 +87,17 @@ const PatientReportPage = () => {
                 <div className="patient-info-list">
                     <div className="info-row">
                         <span className="info-label">Patient name:</span>
-                        <span className="info-value">Patient Name</span>
+                        <span className="info-value">{selectedPatient.fullName}</span>
                     </div>
                     <div className="info-row">
                         <span className="info-label">Date of birth:</span>
-                        <span className="info-value">November 3, 1995</span>
+                        <span className="info-value">
+                            {selectedPatient.dateOfBirth ? new Date(selectedPatient.dateOfBirth).toLocaleDateString('en-US', {
+                                month: 'long',
+                                day: 'numeric',
+                                year: 'numeric'
+                            }) : 'N/A'} ({calculateAge(selectedPatient.dateOfBirth)} years)
+                        </span>
                     </div>
                     <div className="info-row">
                         <span className="info-label">Praxis name:</span>
@@ -82,12 +126,14 @@ const PatientReportPage = () => {
                 <div className="report-section">
                     <h2 className="section-heading">Medical Issues</h2>
                     <div className="medical-issues-grid">
-                        {medicalIssues.map((issue) => (
+                        {medicalIssuesList.length > 0 ? medicalIssuesList.map((issue) => (
                             <div key={issue.id} className="medical-issue-item">
                                 <issue.icon className="issue-icon" size={20} />
-                                <span className="issue-name">{issue.name}</span>
+                                <span className="issue-name">{issue.label}</span>
                             </div>
-                        ))}
+                        )) : (
+                            <div className="no-issues-report">No known medical issues recorded.</div>
+                        )}
                     </div>
                 </div>
 
@@ -97,17 +143,31 @@ const PatientReportPage = () => {
                 <div className="report-section mt-8">
                     <h2 className="section-heading">Treatment Plan</h2>
                     <div className="treatment-plan-list">
-                        {treatmentPlan.map((item) => (
-                            <div key={item.id} className="treatment-item-card">
-                                <div className={`status-indicator status-${item.status}`}></div>
+                        {Object.entries(groupedTreatments).length > 0 ? Object.entries(groupedTreatments).map(([tooth, items]) => (
+                            <div key={tooth} className="treatment-item-card">
+                                <div className={`status-indicator status-planned`}></div>
                                 <div className="treatment-details">
                                     <span className="treatment-desc">
-                                        <span className="tooth-number">{item.tooth},</span> {item.procedure}
+                                        <span className="tooth-number">{tooth}, </span>
+                                        {items.map((item, idx) => (
+                                            <span key={item.id}>
+                                                {item.procedure}
+                                                {idx < items.length - 1 ? ', ' : ''}
+                                            </span>
+                                        ))}
                                     </span>
-                                    <span className="treatment-date">{item.date}</span>
+                                    <span className="treatment-date">
+                                        {items[0].date ? new Date(items[0].date).toLocaleDateString('en-US', {
+                                            month: 'long',
+                                            day: 'numeric',
+                                            year: 'numeric'
+                                        }) : ''}
+                                    </span>
                                 </div>
                             </div>
-                        ))}
+                        )) : (
+                            <div className="empty-state">No treatments pending.</div>
+                        )}
                     </div>
                 </div>
 

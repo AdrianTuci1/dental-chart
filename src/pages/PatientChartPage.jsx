@@ -41,25 +41,27 @@ const PatientChartPage = () => {
         }
     };
 
-    // Mock historical dates for demonstration
-    const mockDates = [
-        null, // Current
-        new Date('2026-01-15').toISOString(),
-        new Date('2025-12-10').toISOString(),
-        new Date('2025-11-05').toISOString()
-    ];
+    // Extract unique dates from history, sort descending, and prepend 'null' for current view
+    const historyItems = selectedPatient?.history?.completedItems || [];
+    const uniqueDates = [...new Set(historyItems.map(item => item.date).filter(Boolean))].sort((a, b) => new Date(b) - new Date(a));
+    const mockDates = [null, ...uniqueDates];
 
     const currentDateIndex = historicalDate ? mockDates.indexOf(historicalDate) : 0;
 
     const handlePrevDate = () => {
+        // "Prev" means older in time (higher index in the descending array)
+        // If we're at the oldest date, loop back to Current View (index 0) or stay there
         const nextIndex = (currentDateIndex + 1) % mockDates.length;
         setHistoricalDate(mockDates[nextIndex]);
     };
 
     const handleNextDate = () => {
+        // "Next" means newer in time (lower index in the descending array)
+        // If we're at Current View (index 0), loop back to oldest or stay there
         const prevIndex = (currentDateIndex - 1 + mockDates.length) % mockDates.length;
         setHistoricalDate(mockDates[prevIndex]);
     };
+
 
     const getNavPath = (basePath) => {
         const patientId = selectedPatient?.id || location.pathname.split('/')[2];

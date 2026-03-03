@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Snowflake, Gavel, Hand, Flame, Zap } from 'lucide-react';
 import JawTooth from './JawTooth';
+import { useAppStore } from '../../../core/store/appStore';
 import './NormalView.css';
 
 const NormalView = ({
@@ -14,6 +15,7 @@ const NormalView = ({
     showPerioGrid = false
 }) => {
     const [tick, setTick] = useState(0);
+    const showEndo = useAppStore(state => state.showEndo);
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -36,7 +38,7 @@ const NormalView = ({
     const lowerTeethNumbers = [...q4, ...q3];
 
     const getEndoIcons = (tooth, type) => {
-        if (!tooth || !tooth.endodontic) return null;
+        if (!showEndo || !tooth || !tooth.endodontic) return null;
         const iconDefs = [
             { key: 'cold', val: tooth.endodontic.cold, icon: <Snowflake size={18} className="endo-icon-cold" /> },
             { key: 'percussion', val: tooth.endodontic.percussion, icon: <Gavel size={18} className="endo-icon-percussion" /> },

@@ -1,9 +1,19 @@
 
+import { useAppStore } from '../../core/store/appStore';
 import './History.css';
 import React from 'react';
 
 const History = ({ history }) => {
-    const items = history?.completedItems || [];
+    const historicalDate = useAppStore(state => state.historicalDate);
+    const allItems = history?.completedItems || [];
+
+    const items = allItems.filter(item => {
+        if (!historicalDate) return true; // Show all to current date
+        if (!item.date) return true;
+
+        return new Date(item.date) <= new Date(historicalDate);
+    });
+
 
     if (items.length === 0) {
         return (

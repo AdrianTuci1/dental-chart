@@ -23,7 +23,7 @@ const OrientationGuard = () => {
     }, []);
 
     const isHomeOrSignup = ['/', '/signup'].includes(location.pathname);
-    const isInvalid = (dimensions.width / dimensions.height < 4 / 3) || (dimensions.width < 1280);
+    const isInvalid = (dimensions.width / dimensions.height < 4 / 4) || (dimensions.width < 1080);
 
     if (isInvalid && !isHomeOrSignup) {
         return (

@@ -1,20 +1,10 @@
-import React from 'react';
-import { AlertCircle, ChevronDown, Check, Info } from 'lucide-react';
+import React, { useState } from 'react';
+import { AlertCircle, ChevronDown, Check, Info, X } from 'lucide-react';
 import './DetectionsPanel.css';
 
-const DetectionsPanel = () => {
-    // Mock data based on the screenshot
-    const detections = [
-        { id: 17, tooth: 17, type: 'Filling', status: 'detected' },
-        { id: 16, tooth: 16, type: 'Filling', status: 'detected' },
-        { id: 15, tooth: 15, type: 'Root-canal filling | Crown', status: 'detected' },
-        { id: 14, tooth: 14, type: 'Filling', status: 'detected' },
-        { id: 13, tooth: 13, type: 'Filling', status: 'detected' },
-        { id: 12, tooth: 12, type: 'Crown', status: 'detected' },
-        { id: 11, tooth: 11, type: 'Root-canal filling | Crown', status: 'detected' },
-        { id: 21, tooth: 21, type: 'Periapical radiolucency\nCrown', status: 'detected' },
-        { id: 22, tooth: 22, type: 'Periapical radiolucency\nRoot-canal filling | Crown', status: 'detected' },
-    ];
+const DetectionsPanel = ({ detections = [], onDelete }) => {
+    const [isLegendOpen, setIsLegendOpen] = useState(false);
+    // Component now uses props for data and actions
 
     return (
         <div className="detections-panel">
@@ -28,19 +18,37 @@ const DetectionsPanel = () => {
             {/* List */}
             <div className="detections-list">
                 {detections.map((item, index) => (
-                    <div key={index} className="detection-item">
-                        <div className="detection-tooth-number">{item.tooth}</div>
+                    <div key={item.id || index} className="detection-item">
+                        <div className={`detection-tooth-number ${item.color}`}>
+                            {item.tooth}
+                        </div>
                         <div className="detection-description">{item.type}</div>
+                        <button
+                            className="detection-delete-btn"
+                            onClick={() => onDelete && onDelete(item.id)}
+                            title="Delete detection"
+                        >
+                            <X size={14} />
+                        </button>
                     </div>
                 ))}
             </div>
 
             {/* Legend / Footer area mock */}
-            <div className="detections-legend-header">
+            <div
+                className={`detections-legend-header ${isLegendOpen ? 'open' : ''}`}
+                onClick={() => setIsLegendOpen(!isLegendOpen)}
+            >
                 <span>Legend</span>
-                <ChevronDown size={16} />
+                <ChevronDown
+                    size={16}
+                    style={{
+                        transform: isLegendOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.3s ease'
+                    }}
+                />
             </div>
-            <div className="detections-legend-grid">
+            <div className={`detections-legend-grid ${isLegendOpen ? 'visible' : ''}`}>
                 <div className="legend-item"><span className="legend-dot red"></span>Caries</div>
                 <div className="legend-item"><span className="legend-dot blue"></span>Filling</div>
                 <div className="legend-item"><span className="legend-dot orange"></span>Periapical radiolucency</div>

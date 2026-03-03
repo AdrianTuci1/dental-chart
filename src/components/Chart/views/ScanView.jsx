@@ -2,10 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import NormalView from './NormalView';
 import { Upload, X } from 'lucide-react';
 import DetectionsPanel from './DetectionsPanel';
+import { MOCK_DETECTIONS } from '../../../utils/mockData';
 import './ScanView.css';
 
 const ScanView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
-    const [scanImage, setScanImage] = useState(null);
+    const [scanImage, setScanImage] = useState('/chart.png');
+    const [detections, setDetections] = useState(MOCK_DETECTIONS);
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState(0);
     const [scale, setScale] = useState(1);
@@ -81,6 +83,10 @@ const ScanView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
+    };
+
+    const handleDeleteDetection = (id) => {
+        setDetections(prev => prev.filter(d => d.id !== id));
     };
 
     const patientInfo = {
@@ -196,7 +202,10 @@ const ScanView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
                 {/* Right Sidebar */}
                 {scanImage && (
                     <div className="scan-view-sidebar">
-                        <DetectionsPanel />
+                        <DetectionsPanel
+                            detections={detections}
+                            onDelete={handleDeleteDetection}
+                        />
                     </div>
                 )}
             </div>
@@ -231,8 +240,7 @@ const ScanView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
                     </div>
 
                     <div className="footer-right">
-                        <button className="btn-text">Save</button>
-                        <button className="btn-primary">Confirm and generate report</button>
+                        <button className="btn-primary">Confirm</button>
                     </div>
                 </div>
             )}
