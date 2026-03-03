@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { maskEngine } from './MaskEngine';
 import { getOverlayPath, getOverlaySlice } from '../../utils/toothOverlayMapping';
 import { getMaskTransforms } from '../../utils/toothMaskTransforms';
+import { getEndoTransforms } from '../../utils/endoUtils';
 import { getApicalCoordinates } from '../../utils/apicalConfig';
 import './ToothMask.css';
 
@@ -70,7 +71,7 @@ const ToothMask = ({
 
                 if (!zoneId) return null;
 
-                const overlayPath = getOverlayPath(toothNumber, zoneId);
+                const overlayPath = getOverlayPath(toothNumber, zoneId, view);
                 if (!overlayPath) return null;
 
                 let viewForSlice = view;
@@ -83,7 +84,7 @@ const ToothMask = ({
                     }
                 }
 
-                const slice = getOverlaySlice(viewForSlice);
+                const slice = getOverlaySlice(viewForSlice, zoneId);
                 if (slice.h <= 0) return null;
 
                 return { cond, overlayPath, slice };
@@ -119,18 +120,29 @@ const ToothMask = ({
 
                 const { needsHorizontalFlip, needsRotation } = getMaskTransforms(toothNumber, view);
 
-                if (needsRotation) {
+                let useHorizontalFlip = needsHorizontalFlip;
+                let useVerticalFlip = (isUpperJaw && view === 'lingual');
+                let useRotation = needsRotation;
+
+                if (cond.zone === 'Endo') {
+                    const endoTransforms = getEndoTransforms(toothNumber, view, { needsHorizontalFlip, needsRotation });
+                    useHorizontalFlip = endoTransforms.useHorizontalFlip;
+                    useVerticalFlip = endoTransforms.useVerticalFlip;
+                    useRotation = endoTransforms.useRotation;
+                }
+
+                if (useRotation) {
                     offCtx.translate(width / 2, height / 2);
                     offCtx.rotate(Math.PI);
                     offCtx.translate(-width / 2, -height / 2);
                 }
 
-                if (needsHorizontalFlip) {
+                if (useHorizontalFlip) {
                     offCtx.translate(width, 0);
                     offCtx.scale(-1, 1);
                 }
 
-                if (isUpperJaw && view === 'lingual') {
+                if (useVerticalFlip) {
                     offCtx.translate(0, height);
                     offCtx.scale(1, -1);
                 }

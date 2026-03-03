@@ -46,11 +46,15 @@ export const MOCK_HIERARCHY_DATA = [
                     items: [
                         { id: 'tp1', tooth: 11, type: 'decay', procedure: 'Decay Treatment', zones: [ToothZone.MESIAL, ToothZone.DISTAL], status: 'planned', priority: 'medium', cost: 150 },
                         { id: 'tp-endo-1', tooth: 11, type: 'endodontic', procedure: 'Cold: Positive, Percussion: Normal', status: 'monitoring' },
-                        { id: 'tp-endo-2', tooth: 16, type: 'endodontic', procedure: 'Palpation: Sensitive, Heat: Positive', status: 'planned', cost: 600 },
+                        { id: 'tp-endo-2', tooth: 16, type: 'endodontic', procedure: 'RCT (Root Canal Treatment)', status: 'planned', cost: 1200 },
+                        { id: 'tp-endo-3', tooth: 14, type: 'endodontic', procedure: 'Endodontic Treatment', status: 'planned', cost: 800 },
+                        { id: 'tp-endo-4', tooth: 11, type: 'endodontic', procedure: 'Observe Pulpal State', status: 'monitoring' },
                         { id: 'tp-decay-2', tooth: 26, type: 'decay', procedure: 'Decay Treatment', zones: [ToothZone.BUCCAL], status: 'planned' },
-                        { id: 'tp-endo-3', tooth: 26, type: 'endodontic', procedure: 'Electricity: Non-responsive', status: 'monitoring' },
+                        { id: 'tp-endo-5', tooth: 26, type: 'endodontic', procedure: 'Electricity: Non-responsive', status: 'monitoring' },
                         { id: 'tp-ext-1', tooth: 44, type: 'extraction', procedure: 'Extraction', status: 'planned' },
-                        { id: 'tp-ext-2', tooth: 27, type: 'extraction', procedure: 'Extraction', status: 'planned' }
+                        { id: 'tp-ext-2', tooth: 27, type: 'extraction', procedure: 'Extraction', status: 'planned' },
+                        { id: 'tp-endo-lower-1', tooth: 47, type: 'endodontic', procedure: 'RCT (Root Canal)', status: 'planned', cost: 1100 },
+                        { id: 'tp-endo-lower-2', tooth: 34, type: 'endodontic', procedure: 'Tratament endodontic', status: 'planned' }
                     ]
                 },
                 history: {

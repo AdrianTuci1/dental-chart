@@ -1,4 +1,5 @@
 import { ToothZone } from '../models/Enums';
+import { getEndoAssetName } from './endoUtils';
 
 // Base paths are now handled directly in the getOverlayPath function using new URL(..., import.meta.url)
 
@@ -61,9 +62,15 @@ const getOverlayAsset = (relativePath) => {
 /**
  * Resolves the overlay path for a given tooth and zone/condition.
  */
-export const getOverlayPath = (toothNumber, zoneId) => {
+export const getOverlayPath = (toothNumber, zoneId, view = 'frontal') => {
     const tNum = parseInt(toothNumber, 10);
     const index = tNum % 10;
+
+    // Handle Endo Zones
+    if (zoneId === 'Endo') {
+        const endoFile = getEndoAssetName(toothNumber, view);
+        return endoFile ? getOverlayAsset(`endo/${endoFile}`) : null;
+    }
 
     // Incisors (1, 2, 3)
     if (index >= 1 && index <= 3) {
@@ -104,7 +111,13 @@ export const getOverlayPath = (toothNumber, zoneId) => {
  * Layout: Outside (Frontal) -> Top -> Inside (Lingual)
  * Spacing: 22px
  */
-export const getOverlaySlice = (view) => {
+export const getOverlaySlice = (view, zoneId) => {
+    // Special case: Endo assets are NOT stacked, they are individual files per view
+    if (zoneId === 'Endo') {
+        if (view === 'topview') return { y: 0, h: 0 }; // Endo masks usually don't have topview
+        return { y: 0, h: 172 };
+    }
+
     // Dimensions provided by user
     // Outside (Frontal): 54x172px
     // Top (Occlusal): 54x94px

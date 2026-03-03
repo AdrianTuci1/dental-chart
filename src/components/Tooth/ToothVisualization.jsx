@@ -15,7 +15,7 @@ const ALL_TEETH = [
     31, 32, 33, 34, 35, 36, 37, 38
 ];
 
-const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
+const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth, treatments = [] }) => {
     const isUpper = isUpperJaw(toothNumber);
     const views = isUpper
         ? ['frontal', 'topview', 'lingual']
@@ -83,7 +83,7 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth }) => {
                                     toothNumber={toothNumber}
                                     toothData={toothData}
                                     view={view}
-                                    conditions={mapToothDataToConditions(toothData)}
+                                    conditions={mapToothDataToConditions(toothData, null, treatments)}
                                     interactive={false}
                                     className="no-scale"
                                 />
@@ -117,6 +117,7 @@ const ToothVisualization = ({ toothNumber, onSelectTooth, overrideToothData }) =
     const currentTooth = parseInt(toothNumber);
     const sidebarScrollRef = useRef(null);
     const teeth = useAppStore(state => state.teeth);
+    const { selectedPatient } = useAppStore();
 
     console.log(`[ToothVisualization] Render! Current tooth data:`, teeth[currentTooth]?.periodontal?.sites);
 
@@ -196,15 +197,19 @@ const ToothVisualization = ({ toothNumber, onSelectTooth, overrideToothData }) =
                         transition: displayState.transition
                     }}
                 >
-                    {displayState.teeth.map((num) => (
-                        <ToothItem
-                            key={num}
-                            toothNumber={num}
-                            toothData={num === currentTooth && overrideToothData ? overrideToothData : teeth[num]}
-                            isSelected={num === currentTooth}
-                            onSelectTooth={onSelectTooth}
-                        />
-                    ))}
+                    {displayState.teeth.map((num) => {
+                        const treatments = selectedPatient?.treatmentPlan?.items?.filter(item => parseInt(item.tooth) === parseInt(num)) || [];
+                        return (
+                            <ToothItem
+                                key={num}
+                                toothNumber={num}
+                                toothData={num === currentTooth && overrideToothData ? overrideToothData : teeth[num]}
+                                isSelected={num === currentTooth}
+                                onSelectTooth={onSelectTooth}
+                                treatments={treatments}
+                            />
+                        );
+                    })}
                 </div>
             </div>
         </div>

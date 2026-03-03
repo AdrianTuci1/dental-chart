@@ -7,9 +7,9 @@
 export const suggestPulpalDiagnosis = (tests) => {
     if (!tests) return null;
 
-    const cold = tests['Cold'];
-    const heat = tests['Heat'];
-    const electric = tests['Electricity'];
+    const cold = tests['cold'];
+    const heat = tests['heat'];
+    const electric = tests['electricity'];
 
     // If no vitality tests are recorded, we can't diagnose pulp
     if (!cold && !heat && !electric) return null;

@@ -227,7 +227,7 @@ const JawTooth = ({
                         <ToothRenderer
                             toothNumber={toothNumber}
                             view={view}
-                            conditions={mapToothDataToConditions(toothData, historicalDate)}
+                            conditions={mapToothDataToConditions(toothData, historicalDate, treatments)}
                             toothData={toothData}
                             historicalDate={historicalDate}
                             interactive={true}

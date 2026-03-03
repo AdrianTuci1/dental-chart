@@ -48,6 +48,7 @@ export const getBaseToothNumber = (toothNumber) => {
 
 // --- Mapping Utility for Tooth Model to Renderer ---
 import { ToothZone, Material } from '../models/DentalModels.js';
+import { ENDO_CATEGORIES, ENDO_COLORS, mapEndoConditions } from './endoUtils';
 
 export const getToothType = (toothNumber) => {
     const n = parseInt(toothNumber);
@@ -59,8 +60,12 @@ export const getToothType = (toothNumber) => {
     return 'molar';
 };
 
-export const mapToothDataToConditions = (tooth, historicalDate = null) => {
-    if (!tooth) return [];
+export const mapToothDataToConditions = (tooth, historicalDate = null, treatments = []) => {
+    if (!tooth) {
+        // Even if there's no tooth data (historical), we might have treatment plan items
+        // affecting the visual state (like endo masks)
+        tooth = { number: null };
+    }
 
     const isBeforeOrAtHistoricalDate = (item) => {
         if (!historicalDate) return true; // Show everything in current view
@@ -79,10 +84,14 @@ export const mapToothDataToConditions = (tooth, historicalDate = null) => {
     };
 
     // Determine tooth category (Anterior / Premolar / Molar)
-    const type = getToothType(tooth.number);
+    const toothNum = tooth.number || tooth.toothNumber || tooth.isoNumber;
+    const type = getToothType(toothNum);
     const isAnterior = type === 'anterior';
 
     const conditions = [];
+
+    // --- Map Endodontic Treatments ---
+    mapEndoConditions(tooth, isBeforeOrAtHistoricalDate, treatments, conditions);
 
     // Check for Implant or Pontic (to exclude fractures)
     const hasImplantOrPontic = tooth.restoration && tooth.restoration.crowns && tooth.restoration.crowns.some(c =>
