@@ -19,8 +19,6 @@ const WaveInteractiveView = ({ children, direction = 'down', alignment = 'center
     // Sync React state with Model state
     const values = useSyncExternalStore(model.subscribe, model.getSnapshot);
 
-    const [dragging, setDragging] = useState(null); // { type: 'gm'|'pd', index: 0|1|2 }
-
     const draw = React.useCallback(() => {
         const canvas = canvasRef.current;
         const container = containerRef.current;
@@ -57,37 +55,7 @@ const WaveInteractiveView = ({ children, direction = 'down', alignment = 'center
     }, [values, direction, topOffset, bottomOffset, draw]);
 
 
-    // Interaction
-    const handleMouseDown = (e) => {
-        const renderer = rendererRef.current;
-        if (!renderer) return;
 
-        const canvas = canvasRef.current;
-        const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        // Ensure renderer has latest geometric data just in case
-        const hit = renderer.getHit(x, y);
-        if (hit) setDragging(hit);
-    };
-
-    const handleMouseMove = (e) => {
-        if (!dragging) return;
-        const renderer = rendererRef.current;
-        const canvas = canvasRef.current;
-        const rect = canvas.getBoundingClientRect();
-        const y = e.clientY - rect.top;
-
-        const newLevel = renderer.getLevelFromY(y);
-
-        // Delegate state updates and business logic to the Model
-        model.updatePoint(dragging.type, dragging.index, newLevel);
-    };
-
-    const handleMouseUp = () => {
-        setDragging(null);
-    };
 
     return (
         <div className="wave-interactive-wrapper" ref={containerRef} {...props}>
@@ -100,10 +68,6 @@ const WaveInteractiveView = ({ children, direction = 'down', alignment = 'center
             <canvas
                 ref={canvasRef}
                 className="wave-canvas"
-                onMouseDown={handleMouseDown}
-                onMouseMove={handleMouseMove}
-                onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
             />
         </div>
     );

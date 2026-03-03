@@ -8,8 +8,6 @@ class MaskEngine {
     constructor() {
         this.imageCache = new Map();
         this.pendingLoads = new Map();
-        // _injectSvgFilter removed/kept? User included it in paste. I'll keep it to match user intent.
-        this._injectSvgFilter();
     }
 
     /**
@@ -18,36 +16,48 @@ class MaskEngine {
      * This avoids CORS issues related to getImageData/pixel manipulation.
      */
     _injectSvgFilter() {
-        if (typeof document === 'undefined' || document.getElementById('dchart-mask-filters')) return;
+        if (typeof document === 'undefined') return;
 
-        const div = document.createElement('div');
-        div.id = 'dchart-mask-filters';
-        div.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;';
-        div.innerHTML = `
-            <svg width="0" height="0">
-                <defs>
-                    <filter id="dchart-hard-alpha">
-                       <feComponentTransfer>
-                           <!-- 
-                               Linear Transfer Function: Alpha_out = Slope * Alpha_in + Intercept 
-                               
-                               Adjusted for smoother edges (Anti-aliasing friendly):
-                               Target:
-                               - Alpha 0.80 -> 0.0 (Transparent)
-                               - Alpha 0.90 -> 1.0 (Opaque)
-                               
-                               Slope = 5
-                               Intercept = -3.5
-                               
-                               Values between 0.70 and 0.90 will have semi-transparency, reducing pixelation.
-                           -->
-                           <feFuncA type="linear" slope="5" intercept="-3.5"/>
-                       </feComponentTransfer>
-                    </filter>
-                </defs>
-            </svg>
-        `;
-        document.body.appendChild(div);
+        // Wait for body to be available if it isn't already
+        const inject = () => {
+            if (document.getElementById('dchart-mask-filters')) return;
+            if (!document.body) return; // Insurance check
+
+            const div = document.createElement('div');
+            div.id = 'dchart-mask-filters';
+            div.style.cssText = 'position:absolute;width:0;height:0;overflow:hidden;pointer-events:none;';
+            div.innerHTML = `
+                <svg width="0" height="0">
+                    <defs>
+                        <filter id="dchart-hard-alpha">
+                           <feComponentTransfer>
+                               <!-- 
+                                   Linear Transfer Function: Alpha_out = Slope * Alpha_in + Intercept 
+                                   
+                                   Adjusted for smoother edges (Anti-aliasing friendly):
+                                   Target:
+                                   - Alpha 0.80 -> 0.0 (Transparent)
+                                   - Alpha 0.90 -> 1.0 (Opaque)
+                                   
+                                   Slope = 5
+                                   Intercept = -3.5
+                                   
+                                   Values between 0.70 and 0.90 will have semi-transparency, reducing pixelation.
+                               -->
+                               <feFuncA type="linear" slope="5" intercept="-3.5"/>
+                           </feComponentTransfer>
+                        </filter>
+                    </defs>
+                </svg>
+            `;
+            document.body.appendChild(div);
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', inject);
+        } else {
+            inject();
+        }
     }
 
     /**
@@ -57,6 +67,8 @@ class MaskEngine {
      * @returns {Promise<HTMLImageElement>}
      */
     loadImage(src) {
+        this._injectSvgFilter(); // Ensure filter is injected when we start loading images
+
         if (!src) return Promise.reject("No source provided");
 
         if (this.imageCache.has(src)) {

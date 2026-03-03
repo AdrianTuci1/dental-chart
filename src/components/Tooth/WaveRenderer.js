@@ -49,18 +49,7 @@ export class WaveRenderer {
         }
     }
 
-    getLevelFromY(y) {
-        const { contentHeight, paddingTop } = this.getVerticalConfigs();
-        const step = contentHeight / (this.LEVELS - 1);
 
-        let level;
-        if (this.direction === 'down') {
-            level = 1 + ((paddingTop + contentHeight) - y) / step;
-        } else {
-            level = 1 + (y - paddingTop) / step;
-        }
-        return Math.max(1, Math.min(12, Math.round(level)));
-    }
 
     getXPositions() {
         // Distribute 5 points: 0% (Fixed), ~20-25% (Movable), 50% (Movable), ~75-80% (Movable), 100% (Fixed)
@@ -193,31 +182,5 @@ export class WaveRenderer {
         // });
     }
 
-    getHit(x, y) {
-        const xPos = this.getXPositions();
-        const threshold = 20;
 
-        // Check GM points
-        for (let i = 0; i < 3; i++) {
-            const pointIndex = i + 1;
-            const py = this.getYForLevel(this.values.gm[i]);
-            const dx = x - xPos[pointIndex];
-            const dy = y - py;
-            if (dx * dx + dy * dy < threshold * threshold) {
-                return { type: 'gm', index: i };
-            }
-        }
-
-        // Check PD points
-        for (let i = 0; i < 3; i++) {
-            const pointIndex = i + 1;
-            const py = this.getYForLevel(this.values.pd[i]);
-            const dx = x - xPos[pointIndex];
-            const dy = y - py;
-            if (dx * dx + dy * dy < threshold * threshold) {
-                return { type: 'pd', index: i };
-            }
-        }
-        return null;
-    }
 }

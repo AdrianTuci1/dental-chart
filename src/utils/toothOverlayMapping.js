@@ -1,9 +1,6 @@
 import { ToothZone } from '../models/Enums';
 
-// Base paths
-const PATH_INCISORS = '/src/assets/overlays/incisors';
-const PATH_PREMOLARS = '/src/assets/overlays/pre-molars';
-const PATH_MOLARS = '/src/assets/overlays/molars';
+// Base paths are now handled directly in the getOverlayPath function using new URL(..., import.meta.url)
 
 // Define the file mappings for each category
 // Keys match the Zone IDs used in ToothZones.jsx
@@ -52,6 +49,16 @@ const MOLAR_OVERRIDES = {
 };
 
 /**
+ * Pre-load all overlay image assets using Vite's import.meta.glob for production bundling
+ */
+const overlayAssets = import.meta.glob('../assets/overlays/**/*.svg', { eager: true, import: 'default' });
+
+const getOverlayAsset = (relativePath) => {
+    const fullKey = `../assets/overlays/${relativePath}`;
+    return overlayAssets[fullKey] || null;
+};
+
+/**
  * Resolves the overlay path for a given tooth and zone/condition.
  */
 export const getOverlayPath = (toothNumber, zoneId) => {
@@ -61,32 +68,32 @@ export const getOverlayPath = (toothNumber, zoneId) => {
     // Incisors (1, 2, 3)
     if (index >= 1 && index <= 3) {
         const file = INCISOR_MAP[zoneId];
-        return file ? `${PATH_INCISORS}/${file}` : null;
+        return file ? getOverlayAsset(`incisors/${file}`) : null;
     }
 
     // Shared Cervical Overlays for Premolars and Molars (Use Incisor assets)
     if (index >= 4 && index <= 8) {
         if (zoneId === ToothZone.CERVICAL_BUCCAL || zoneId === ToothZone.CERVICAL_PALATAL) {
             const file = INCISOR_MAP[zoneId];
-            return file ? `${PATH_INCISORS}/${file}` : null;
+            return file ? getOverlayAsset(`incisors/${file}`) : null;
         }
     }
 
     // Premolars (4, 5)
     if (index === 4 || index === 5) {
         const file = PREMOLAR_MAP[zoneId];
-        return file ? `${PATH_PREMOLARS}/${file}` : null;
+        return file ? getOverlayAsset(`pre-molars/${file}`) : null;
     }
 
     // Molars (6, 7, 8)
     if (index >= 6 && index <= 8) {
         // Check override first
         if (MOLAR_OVERRIDES[zoneId]) {
-            return `${PATH_MOLARS}/${MOLAR_OVERRIDES[zoneId]}`;
+            return getOverlayAsset(`molars/${MOLAR_OVERRIDES[zoneId]}`);
         }
         // Fallback to Premolars
         const file = PREMOLAR_MAP[zoneId];
-        return file ? `${PATH_PREMOLARS}/${file}` : null;
+        return file ? getOverlayAsset(`pre-molars/${file}`) : null;
     }
 
     return null;
