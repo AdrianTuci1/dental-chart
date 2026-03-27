@@ -1,53 +1,62 @@
+import apiClient from '../api/apiClient';
 import { MOCK_HIERARCHY_DATA } from '../utils/mockData';
 
-// Simulate network delay
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+/**
+ * API Service — Bridge between apiClient.js and UI Components.
+ *
+ * In demo mode (no backend), returns mock data directly.
+ * In API mode, calls apiClient and returns backend responses as-is.
+ *
+ * Backend now returns data in the same camelCase shape as mockData.js,
+ * so NO transformation is needed.
+ */
+
+const useMock = () => !import.meta.env.VITE_API_URL;
 
 /**
- * Simulated API Service
- * Replaces direct imports of static mock data to mimic asynchronous DB fetching (e.g. DynamoDB).
+ * Get all patients for a given medic.
+ * @param {string} medicId
+ * @returns {Promise<Array>} Array of patient objects in mockData shape
  */
-export const apiService = {
-
-    /**
-     * Fetch all patients for a given medic.
-     * In a real app, this would query a Patients table by medicId.
-     * Returns a summary list of patients (excluding full chart data to save bandwidth).
-     */
-    async getPatients(medicId = 'medic-1') {
-        await delay(600); // simulate latency
-
+const getPatients = async (medicId) => {
+    if (useMock()) {
         const medic = MOCK_HIERARCHY_DATA.find(m => m.id === medicId);
-        if (!medic) return [];
+        return medic ? medic.patients : [];
+    }
 
-        // Return patients without the heavy chart data
-        return medic.patients.map(p => {
-            const { chart, ...patientData } = p;
-            return {
-                ...patientData,
-                // Include basic chart metadata if needed (e.g., lastUpdated)
-                chartMeta: chart ? { id: chart.id, lastUpdated: chart.lastUpdated } : null
-            };
-        });
-    },
+    return await apiClient(`/medics/${medicId}/patients`);
+};
 
-    /**
-     * Fetch detailed data for a specific patient.
-     */
-    async getPatientById(patientId) {
-        await delay(400);
-
+/**
+ * Get a single patient by ID, with full record (history + treatment plans).
+ * Backend returns: { fullName, treatmentPlan: { items: [...] }, history: { completedItems: [...] }, ... }
+ * This matches mockData.js structure exactly — no transformation needed.
+ * @param {string} patientId
+ * @returns {Promise<Object>} Patient object in mockData shape
+ */
+const getPatientById = async (patientId) => {
+    if (useMock()) {
         for (const medic of MOCK_HIERARCHY_DATA) {
             const patient = medic.patients.find(p => p.id === patientId);
-            if (patient) {
-                // Return patient, but strip out the heavy chart for now (to be fetched separately or together)
-                // Depending on DynamoDB design, they might be in the same item or separate. 
-                // We'll return everything here for simplicity of the Patient Model, 
-                // but emphasize chart separation.
-                const { chart, ...patientData } = patient;
-                return patientData;
-            }
+            if (patient) return patient;
         }
         return null;
     }
+
+    return await apiClient(`/patients/${patientId}/chart`);
+};
+
+/**
+ * Create a new patient.
+ * @param {Object} patientData - { fullName, medicId, email, phone, ... }
+ * @returns {Promise<Object>} Created patient
+ */
+const createPatient = async (patientData) => {
+    return await apiClient('/patients', { method: 'POST', body: patientData });
+};
+
+export const apiService = {
+    getPatients,
+    getPatientById,
+    createPatient,
 };

@@ -7,9 +7,9 @@ class PatientService {
     }
 
     async createPatient(patientData) {
-        // Validate or manipulate data before saving
-        if (!patientData.medic_id || !patientData.full_name) {
-            throw new Error('medic_id and full_name are required');
+        // Validate using camelCase fields (matching frontend convention)
+        if (!patientData.medicId || !patientData.fullName) {
+            throw new Error('medicId and fullName are required');
         }
 
         const newPatient = {
@@ -37,19 +37,25 @@ class PatientService {
 
         // Group the single-table design flat list into a structured object
         const patientData = allRecords.find(item => item.SK === 'METADATA#');
-        const history = allRecords.filter(item => item.SK.startsWith('HISTORY#'));
-        const plans = allRecords.filter(item => item.SK.startsWith('PLAN#'));
+        const historyItems = allRecords.filter(item => item.SK.startsWith('HISTORY#'));
+        const planItems = allRecords.filter(item => item.SK.startsWith('PLAN#'));
 
         if (!patientData) {
             throw new Error('Patient not found');
         }
 
+        // Return in the same shape as mockData.js (camelCase, nested)
         return {
             ...patientData,
-            history,
-            plans
+            treatmentPlan: {
+                items: planItems
+            },
+            history: {
+                completedItems: historyItems
+            }
         };
     }
 }
 
 module.exports = PatientService;
+

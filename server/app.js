@@ -21,9 +21,11 @@ app.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', message: 'Dental Chart Server is running' });
 });
 
-// Start Server
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+// Start Server only if not imported as a module (e.g for testing)
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
 
 module.exports = app;

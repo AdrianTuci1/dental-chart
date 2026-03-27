@@ -1,11 +1,18 @@
 const express = require('express');
 const router = express.Router();
 
+const authController = require('../controllers/authController');
 const clinicController = require('../controllers/clinicController');
 const medicController = require('../controllers/medicController');
 const patientController = require('../controllers/patientController');
 const historyController = require('../controllers/historyController');
 const treatmentPlanController = require('../controllers/treatmentPlanController');
+
+// Auth Routes
+router.post('/auth/register', authController.register);
+router.post('/auth/login', authController.login);
+router.get('/auth/me', authController.getMe);
+
 // Clinic Routes
 router.post('/clinics', clinicController.createClinic);
 router.get('/clinics/:id', clinicController.getClinic);
@@ -27,3 +34,4 @@ router.post('/patients/:patientId/treatment-plans', treatmentPlanController.addT
 router.get('/patients/:patientId/treatment-plans', treatmentPlanController.getPatientTreatmentPlans);
 
 module.exports = router;
+
