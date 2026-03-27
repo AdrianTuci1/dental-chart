@@ -28,6 +28,7 @@ exports.register = async (req, res) => {
             token,
         });
     } catch (err) {
+        console.error('[AuthController Register Error]', err);
         res.status(500).json({ error: err.message });
     }
 };
@@ -46,11 +47,35 @@ exports.login = async (req, res) => {
 
         res.status(200).json({ token });
     } catch (err) {
+        console.error('[AuthController Login Error]', err);
         res.status(500).json({ error: err.message });
     }
 };
 
 exports.getMe = async (req, res) => {
-    // In a real app, decode JWT from Authorization header and return user info
-    res.status(501).json({ error: 'Not implemented (requires JWT middleware)' });
+    try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            return res.status(401).json({ error: 'Unauthorized: No token provided' });
+        }
+
+        const token = authHeader.split(' ')[1];
+        let medicId = token.startsWith('placeholder-token-') 
+            ? token.replace('placeholder-token-', '') 
+            : null;
+
+        if (!medicId || medicId === 'login') {
+            medicId = 'medic-1'; // Default ID for demo if needed, but safer to check existence
+        }
+
+        const medic = await medicService.getMedic(medicId);
+        if (!medic) {
+            return res.status(401).json({ error: 'Session invalid: Medic not found. Please log in again.' });
+        }
+
+        res.json(medic);
+    } catch (err) {
+        console.error('[AuthController getMe Error]', err);
+        res.status(500).json({ error: err.message });
+    }
 };

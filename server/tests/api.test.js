@@ -28,6 +28,11 @@ jest.mock('../src/config/dynamoConfig', () => ({
                     { SK: 'PLAN#2024-01-01#tp-1', id: 'tp-1', tooth: 11, type: 'decay', procedure: 'Decay Treatment', status: 'planned' },
                 ]
             });
+            if (type === 'ScanCommand') return Promise.resolve({
+                Items: [
+                    { SK: 'METADATA#', id: 'p-1', fullName: 'John Doe', medicId: 'm-1' },
+                ]
+            });
             return Promise.resolve({});
         })
     }
@@ -120,7 +125,9 @@ describe('API Routes CRUD Tests', () => {
 
         it('should get medic patients', async () => {
             const res = await request(app).get('/api/medics/m-1/patients');
-            expect(res.statusCode).toEqual(501);
+            expect(res.statusCode).toEqual(200);
+            expect(Array.isArray(res.body)).toBe(true);
+            expect(res.body.length).toBeGreaterThan(0);
         });
     });
 

@@ -13,7 +13,7 @@ class PatientService {
         }
 
         const newPatient = {
-            id: uuidv4(),
+            id: patientData.id || uuidv4(),
             ...patientData,
         };
 
@@ -35,10 +35,9 @@ class PatientService {
         // This will fetch Patient metadata, history, and treatment plans all together
         const allRecords = await this.patientRepository.getPatientWithChartAndHistory(id);
 
-        // Group the single-table design flat list into a structured object
-        const patientData = allRecords.find(item => item.SK === 'METADATA#');
-        const historyItems = allRecords.filter(item => item.SK.startsWith('HISTORY#'));
-        const planItems = allRecords.filter(item => item.SK.startsWith('PLAN#'));
+        // Extract items from consolidated records
+        const historyRecord = allRecords.find(item => item.SK === 'HISTORY#');
+        const planRecord = allRecords.find(item => item.SK === 'PLAN#');
 
         if (!patientData) {
             throw new Error('Patient not found');
@@ -48,12 +47,19 @@ class PatientService {
         return {
             ...patientData,
             treatmentPlan: {
-                items: planItems
+                items: planRecord ? (planRecord.items || []) : []
             },
             history: {
-                completedItems: historyItems
+                completedItems: historyRecord ? (historyRecord.items || []) : []
             }
         };
+    }
+
+    async getPatientsByMedicId(medicId) {
+        if (!medicId) {
+            throw new Error('Medic ID is required');
+        }
+        return await this.patientRepository.getPatientsByMedicId(medicId);
     }
 }
 

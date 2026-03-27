@@ -1,12 +1,15 @@
 import apiClient from './apiClient';
 
-const getPatients = async (params) => {
-    const queryString = params ? '?' + new URLSearchParams(params).toString() : '';
-    return apiClient(`/patients${queryString}`);
+const getPatients = async (medicId) => {
+    return apiClient(`/medics/${medicId}/patients`);
 };
 
 const getPatient = async (id) => {
     return apiClient(`/patients/${id}`);
+};
+
+const getPatientFull = async (id) => {
+    return apiClient(`/patients/${id}/chart`);
 };
 
 const createPatient = async (patientData) => {
@@ -32,6 +35,7 @@ const deletePatient = async (id) => {
 export const patientService = {
     getPatients,
     getPatient,
+    getPatientFull,
     createPatient,
     updatePatient,
     deletePatient,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { User, Lock } from 'lucide-react';
 
@@ -7,20 +7,41 @@ import './HomePage.css';
 
 const HomePage = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const login = useAuthStore((state) => state.login);
-    const [email, setEmail] = useState('demo@example.com');
-    const [password, setPassword] = useState('password');
+    const successMessage = location.state?.message;
+    const isMock = !import.meta.env.VITE_API_URL;
+    const [email, setEmail] = useState(isMock ? 'demo@example.com' : '');
+    const [password, setPassword] = useState(isMock ? 'password' : '');
+    const [error, setError] = useState('');
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        // Demo login - accept any credentials
-        login({
-            id: '1',
-            name: 'Dr. Demo',
-            email: email,
-            role: 'dentist'
-        });
-        navigate('/patients');
+        setError('');
+
+        if (isMock) {
+            // Demo login - accept any credentials
+            login({
+                id: '1',
+                name: 'Dr. Demo',
+                email: email,
+                role: 'dentist'
+            });
+            navigate('/patients');
+            return;
+        }
+
+        try {
+            const { authService } = await import('../api');
+            const response = await authService.login({ email, password });
+            
+            // authService.login should return { user, token }
+            localStorage.setItem('token', response.token);
+            login(response.user);
+            navigate('/patients');
+        } catch (err) {
+            setError(err.message || 'Login failed. Please check your credentials.');
+        }
     };
 
     return (
@@ -30,6 +51,8 @@ const HomePage = () => {
                     <img src="/logo.png" alt="Pixtooth Logo" className="brand-logo" />
                     <span className="brand-name">Pixtooth</span>
                 </div>
+
+                {successMessage && <div className="success-message" style={{ color: 'green', fontSize: '0.85rem', marginBottom: '15px', backgroundColor: '#e6fffa', padding: '10px', borderRadius: '4px', border: '1px solid #38b2ac' }}>{successMessage}</div>}
 
                 <form onSubmit={handleLogin} className="login-form">
                     <div className="form-group">
@@ -72,6 +95,8 @@ const HomePage = () => {
                         </a>
                     </div>
 
+                    {error && <div className="error-message" style={{ color: 'red', fontSize: '0.85rem', marginBottom: '10px' }}>{error}</div>}
+
                     <button
                         type="submit"
                         className="submit-button"
@@ -90,9 +115,11 @@ const HomePage = () => {
                     </span>
                 </div>
 
-                <div className="demo-text">
-                    <p>Demo Mode: Click "Sign In" to continue</p>
-                </div>
+                {isMock && (
+                    <div className="demo-text">
+                        <p>Demo Mode: Click "Sign In" to continue</p>
+                    </div>
+                )}
             </div>
         </div>
     );

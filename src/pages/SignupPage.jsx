@@ -19,13 +19,43 @@ const SignupPage = () => {
         });
     };
 
-    const handleSignup = (e) => {
-        e.preventDefault();
-        // Here you would typically handle the signup logic
-        console.log('Signup Data:', formData);
+    const [error, setError] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-        // Navigate to home/login after successful signup (simulation)
-        navigate('/');
+    const handleSignup = async (e) => {
+        e.preventDefault();
+        setError('');
+
+        if (formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            const { authService } = await import('../api');
+            const response = await authService.register({
+                name: formData.name,
+                email: formData.email,
+                password: formData.password
+            });
+            
+            // Store token for future requests
+            if (response.token) {
+                localStorage.setItem('token', response.token);
+            }
+            
+            // Auto-login and redirect to dashboard
+            const useAuthStore = (await import('../store/authStore')).default;
+            const login = useAuthStore.getState().login;
+            login(response.medic || response.user);
+            
+            navigate('/patients');
+        } catch (err) {
+            setError(err.message || 'Registration failed. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -109,8 +139,10 @@ const SignupPage = () => {
                         </div>
                     </div>
 
-                    <button type="submit" className="signup-button">
-                        Sign Up
+                    {error && <div className="error-message" style={{ color: 'red', fontSize: '0.85rem', marginBottom: '10px' }}>{error}</div>}
+
+                    <button type="submit" className="signup-button" disabled={isSubmitting}>
+                        {isSubmitting ? 'Signing Up...' : 'Sign Up'}
                     </button>
                 </form>
 

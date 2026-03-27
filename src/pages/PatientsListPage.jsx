@@ -1,41 +1,48 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../core/store/appStore';
-import { apiService } from '../services/apiService';
+import { authService, patientService } from '../api';
 import { Search, Plus, User, Settings, Loader2 } from 'lucide-react';
 import SettingsModal from '../components/UI/SettingsModal';
 import AddPatientModal from '../components/UI/AddPatientModal';
-
-import { user0profile } from '../utils/mockData';
 import './PatientsListPage.css';
 
 const PatientsListPage = () => {
     const navigate = useNavigate();
-    const { patients, setPatients, searchQuery, setSearchQuery, selectPatient } = useAppStore();
+    const { patients, setPatients, searchQuery, setSearchQuery, selectPatient, medicProfile, setMedicProfile } = useAppStore();
     const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
     const [isAddPatientOpen, setIsAddPatientOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchPatients = async () => {
+        const initDashboard = async () => {
             setIsLoading(true);
             try {
-                // Fetch patients from our simulated API
-                const data = await apiService.getPatients('medic-1');
-                setPatients(data);
+                // 1. Fetch Medic Profile
+                let currentProfile = medicProfile;
+                if (!currentProfile) {
+                    currentProfile = await authService.getCurrentUser();
+                    setMedicProfile(currentProfile);
+                }
+
+                if (currentProfile && currentProfile.id) {
+                    // 2. Fetch patients for THIS medic
+                    const data = await patientService.getPatients(currentProfile.id);
+                    setPatients(data);
+                }
             } catch (error) {
-                console.error("Failed to load patients", error);
+                console.error("Failed to load dashboard data", error);
+                // If it's an auth error, redirect to login
+                if (error.message && (error.message.includes('401') || error.message.includes('Unauthorized') || error.message.includes('found'))) {
+                    navigate('/');
+                }
             } finally {
                 setIsLoading(false);
             }
         };
 
-        if (patients.length === 0) {
-            fetchPatients();
-        } else {
-            setIsLoading(false);
-        }
-    }, [patients.length, setPatients]);
+        initDashboard();
+    }, [medicProfile, setMedicProfile, setPatients, navigate]);
 
     const filteredPatients = patients.filter(patient =>
         patient.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -55,7 +62,7 @@ const PatientsListPage = () => {
                         <img src="/logo.png" alt="logo" style={{ width: '30px', height: '30px' }} />
                         Patients</h1>
                     <div className="user-profile">
-                        <span className="user-name">{user0profile.name}</span>
+                        <span className="user-name">{medicProfile?.name || 'Loading...'}</span>
                         <button className="settings-btn" onClick={() => setIsSettingsOpen(true)}>
                             <Settings size={20} />
                         </button>
@@ -163,7 +170,7 @@ const PatientsListPage = () => {
             <SettingsModal
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
-                userProfile={user0profile}
+                userProfile={medicProfile}
             />
 
             <AddPatientModal

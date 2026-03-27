@@ -6,13 +6,12 @@ class TreatmentPlanRepository extends BaseRepository {
     // PLAN PK format: PATIENT#<patient_id>
     // PLAN SK format: PLAN#<date_iso>#<plan_id>
 
-    async addTreatmentPlanItem(patientId, planData) {
-        const dateStr = new Date().toISOString();
+    async updateTreatmentPlan(patientId, items) {
         const item = {
             PK: `PATIENT#${patientId}`,
-            SK: `PLAN#${dateStr}#${planData.id}`,
-            ...planData,
-            createdAt: dateStr
+            SK: `PLAN#`,
+            items: items,
+            updatedAt: new Date().toISOString()
         };
 
         const command = new PutCommand({
@@ -21,21 +20,20 @@ class TreatmentPlanRepository extends BaseRepository {
         });
 
         await this.docClient.send(command);
-        return item;
+        return items;
     }
 
     async getPatientTreatmentPlans(patientId) {
-        const command = new QueryCommand({
+        const command = new GetCommand({
             TableName: this.tableName,
-            KeyConditionExpression: 'PK = :pk AND begins_with(SK, :skPrefix)',
-            ExpressionAttributeValues: {
-                ':pk': `PATIENT#${patientId}`,
-                ':skPrefix': 'PLAN#'
+            Key: {
+                PK: `PATIENT#${patientId}`,
+                SK: `PLAN#`
             }
         });
 
         const response = await this.docClient.send(command);
-        return response.Items || [];
+        return response.Item ? response.Item.items : [];
     }
 }
 

@@ -6,18 +6,23 @@ class TreatmentPlanService {
         this.treatmentPlanRepository = new TreatmentPlanRepository();
     }
 
-    async addTreatmentPlanItem(patientId, planData) {
-        if (!patientId || !planData.tooth || !planData.procedure) {
-            throw new Error('Patient ID, tooth number and procedure details are required');
+    async updateTreatmentPlan(patientId, items) {
+        if (!patientId || !Array.isArray(items)) {
+            throw new Error('Patient ID and items array are required');
         }
 
+        return await this.treatmentPlanRepository.updateTreatmentPlan(patientId, items);
+    }
+
+    async addTreatmentPlanItem(patientId, planData) {
+        const currentItems = await this.getPatientTreatmentPlans(patientId);
         const newItem = {
             id: planData.id || `tp-${uuidv4().split('-')[0]}`,
             status: planData.status || 'planned',
             ...planData,
         };
-
-        return await this.treatmentPlanRepository.addTreatmentPlanItem(patientId, newItem);
+        currentItems.push(newItem);
+        return await this.updateTreatmentPlan(patientId, currentItems);
     }
 
     async getPatientTreatmentPlans(patientId) {

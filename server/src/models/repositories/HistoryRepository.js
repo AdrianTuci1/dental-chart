@@ -6,13 +6,12 @@ class HistoryRepository extends BaseRepository {
     // HISTORY PK format: PATIENT#<patient_id>
     // HISTORY SK format: HISTORY#<date_iso>#<history_id>
 
-    async addHistoryRecord(patientId, historyData) {
-        const dateStr = new Date().toISOString();
+    async updateHistory(patientId, items) {
         const item = {
             PK: `PATIENT#${patientId}`,
-            SK: `HISTORY#${dateStr}#${historyData.id}`,
-            ...historyData,
-            createdAt: dateStr
+            SK: `HISTORY#`,
+            items: items,
+            updatedAt: new Date().toISOString()
         };
 
         const command = new PutCommand({
@@ -21,22 +20,20 @@ class HistoryRepository extends BaseRepository {
         });
 
         await this.docClient.send(command);
-        return item;
+        return items;
     }
 
     async getPatientHistory(patientId) {
-        // Query just the HISTORY items
-        const command = new QueryCommand({
+        const command = new GetCommand({
             TableName: this.tableName,
-            KeyConditionExpression: 'PK = :pk AND begins_with(SK, :skPrefix)',
-            ExpressionAttributeValues: {
-                ':pk': `PATIENT#${patientId}`,
-                ':skPrefix': 'HISTORY#'
+            Key: {
+                PK: `PATIENT#${patientId}`,
+                SK: `HISTORY#`
             }
         });
 
         const response = await this.docClient.send(command);
-        return response.Items || [];
+        return response.Item ? response.Item.items : [];
     }
 }
 

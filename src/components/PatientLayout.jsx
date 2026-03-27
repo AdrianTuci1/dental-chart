@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
 import { useAppStore } from '../core/store/appStore';
-import { apiService } from '../services/apiService';
+import { patientService } from '../api';
 import { ChartModel } from '../core/models/ChartModel';
 import PatientSidebar from './PatientSidebar';
 import { Loader2 } from 'lucide-react';
@@ -24,7 +24,7 @@ const PatientLayout = () => {
             setIsLoading(true);
             try {
                 // Fetch ONLY the patient info. The chart is reconstructed locally.
-                const patientData = await apiService.getPatientById(patientId);
+                const patientData = await patientService.getPatientFull(patientId);
 
                 if (isMounted && patientData) {
                     const projectedTeeth = ChartModel.projectTeethFromInterventions(

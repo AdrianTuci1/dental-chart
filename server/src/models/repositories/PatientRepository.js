@@ -49,6 +49,25 @@ class PatientRepository extends BaseRepository {
         const response = await this.docClient.send(command);
         return response.Items || [];
     }
+
+    async getPatientsByMedicId(medicId) {
+        // For a true Single-Table Design, we'd use a GSI.
+        // For this demo/mock execution, we'll Scan with a filter on medicId.
+        const { ScanCommand } = require('@aws-sdk/lib-dynamodb');
+        const command = new ScanCommand({
+            TableName: this.tableName,
+            FilterExpression: 'medicId = :medicId AND SK = :sk',
+            ExpressionAttributeValues: {
+                ':medicId': medicId,
+                ':sk': 'METADATA#'
+            }
+        });
+
+        console.log(`[PatientRepository] Scanning for patients with medicId: ${medicId}`);
+        const response = await this.docClient.send(command);
+        console.log(`[PatientRepository] Found ${response.Items ? response.Items.length : 0} patients`);
+        return response.Items || [];
+    }
 }
 
 module.exports = PatientRepository;

@@ -6,20 +6,24 @@ class HistoryService {
         this.historyRepository = new HistoryRepository();
     }
 
-    async addHistoryRecord(patientId, historyData) {
-        if (!patientId || !historyData.procedure) {
-            throw new Error('Patient ID and procedure details are required');
+    async updateHistory(patientId, items) {
+        if (!patientId || !Array.isArray(items)) {
+            throw new Error('Patient ID and items array are required');
         }
 
+        return await this.historyRepository.updateHistory(patientId, items);
+    }
+
+    async addHistoryRecord(patientId, historyData) {
+        // Appends a single record to the consolidated array
+        const currentItems = await this.getPatientHistory(patientId);
         const newRecord = {
-            id: uuidv4(),
+            id: historyData.id || uuidv4(),
             ...historyData,
+            date: historyData.date || new Date().toISOString()
         };
-
-        // Here we could add logic to check if this was part of a treatment plan
-        // and mark that plan as completed if necessary.
-
-        return await this.historyRepository.addHistoryRecord(patientId, newRecord);
+        currentItems.push(newRecord);
+        return await this.updateHistory(patientId, currentItems);
     }
 
     async getPatientHistory(patientId) {
