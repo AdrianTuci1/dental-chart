@@ -131,6 +131,12 @@ export class ChartModel {
                             tooth.periodontal.sites[siteKey].probingDepth = data.probingDepth[siteKey];
                         });
                     }
+                    if (data.gingivalMargin) {
+                        Object.keys(data.gingivalMargin).forEach(siteKey => {
+                            if (!tooth.periodontal.sites[siteKey]) tooth.periodontal.sites[siteKey] = {};
+                            tooth.periodontal.sites[siteKey].gingivalMargin = data.gingivalMargin[siteKey];
+                        });
+                    }
                     if (data.bleedingSites) {
                         data.bleedingSites.forEach(siteKey => {
                             if (!tooth.periodontal.sites[siteKey]) tooth.periodontal.sites[siteKey] = {};

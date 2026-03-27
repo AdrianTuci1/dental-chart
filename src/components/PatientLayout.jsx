@@ -44,18 +44,9 @@ const PatientLayout = () => {
             }
         };
 
-        // If we have the patient (likely set by PatientsListPage), project teeth immediately
-        if (selectedPatient?.id === patientId) {
-            const projectedTeeth = ChartModel.projectTeethFromInterventions(
-                selectedPatient.history || [],
-                selectedPatient.treatmentPlan || []
-            );
-            setTeeth(projectedTeeth);
-            setIsLoading(false);
-        } else {
-            // Otherwise, fetch everything
-            loadPatientData();
-        }
+        // Load full patient data to ensure we have medical history and treatment plans,
+        // which are not available in the list view.
+        loadPatientData();
 
         return () => {
             isMounted = false;

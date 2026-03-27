@@ -63,6 +63,13 @@ class MedicService {
         return await this.medicRepository.getMedicById(id);
     }
 
+    async getMedicByEmail(email) {
+        if (!email) {
+            throw new Error('Email is required');
+        }
+        return await this.medicRepository.getMedicByEmail(email);
+    }
+
     async getMedicPatients(medicId) {
         return await this.patientService.getPatientsByMedicId(medicId);
     }

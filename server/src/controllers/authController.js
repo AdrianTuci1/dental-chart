@@ -41,11 +41,21 @@ exports.login = async (req, res) => {
             return res.status(400).json({ error: 'email and password are required' });
         }
 
-        // In a real app, find user by email, verify password, generate JWT
-        // For now, return a placeholder token
-        const token = `placeholder-token-login`;
+        // Look up medic by email
+        const medic = await medicService.getMedicByEmail(email);
+        if (!medic) {
+            return res.status(401).json({ error: 'Invalid credentials: account not found' });
+        }
 
-        res.status(200).json({ token });
+        // In a real app, verify password hash here
+        const token = `placeholder-token-${medic.id}`;
+
+        res.status(200).json({
+            id: medic.id,
+            name: medic.name,
+            email: medic.email,
+            token,
+        });
     } catch (err) {
         console.error('[AuthController Login Error]', err);
         res.status(500).json({ error: err.message });
@@ -64,8 +74,8 @@ exports.getMe = async (req, res) => {
             ? token.replace('placeholder-token-', '') 
             : null;
 
-        if (!medicId || medicId === 'login') {
-            medicId = 'medic-1'; // Default ID for demo if needed, but safer to check existence
+        if (!medicId) {
+            return res.status(401).json({ error: 'Invalid token format' });
         }
 
         const medic = await medicService.getMedic(medicId);

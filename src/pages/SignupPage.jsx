@@ -47,8 +47,11 @@ const SignupPage = () => {
             
             // Auto-login and redirect to dashboard
             const useAuthStore = (await import('../store/authStore')).default;
-            const login = useAuthStore.getState().login;
-            login(response.medic || response.user);
+            const { useAppStore } = await import('../core/store/appStore');
+            const userData = { id: response.id, name: response.name, email: response.email };
+
+            useAuthStore.getState().login(userData);
+            useAppStore.getState().setMedicProfile(userData);
             
             navigate('/patients');
         } catch (err) {

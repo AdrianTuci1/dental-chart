@@ -35,9 +35,15 @@ const HomePage = () => {
             const { authService } = await import('../api');
             const response = await authService.login({ email, password });
             
-            // authService.login should return { user, token }
+            // authService.login returns { id, name, email, token }
             localStorage.setItem('token', response.token);
-            login(response.user);
+            const userData = { id: response.id, name: response.name, email: response.email };
+            login(userData);
+
+            // Set medicProfile in appStore so PatientsListPage has it immediately
+            const { useAppStore } = await import('../core/store/appStore');
+            useAppStore.getState().setMedicProfile(userData);
+
             navigate('/patients');
         } catch (err) {
             setError(err.message || 'Login failed. Please check your credentials.');

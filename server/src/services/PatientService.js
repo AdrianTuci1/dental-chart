@@ -36,6 +36,7 @@ class PatientService {
         const allRecords = await this.patientRepository.getPatientWithChartAndHistory(id);
 
         // Extract items from consolidated records
+        const patientData = allRecords.find(item => item.SK === 'METADATA#');
         const historyRecord = allRecords.find(item => item.SK === 'HISTORY#');
         const planRecord = allRecords.find(item => item.SK === 'PLAN#');
 

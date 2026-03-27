@@ -35,6 +35,20 @@ class MedicRepository extends BaseRepository {
         const response = await this.docClient.send(command);
         return response.Item;
     }
+    async getMedicByEmail(email) {
+        const { ScanCommand } = require('@aws-sdk/lib-dynamodb');
+        const command = new ScanCommand({
+            TableName: this.tableName,
+            FilterExpression: 'email = :email AND SK = :sk',
+            ExpressionAttributeValues: {
+                ':email': email,
+                ':sk': 'METADATA#'
+            }
+        });
+
+        const response = await this.docClient.send(command);
+        return response.Items && response.Items.length > 0 ? response.Items[0] : null;
+    }
 }
 
 module.exports = MedicRepository;

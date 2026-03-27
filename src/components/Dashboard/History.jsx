@@ -8,6 +8,9 @@ const History = ({ history }) => {
     const allItems = history?.completedItems || [];
 
     const items = allItems.filter(item => {
+        // Exclude periodontal measurement updates from history list
+        if (item.type === 'periodontal') return false;
+
         if (!historicalDate) return true; // Show all to current date
         if (!item.date) return true;
 
