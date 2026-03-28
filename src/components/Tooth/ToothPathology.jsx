@@ -188,23 +188,47 @@ const ToothPathology = () => {
         const typeLabel = pathologyTypes.find(t => t.route === selectedPathologyType)?.label;
         if (typeLabel) parts.push(typeLabel);
 
+        // Build structured data fields matching projectTeethFromInterventions expectations
+        let itemType = 'decay'; // default for decay
+        const structuredFields = {};
+
         if (selectedPathologyType === 'decay') {
             if (selectedZones.length > 0) parts.push(selectedZones.join(', '));
             if (decayMaterial) parts.push(decayMaterial.charAt(0).toUpperCase() + decayMaterial.slice(1));
             if (cavitation) parts.push(cavitation === 'no-cavitation' ? 'No Cavitation' : 'Cavitation');
             if (cavitationLevel) parts.push(cavitationLevel);
+            itemType = 'decay';
+            structuredFields.zones = selectedZones;
+            structuredFields.decayType = `${decayMaterial || '?'}-${cavitation || '?'}-${cavitationLevel || '?'}`;
         } else if (selectedPathologyType === 'fracture') {
             if (fractureLocation) parts.push(`${fractureLocation.charAt(0).toUpperCase() + fractureLocation.slice(1)} Fracture`);
             if (fractureDirection) parts.push(fractureDirection.charAt(0).toUpperCase() + fractureDirection.slice(1));
+            itemType = 'pathology';
+            structuredFields.subtype = 'fracture';
+            if (fractureLocation === 'crown') structuredFields.crown = true;
+            if (fractureLocation === 'root') structuredFields.root = fractureDirection === 'vertical' ? 'Vertical' : 'Horizontal';
         } else if (selectedPathologyType === 'tooth-wear') {
             if (toothWearType) parts.push(toothWearType.charAt(0).toUpperCase() + toothWearType.slice(1));
             if (toothWearSurface) parts.push(toothWearSurface.charAt(0).toUpperCase() + toothWearSurface.slice(1));
+            itemType = 'pathology';
+            structuredFields.subtype = 'tooth-wear';
+            structuredFields.wearType = toothWearType;
+            structuredFields.surface = toothWearSurface;
         } else if (selectedPathologyType === 'discoloration') {
             if (discolorationColor) parts.push(discolorationColor.charAt(0).toUpperCase() + discolorationColor.slice(1));
+            itemType = 'pathology';
+            structuredFields.subtype = 'discoloration';
+            structuredFields.color = discolorationColor;
         } else if (selectedPathologyType === 'apical') {
             if (apicalPresent !== null) parts.push(apicalPresent ? 'Present' : 'Not Present');
+            itemType = 'pathology';
+            structuredFields.subtype = 'apical';
+            structuredFields.present = apicalPresent;
         } else if (selectedPathologyType === 'development-disorder') {
             if (developmentDisorderPresent !== null) parts.push(developmentDisorderPresent ? 'Present' : 'Not Present');
+            itemType = 'pathology';
+            structuredFields.subtype = 'development-disorder';
+            structuredFields.present = developmentDisorderPresent;
         }
 
         const procedure = parts.join(', ');
@@ -212,8 +236,11 @@ const ToothPathology = () => {
 
         const newItemId = Date.now().toString();
 
+        // Item with full structured data for projectTeethFromInterventions
         const baseItem = {
             id: newItemId,
+            type: itemType,
+            ...structuredFields,
             procedure,
             tooth: tooth.toothNumber,
             cost: actionType === 'monitor' ? 50 : 200,
@@ -225,14 +252,14 @@ const ToothPathology = () => {
                 ...baseItem,
                 status: actionType === 'monitor' ? 'monitoring' : 'planned'
             });
-            handleSave(actionType, newItemId, true, false); 
+            handleSave(actionType, newItemId, true, false);
         } else if (actionType === 'save') {
-            handleSave(actionType, newItemId, true, false); 
+            handleSave(actionType, newItemId, true, false);
             useAppStore.getState().addToHistory(selectedPatient.id, {
-                id: newItemId,
-                description: procedure,
-                provider: 'Dr. Current',
-                tooth: tooth.toothNumber
+                ...baseItem,
+                status: 'completed',
+                date: new Date().toISOString(),
+                provider: 'Dr. Current'
             });
         }
 

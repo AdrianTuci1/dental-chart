@@ -49,14 +49,8 @@ const JawTooth = ({
         const OFFSETS = [1, 2, 1];
 
         const getSiteData = (data, key) => {
-            let actualKey = key;
-            if (isUpperJaw) {
-                if (key === 'distoLingual') actualKey = 'distoPalatal';
-                if (key === 'lingual') actualKey = 'palatal';
-                if (key === 'mesioLingual') actualKey = 'mesioPalatal';
-            }
-            if (data && data.periodontal && data.periodontal.sites && data.periodontal.sites[actualKey]) {
-                return data.periodontal.sites[actualKey];
+            if (data && data.periodontal && data.periodontal.sites && data.periodontal.sites[key]) {
+                return data.periodontal.sites[key];
             }
             return { probingDepth: 0, gingivalMargin: 0 };
         };
@@ -84,13 +78,7 @@ const JawTooth = ({
 
     // Extract site data for PerioGrid
     const getSite = (key) => {
-        let actualKey = key;
-        if (isUpperJaw) {
-            if (key === 'distoLingual') actualKey = 'distoPalatal';
-            if (key === 'lingual') actualKey = 'palatal';
-            if (key === 'mesioLingual') actualKey = 'mesioPalatal';
-        }
-        return toothData?.periodontal?.sites?.[actualKey] || {};
+        return toothData?.periodontal?.sites?.[key] || {};
     };
 
     const buccalSites = [
@@ -194,12 +182,12 @@ const JawTooth = ({
 
                     // Recover wave logic based on view type + jaw
                     if (isUpperJaw) {
-                        if (view === 'frontal') { // Top (Outside view of chart) -> Palatal
-                            modelToUse = models.lingual;
+                        if (view === 'frontal') { // Top (Outside view of chart) -> Buccal
+                            modelToUse = models.buccal;
                             waveDirection = 'down';
                             waveTopOffset = 25;
-                        } else if (view === 'lingual') { // Bottom (Inside view of chart) -> Buccal
-                            modelToUse = models.buccal;
+                        } else if (view === 'lingual') { // Bottom (Inside view of chart) -> Palatal (Lingual)
+                            modelToUse = models.lingual;
                             waveDirection = 'up';
                             waveBottomOffset = -25;
                         }

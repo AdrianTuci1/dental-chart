@@ -217,25 +217,49 @@ const ToothRestoration = () => {
         const typeLabel = restorationTypes.find(t => t.route === selectedRestorationType)?.label;
         if (typeLabel) parts.push(typeLabel);
 
+        // Build structured data fields matching projectTeethFromInterventions expectations
+        const structuredFields = { type: 'restoration' };
+
         if (selectedRestorationType === 'filling') {
             if (fillingMaterial) parts.push(fillingMaterial);
             if (fillingQuality) parts.push(fillingQuality);
             if (selectedZones.length > 0) parts.push(selectedZones.join(', '));
+            structuredFields.subtype = 'filling';
+            structuredFields.material = fillingMaterial || 'Composite';
+            structuredFields.quality = fillingQuality || 'Sufficient';
+            structuredFields.zones = selectedZones;
         } else if (selectedRestorationType === 'veneer') {
             if (veneerMaterial) parts.push(veneerMaterial);
             if (veneerQuality) parts.push(veneerQuality);
             if (veneerDetail) parts.push(veneerDetail);
             if (selectedZones.length > 0) parts.push(selectedZones.join(', '));
+            structuredFields.subtype = 'veneer';
+            structuredFields.material = veneerMaterial || 'Ceramic';
+            structuredFields.quality = veneerQuality || 'Sufficient';
+            structuredFields.detail = veneerDetail || 'Flush';
+            structuredFields.zones = selectedZones;
         } else if (selectedRestorationType === 'crown') {
             if (crownMaterial) parts.push(crownMaterial);
             if (crownType) parts.push(crownType);
             if (crownBase) parts.push(crownBase);
             if (implantType) parts.push(implantType);
+            structuredFields.subtype = 'crown';
+            structuredFields.material = crownMaterial || 'Ceramic';
+            structuredFields.crownType = crownType || 'Single Crown';
+            structuredFields.base = crownBase || 'Natural';
+            if (crownBase === 'Implant' && implantType) {
+                structuredFields.implantType = implantType;
+            }
         } else if (['inlay', 'onlay', 'partial_crown'].includes(selectedRestorationType)) {
             if (advancedMaterial) parts.push(advancedMaterial);
             if (advancedQuality) parts.push(advancedQuality);
             if (advancedDetail) parts.push(advancedDetail);
             if (selectedZones.length > 0) parts.push(selectedZones.join(', '));
+            structuredFields.subtype = selectedRestorationType;
+            structuredFields.material = advancedMaterial || 'Ceramic';
+            structuredFields.quality = advancedQuality || 'Sufficient';
+            structuredFields.detail = advancedDetail || 'Flush';
+            structuredFields.zones = selectedZones;
         }
 
         const procedure = parts.join(', ');
@@ -243,8 +267,10 @@ const ToothRestoration = () => {
 
         const newItemId = Date.now().toString();
 
+        // Item with full structured data for projectTeethFromInterventions
         const baseItem = {
             id: newItemId,
+            ...structuredFields,
             procedure,
             tooth: tooth.toothNumber,
             cost: actionType === 'monitor' ? 100 : 400,
@@ -260,11 +286,10 @@ const ToothRestoration = () => {
         } else if (actionType === 'save') {
             handleSave(actionType, newItemId, true, false);
             useAppStore.getState().addToHistory(selectedPatient.id, {
-                id: newItemId,
-                description: procedure,
-                provider: 'Dr. Current',
-                tooth: tooth.toothNumber,
-                date: new Date().toISOString()
+                ...baseItem,
+                status: 'completed',
+                date: new Date().toISOString(),
+                provider: 'Dr. Current'
             });
         }
 

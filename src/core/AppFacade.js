@@ -1,5 +1,4 @@
 import { useAppStore } from './store/appStore';
-import { ActionProxy } from './proxies/ActionProxy';
 import { PatientAdapter } from './adapters/PatientAdapter';
 import { patientService } from '../api';
 
@@ -50,13 +49,13 @@ export const AppFacade = {
                 console.log(`[AppFacade] loadFull received response for ${id}:`, response);
                 const domainPatient = PatientAdapter.toDomain(response);
                 console.log(`[AppFacade] loadFull adapted domain patient:`, domainPatient);
-                
+
                 // Sync charts/teeth state if present
                 if (domainPatient.chart?.teeth) {
                     console.log(`[AppFacade] loadFull syncing teeth data`);
                     useAppStore.getState().setTeeth(domainPatient.chart.teeth);
                 }
-                
+
                 useAppStore.getState().selectPatient(domainPatient);
                 return domainPatient;
             } catch (error) {
@@ -89,7 +88,7 @@ export const AppFacade = {
                     treatmentPlan: { items: [] },
                     history: { completedItems: [] }
                 };
-                
+
                 const response = await patientService.createPatient(PatientAdapter.toApi(payload));
                 const domainPatient = PatientAdapter.toDomain(response);
                 useAppStore.getState().addPatient(domainPatient);
@@ -101,14 +100,15 @@ export const AppFacade = {
         },
 
         /**
-         * Update an existing patient record
+         * Update an existing patient record.
+         * We do NOT replace selectedPatient with the backend response since
+         * the UI state is maintained via the action streams.
          */
         update: async (id, patientData) => {
             try {
-                const response = await patientService.updatePatient(id, PatientAdapter.toApi(patientData));
-                const domainPatient = PatientAdapter.toDomain(response);
-                useAppStore.getState().updatePatient(domainPatient);
-                return domainPatient;
+                await patientService.updatePatient(id, PatientAdapter.toApi(patientData));
+                // Do NOT replace selectedPatient with the partial backend response.
+                return patientData;
             } catch (error) {
                 console.error("[AppFacade] Failed to update patient", error);
                 throw error;
@@ -132,12 +132,12 @@ export const AppFacade = {
          * Complex business flow: mark treatment plan item as complete.
          */
         completeTreatment: async (patientId, itemId) => {
-            const store = useAppStore.getState();
-            store.completeTreatmentPlanItem(patientId, itemId);
-            
+            useAppStore.getState().completeTreatmentPlanItem(patientId, itemId);
+
+            const freshStore = useAppStore.getState();
             // Persist the entire updated patient state
-            if (store.selectedPatient) {
-                return await AppFacade.patient.update(patientId, store.selectedPatient);
+            if (freshStore.selectedPatient) {
+                return await AppFacade.patient.update(patientId, freshStore.selectedPatient);
             }
         },
 
@@ -145,11 +145,11 @@ export const AppFacade = {
          * Add an item directly to history
          */
         addToHistory: async (patientId, item) => {
-            const store = useAppStore.getState();
-            store.addToHistory(patientId, item);
+            useAppStore.getState().addToHistory(patientId, item);
 
-            if (store.selectedPatient) {
-                return await AppFacade.patient.update(patientId, store.selectedPatient);
+            const freshStore = useAppStore.getState();
+            if (freshStore.selectedPatient) {
+                return await AppFacade.patient.update(patientId, freshStore.selectedPatient);
             }
         },
 
@@ -157,11 +157,11 @@ export const AppFacade = {
          * Add a new treatment plan item
          */
         addTreatmentPlanItem: async (patientId, item) => {
-            const store = useAppStore.getState();
-            store.addTreatmentPlanItem(patientId, item);
+            useAppStore.getState().addTreatmentPlanItem(patientId, item);
 
-            if (store.selectedPatient) {
-                return await AppFacade.patient.update(patientId, store.selectedPatient);
+            const freshStore = useAppStore.getState();
+            if (freshStore.selectedPatient) {
+                return await AppFacade.patient.update(patientId, freshStore.selectedPatient);
             }
         },
 
@@ -173,37 +173,26 @@ export const AppFacade = {
 
     chart: {
         updateTooth: async (toothNumber, updates) => {
-            const store = useAppStore.getState();
-            store.updateTooth(toothNumber, updates);
-            
-            const patient = store.selectedPatient;
+            useAppStore.getState().updateTooth(toothNumber, updates);
+
+            const freshStore = useAppStore.getState();
+            const patient = freshStore.selectedPatient ? { ...freshStore.selectedPatient } : null;
             if (patient) {
-                // Ensure chart object exists
-                const updatedPatient = {
-                    ...patient,
-                    chart: {
-                        ...(patient.chart || {}),
-                        teeth: store.teeth
-                    }
-                };
-                await AppFacade.patient.update(patient.id, updatedPatient);
+                patient.chart = { ...patient.chart, teeth: freshStore.teeth };
+                useAppStore.getState().updatePatient(patient);
+                await AppFacade.patient.update(patient.id, patient);
             }
         },
 
         updateTeethBatch: async (updates) => {
-            const store = useAppStore.getState();
-            store.updateTeeth(updates);
+            useAppStore.getState().updateTeeth(updates);
 
-            const patient = store.selectedPatient;
+            const freshStore = useAppStore.getState();
+            const patient = freshStore.selectedPatient ? { ...freshStore.selectedPatient } : null;
             if (patient) {
-                const updatedPatient = {
-                    ...patient,
-                    chart: {
-                        ...(patient.chart || {}),
-                        teeth: store.teeth
-                    }
-                };
-                await AppFacade.patient.update(patient.id, updatedPatient);
+                patient.chart = { ...patient.chart, teeth: freshStore.teeth };
+                useAppStore.getState().updatePatient(patient);
+                await AppFacade.patient.update(patient.id, patient);
             }
         }
     }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../../core/store/appStore';
+import { AppFacade } from '../../core/AppFacade';
 import { PeriodontalFacade } from '../../models/PeriodontalFacade';
 import './PeriodontalDrawer.css';
 
@@ -8,8 +9,26 @@ const PeriodontalDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
     const [selectedSite, setSelectedSite] = useState('distoLingual');
     const [autoSequential, setAutoSequential] = useState(false);
 
-    const { teeth, updateTooth } = useAppStore();
+    const { teeth, updateTooth, selectedPatient } = useAppStore();
+
     const facade = React.useMemo(() => new PeriodontalFacade(toothNumber, teeth, updateTooth), [toothNumber, teeth, updateTooth]);
+
+    const handleActionWithSave = async (actionFn) => {
+        if (selectedPatient && facade) {
+            const freshStore = useAppStore.getState();
+            const perioEvent = facade.generateHistoryEvent();
+
+            if (perioEvent) {
+                await AppFacade.patient.addToHistory(selectedPatient.id, perioEvent);
+            } else {
+                const patient = { ...freshStore.selectedPatient };
+                patient.chart = { ...patient.chart, teeth: freshStore.teeth };
+                freshStore.updatePatient(patient);
+                await AppFacade.patient.update(patient.id, patient);
+            }
+        }
+        if (actionFn) actionFn();
+    };
 
     const siteLabels = facade.getSiteLabels();
     const siteKeys = ['distoLingual', 'lingual', 'mesioLingual', 'distoBuccal', 'buccal', 'mesioBuccal'];
@@ -57,7 +76,7 @@ const PeriodontalDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                         // Reset selected site to the first one for the next tooth
                         setSelectedSite(siteKeys[0]);
                         setActiveTab('probing');
-                        onNext();
+                        handleActionWithSave(onNext);
                     }
                 }
             }
@@ -74,12 +93,12 @@ const PeriodontalDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
         <div className={`periodontal-drawer ${position}`}>
             <div className="drawer-header">
                 <div className="drawer-nav">
-                    <span className="nav-arrow" onClick={onPrevious}>&lt;</span>
-                    <span className="nav-arrow" onClick={onNext}>&gt;</span>
+                    <span className="nav-arrow" onClick={() => handleActionWithSave(onPrevious)}>&lt;</span>
+                    <span className="nav-arrow" onClick={() => handleActionWithSave(onNext)}>&gt;</span>
                 </div>
                 <div className="tooth-title">TOOTH {toothNumber}</div>
                 <div className="drawer-actions">
-                    <span className="action-icon" onClick={onClose}>✕</span>
+                    <span className="action-icon" onClick={() => handleActionWithSave(onClose)}>✕</span>
                 </div>
             </div>
 
@@ -181,7 +200,7 @@ const PeriodontalDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                         <span className="slider"></span>
                     </label>
                 </div>
-                <button className="next-btn" onClick={onNext}>NEXT TOOTH</button>
+                <button className="next-btn" onClick={() => handleActionWithSave(onNext)}>NEXT TOOTH</button>
             </div>
         </div>
     );

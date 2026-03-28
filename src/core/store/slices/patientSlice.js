@@ -1,5 +1,6 @@
 import { produce } from 'immer';
 import { PatientModel } from '../../models/PatientModel';
+import { ChartModel } from '../../models/ChartModel';
 // import { ActionProxy } from '../../proxies/ActionProxy'; // Future use
 
 /**
@@ -46,7 +47,15 @@ export const createPatientSlice = (set) => ({
 
     // Complex domain actions delegated to Model
     addTreatmentPlanItem: (patientId, item) => set(produce((state) => {
-        const patient = state.patients.find(p => p.id === patientId);
+        let patient = state.patients.find(p => p.id === patientId);
+        
+        // Ensure selectedPatient is also updated if it matches, even if patients array is empty (e.g. on direct nav)
+        if (!patient && state.selectedPatient?.id === patientId) {
+            patient = state.selectedPatient;
+        } else if (patient && state.selectedPatient?.id === patientId) {
+            state.selectedPatient = patient; // Keep them synced
+        }
+
         if (patient) {
             const newItem = { ...item, id: item.id || Date.now().toString() };
             if (!patient.treatmentPlan) patient.treatmentPlan = { items: [] };
@@ -54,33 +63,59 @@ export const createPatientSlice = (set) => ({
             patient.treatmentPlan.items.push(newItem);
         }
 
+        // Modular reprojection: automatically update visual teeth immediately
         if (state.selectedPatient?.id === patientId) {
-            // Keep selected patient reference in sync
-            state.selectedPatient = state.patients.find(p => p.id === patientId);
+            state.teeth = ChartModel.projectTeethFromInterventions(
+                state.selectedPatient.history?.completedItems || [],
+                state.selectedPatient.treatmentPlan?.items || []
+            );
         }
     })),
 
     completeTreatmentPlanItem: (patientId, itemId) => {
-        // Delegate logic to PatientModel using Immer's produce via set()
         set(produce((state) => {
-            const patient = state.patients.find(p => p.id === patientId);
+            let patient = state.patients.find(p => p.id === patientId);
+            
+            if (!patient && state.selectedPatient?.id === patientId) {
+                patient = state.selectedPatient;
+            } else if (patient && state.selectedPatient?.id === patientId) {
+                state.selectedPatient = patient;
+            }
+
             if (patient) {
                 PatientModel.completeTreatment(patient, itemId);
             }
+
+            // Modular reprojection
             if (state.selectedPatient?.id === patientId) {
-                state.selectedPatient = patient;
+                state.teeth = ChartModel.projectTeethFromInterventions(
+                    state.selectedPatient.history?.completedItems || [],
+                    state.selectedPatient.treatmentPlan?.items || []
+                );
             }
         }));
     },
 
     addToHistory: (patientId, item) => {
         set(produce((state) => {
-            const patient = state.patients.find(p => p.id === patientId);
+            let patient = state.patients.find(p => p.id === patientId);
+            
+            if (!patient && state.selectedPatient?.id === patientId) {
+                patient = state.selectedPatient;
+            } else if (patient && state.selectedPatient?.id === patientId) {
+                state.selectedPatient = patient;
+            }
+
             if (patient) {
                 PatientModel.addToHistory(patient, item);
             }
+
+            // Modular reprojection
             if (state.selectedPatient?.id === patientId) {
-                state.selectedPatient = patient;
+                state.teeth = ChartModel.projectTeethFromInterventions(
+                    state.selectedPatient.history?.completedItems || [],
+                    state.selectedPatient.treatmentPlan?.items || []
+                );
             }
         }));
     },

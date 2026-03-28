@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { X, Volume2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useAppStore } from '../../core/store/appStore';
+import { AppFacade } from '../../core/AppFacade';
 import { PeriodontalFacade } from '../../models/PeriodontalFacade';
 import { WaveInteractionModel } from '../../models/WaveInteractionModel';
 import './ToothPeriodontal.css';
@@ -18,7 +19,8 @@ const ToothPeriodontal = () => {
 
     const facade = React.useMemo(() => new PeriodontalFacade(currentToothNumber, teeth, updateTooth), [currentToothNumber, teeth, updateTooth]);
 
-    // Default to 'disto-lingual' if no site is selected
+
+
     const currentSiteKey = site || 'disto-lingual';
 
     // Map URL param to internal data keys
@@ -263,7 +265,26 @@ const ToothPeriodontal = () => {
                 {/* Save Button */}
                 <div className="footer-actions">
                     <button
-                        onClick={() => navigate('../')}
+                        onClick={async () => {
+                            const freshStore = useAppStore.getState();
+                            const patient = freshStore.selectedPatient ? { ...freshStore.selectedPatient } : null;
+
+                            if (patient && facade) {
+                                // 1. Generate periodontal history event from current tooth state
+                                const perioEvent = facade.generateHistoryEvent();
+                                if (perioEvent) {
+                                    // 2. Push to history (this auto-updates DB and auto-reprojects state.teeth)
+                                    await AppFacade.patient.addToHistory(patient.id, perioEvent);
+                                } else {
+                                    // If no perio data was added, just ensure the chart is synced
+                                    patient.chart = { ...patient.chart, teeth: freshStore.teeth };
+                                    freshStore.updatePatient(patient);
+                                    await AppFacade.patient.update(patient.id, patient);
+                                }
+                            }
+                            navigate('../');
+                        }}
+
                         className="save-btn"
                     >
                         SAVE

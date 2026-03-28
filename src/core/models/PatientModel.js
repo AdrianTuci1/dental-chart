@@ -73,6 +73,15 @@ export class PatientModel {
 
         const markDone = (itemsArray) => {
             if (!itemsArray) return;
+            // Handle case where itemsArray is a single object rather than an array
+            if (!Array.isArray(itemsArray)) {
+                if (itemsArray.id === itemId) {
+                    itemsArray.status = 'completed';
+                    itemsArray.date = fullIsoDate;
+                }
+                return;
+            }
+            
             for (let obj of itemsArray) {
                 if (obj.id === itemId) {
                     obj.status = 'completed';

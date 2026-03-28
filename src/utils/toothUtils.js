@@ -101,10 +101,11 @@ export const mapToothDataToConditions = (tooth, historicalDate = null, treatment
     // Map Fractures (Only if natural tooth / not implant/pontic)
     if (!hasImplantOrPontic && tooth.pathology && tooth.pathology.fracture && isBeforeOrAtHistoricalDate(tooth.pathology.fracture)) {
         if (tooth.pathology.fracture.crown) {
+            const dir = typeof tooth.pathology.fracture.crown === 'string' ? tooth.pathology.fracture.crown.toLowerCase() : 'horizontal';
             conditions.push({
-                surface: `fracture_crown_${tooth.pathology.fracture.crown.toLowerCase()}`,
-                zone: 'Fracture Crown',
-                color: 'transparent',
+                surface: `fracture_crown_${dir}`,
+                zone: `Fracture Crown-${dir}`,
+                color: '#FF0000',
                 type: 'fracture',
                 stroke: '#FF0000',
                 strokeWidth: 1.5,
@@ -112,10 +113,11 @@ export const mapToothDataToConditions = (tooth, historicalDate = null, treatment
             });
         }
         if (tooth.pathology.fracture.root) {
+            const dir = typeof tooth.pathology.fracture.root === 'string' ? tooth.pathology.fracture.root.toLowerCase() : 'horizontal';
             conditions.push({
-                surface: `fracture_root_${tooth.pathology.fracture.root.toLowerCase()}`,
-                zone: 'Fracture Root',
-                color: 'transparent',
+                surface: `fracture_root_${dir}`,
+                zone: `Fracture Root-${dir}`,
+                color: '#FF0000',
                 type: 'fracture',
                 stroke: '#FF0000',
                 strokeWidth: 1.5,

@@ -72,10 +72,11 @@ export class Tooth {
         // Map Fractures (Only if natural tooth / not implant/pontic)
         if (!hasImplantOrPontic && this.pathology && this.pathology.fracture) {
             if (this.pathology.fracture.crown) {
+                const dir = typeof this.pathology.fracture.crown === 'string' ? this.pathology.fracture.crown.toLowerCase() : 'horizontal';
                 conditions.push({
-                    surface: `fracture_crown_${this.pathology.fracture.crown.toLowerCase()}`,
-                    zone: 'Fracture Crown',
-                    color: 'transparent', // Don't fill the zigzag, just stroke
+                    surface: `fracture_crown_${dir}`,
+                    zone: `Fracture Crown-${dir}`,
+                    color: '#FF0000', // Need fill for SVG color mapping
                     type: 'fracture',
                     stroke: '#FF0000',
                     strokeWidth: 3,
@@ -83,10 +84,11 @@ export class Tooth {
                 });
             }
             if (this.pathology.fracture.root) {
+                const dir = typeof this.pathology.fracture.root === 'string' ? this.pathology.fracture.root.toLowerCase() : 'horizontal';
                 conditions.push({
-                    surface: `fracture_root_${this.pathology.fracture.root.toLowerCase()}`,
-                    zone: 'Fracture Root',
-                    color: 'transparent',
+                    surface: `fracture_root_${dir}`,
+                    zone: `Fracture Root-${dir}`,
+                    color: '#FF0000',
                     type: 'fracture',
                     stroke: '#FF0000',
                     strokeWidth: 3,

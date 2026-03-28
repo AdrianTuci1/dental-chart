@@ -72,6 +72,16 @@ export const getOverlayPath = (toothNumber, zoneId, view = 'frontal') => {
         return endoFile ? getOverlayAsset(`endo/${endoFile}`) : null;
     }
 
+    // Handle Fracture Zones
+    if (zoneId.startsWith('Fracture Crown')) {
+        const dir = zoneId.split('-')[1] || 'horizontal';
+        return getOverlayAsset(`fractures/crown-${dir}.svg`);
+    }
+    if (zoneId.startsWith('Fracture Root')) {
+        const dir = zoneId.split('-')[1] || 'horizontal';
+        return getOverlayAsset(`fractures/root-${dir}.svg`);
+    }
+
     // Incisors (1, 2, 3)
     if (index >= 1 && index <= 3) {
         const file = INCISOR_MAP[zoneId];

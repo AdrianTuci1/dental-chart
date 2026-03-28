@@ -6,15 +6,6 @@ export class PeriodontalFacade {
     }
 
     _getInternalKey(siteKey) {
-        if (!this.toothNumber) return siteKey;
-        const num = parseInt(this.toothNumber, 10);
-        const isUpper = (num >= 11 && num <= 28) || (num >= 51 && num <= 65);
-
-        if (isUpper) {
-            if (siteKey === 'distoLingual') return 'distoPalatal';
-            if (siteKey === 'lingual') return 'palatal';
-            if (siteKey === 'mesioLingual') return 'mesioPalatal';
-        }
         return siteKey;
     }
 
@@ -104,6 +95,42 @@ export class PeriodontalFacade {
             distoBuccal: 'Disto Buccal',
             buccal: 'Buccal',
             mesioBuccal: 'Mesio Buccal'
+        };
+    }
+
+    /**
+     * Generates a history event object for the current state of this tooth's periodontal data.
+     * Complies with the backend mockData.js format for event-sourced projection.
+     */
+    generateHistoryEvent() {
+        if (!this.tooth || !this.tooth.periodontal || !this.tooth.periodontal.sites) return null;
+
+        const pd = {};
+        const gm = {};
+        const bleeding = [];
+
+        Object.keys(this.tooth.periodontal.sites).forEach(siteKey => {
+            const siteData = this.tooth.periodontal.sites[siteKey];
+            if (siteData.probingDepth !== undefined) pd[siteKey] = siteData.probingDepth;
+            if (siteData.gingivalMargin !== undefined) gm[siteKey] = siteData.gingivalMargin;
+            if (siteData.bleeding) bleeding.push(siteKey);
+        });
+
+        // Only generate an event if there's actual data
+        if (Object.keys(pd).length === 0 && Object.keys(gm).length === 0 && bleeding.length === 0) {
+            return null;
+        }
+
+        return {
+            id: `perio-${this.toothNumber}-${Date.now()}`,
+            tooth: this.toothNumber,
+            isoNumber: this.toothNumber,
+            type: 'periodontal',
+            status: 'completed',
+            date: new Date().toISOString().split('T')[0],
+            probingDepth: pd,
+            gingivalMargin: gm,
+            bleedingSites: bleeding
         };
     }
 }

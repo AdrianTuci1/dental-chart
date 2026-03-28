@@ -2,8 +2,8 @@ const { docClient } = require('../../config/dynamoConfig');
 
 const SEARCHABLE_FIELDS_BY_SK = {
     'METADATA#': ['id', 'medicId', 'name', 'email', 'clinicId', 'createdAt', 'updatedAt', 'phoneNumber'],
-    'HISTORY#': ['updatedAt', 'items'],
-    'PLAN#': ['updatedAt', 'items'],
+    'HISTORY#': ['updatedAt'],
+    'PLAN#': ['updatedAt'],
     'CLINIC#': ['id', 'name', 'createdAt', 'updatedAt'],
     'MEDIC#': ['id', 'clinicId', 'email', 'name', 'createdAt', 'updatedAt'],
 };
