@@ -1,6 +1,7 @@
 import { useAppStore } from './store/appStore';
 import { PatientAdapter } from './adapters/PatientAdapter';
 import { patientService } from '../api';
+import { ActionProxy } from './proxies/ActionProxy';
 
 /**
  * AppFacade acts as a central access point for the UI.
@@ -106,9 +107,21 @@ export const AppFacade = {
          */
         update: async (id, patientData) => {
             try {
-                await patientService.updatePatient(id, PatientAdapter.toApi(patientData));
-                // Do NOT replace selectedPatient with the partial backend response.
-                return patientData;
+                const freshStore = useAppStore.getState();
+                let finalData = patientData;
+
+                // Defensive merge: if we're updating the currently selected patient, 
+                // ensure we don't send a partial object that would lose data on a PutCommand backend
+                if (freshStore.selectedPatient?.id === id) {
+                    finalData = { ...freshStore.selectedPatient, ...patientData };
+                }
+
+                await patientService.updatePatient(id, PatientAdapter.toApi(finalData));
+                
+                // Update local store with the merged data
+                useAppStore.getState().updatePatient(finalData);
+                
+                return finalData;
             } catch (error) {
                 console.error("[AppFacade] Failed to update patient", error);
                 throw error;
@@ -168,7 +181,39 @@ export const AppFacade = {
         /**
          * Get selected patient helper
          */
-        getSelected: () => useAppStore.getState().selectedPatient
+        getSelected: () => useAppStore.getState().selectedPatient,
+
+        /**
+         * Centralized persistence sync.
+         * Debounced to prevent excessive API calls.
+         */
+        syncPatient: ActionProxy.debounceSync(async (patientId) => {
+            const state = useAppStore.getState();
+            const patient = state.selectedPatient;
+            
+            if (patient && String(patient.id) === String(patientId)) {
+                console.log(`[AppFacade] PERSISTENCE: Syncing patient ${patientId} to backend...`);
+                
+                // Set syncing flag to prevent PersistenceController from re-triggering this
+                state.setIsSyncing(true);
+
+                // Construct the full domain object for saving
+                const patientToSave = {
+                    ...patient,
+                    chart: { ...patient.chart, teeth: state.teeth }
+                };
+
+                try {
+                    await AppFacade.patient.update(patientId, patientToSave);
+                    console.log(`[AppFacade] PERSISTENCE: Successfully synced patient ${patientId}`);
+                } catch (err) {
+                    console.error(`[AppFacade] PERSISTENCE ERROR: Failed to sync patient ${patientId}`, err);
+                } finally {
+                    // Reset syncing flag
+                    useAppStore.getState().setIsSyncing(false);
+                }
+            }
+        }, 1500)
     },
 
     chart: {

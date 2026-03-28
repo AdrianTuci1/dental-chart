@@ -14,11 +14,13 @@ export const createPatientSlice = (set) => ({
     patients: [],
     selectedPatient: null,
     searchQuery: '',
+    isSyncing: false,
 
     // Basic actions
     setPatients: (patients) => set({ patients }),
     selectPatient: (patient) => set({ selectedPatient: patient }),
     setSearchQuery: (query) => set({ searchQuery: query }),
+    setIsSyncing: (isSyncing) => set({ isSyncing }),
 
     addPatient: (patient) => set(produce((state) => {
         state.patients.push(patient);
@@ -67,7 +69,8 @@ export const createPatientSlice = (set) => ({
         if (state.selectedPatient?.id === patientId) {
             state.teeth = ChartModel.projectTeethFromInterventions(
                 state.selectedPatient.history?.completedItems || [],
-                state.selectedPatient.treatmentPlan?.items || []
+                state.selectedPatient.treatmentPlan?.items || [],
+                state.selectedPatient.chart?.teeth || null
             );
         }
     })),
@@ -90,7 +93,8 @@ export const createPatientSlice = (set) => ({
             if (state.selectedPatient?.id === patientId) {
                 state.teeth = ChartModel.projectTeethFromInterventions(
                     state.selectedPatient.history?.completedItems || [],
-                    state.selectedPatient.treatmentPlan?.items || []
+                    state.selectedPatient.treatmentPlan?.items || [],
+                    state.selectedPatient.chart?.teeth || null
                 );
             }
         }));
@@ -114,7 +118,8 @@ export const createPatientSlice = (set) => ({
             if (state.selectedPatient?.id === patientId) {
                 state.teeth = ChartModel.projectTeethFromInterventions(
                     state.selectedPatient.history?.completedItems || [],
-                    state.selectedPatient.treatmentPlan?.items || []
+                    state.selectedPatient.treatmentPlan?.items || [],
+                    state.selectedPatient.chart?.teeth || null
                 );
             }
         }));

@@ -54,10 +54,21 @@ export class ChartModel {
      * 
      * @param {Array} history - Completed interventions
      * @param {Array} treatmentPlan - Planned/Monitoring interventions
+     * @param {Object} [baseTeeth] - Optional base teeth map to project onto (preserves static data)
      * @returns {Object} Teeth map with conditions
      */
-    static projectTeethFromInterventions(history = [], treatmentPlan = []) {
-        const teeth = {};
+    static projectTeethFromInterventions(history = [], treatmentPlan = [], baseTeeth = null) {
+        let teeth = {};
+        
+        if (baseTeeth) {
+            // Deep clone to avoid mutating the source of truth directly here
+            try {
+                teeth = JSON.parse(JSON.stringify(baseTeeth));
+            } catch (e) {
+                console.error("[ChartModel] Failed to clone baseTeeth, falling back to empty", e);
+                teeth = {};
+            }
+        }
 
         // Handle both array and object formats (aligned with PatientModels.js)
         const completedList = Array.isArray(history) ? history : (history?.completedItems || []);
@@ -72,8 +83,16 @@ export class ChartModel {
         ];
 
         ALL_VALID_TEETH.forEach(num => {
-            teeth[num] = {};
+            if (!teeth[num]) teeth[num] = {};
             ToothModel.initializeData(teeth[num], num);
+            
+            // Clear dynamic intervention arrays to avoid duplicates when re-projecting
+            // but preserve static properties (like endodontic tests, missing status etc)
+            teeth[num].pathology.decay = [];
+            teeth[num].restoration.fillings = [];
+            teeth[num].restoration.crowns = [];
+            teeth[num].restoration.veneers = [];
+            teeth[num].restoration.advancedRestorations = [];
         });
 
         allItems.forEach(item => {

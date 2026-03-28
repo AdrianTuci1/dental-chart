@@ -1,13 +1,12 @@
-import React from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { useAppStore } from '../../core/store/appStore';
+import { AppFacade } from '../../core/AppFacade';
 
 const ToothEndodontic = () => {
     const { tooth } = useOutletContext();
-    const { updateTooth } = useAppStore();
+    // No longer using updateTooth from store directly
 
     const handleTestChange = (test, value) => {
-        updateTooth(tooth.toothNumber, {
+        AppFacade.chart.updateTooth(tooth.toothNumber, {
             endodontic: {
                 ...tooth.endodontic,
                 tests: {
@@ -27,7 +26,7 @@ const ToothEndodontic = () => {
                         id="hasRootCanal"
                         type="checkbox"
                         checked={tooth.endodontic.hasRootCanal}
-                        onChange={(e) => updateTooth(tooth.toothNumber, {
+                        onChange={(e) => AppFacade.chart.updateTooth(tooth.toothNumber, {
                             endodontic: { ...tooth.endodontic, hasRootCanal: e.target.checked }
                         })}
                         className="h-4 w-4 text-[var(--color-primary)] focus:ring-[var(--color-primary)] border-gray-300 rounded"

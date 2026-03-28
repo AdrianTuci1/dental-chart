@@ -1,9 +1,10 @@
 import React from 'react';
 import { useAppStore } from '../../core/store/appStore';
+import { AppFacade } from '../../core/AppFacade';
 import './DevelopmentDrawer.css';
 
 const DevelopmentDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
-    const { updateTeeth } = useAppStore();
+    // No longer using updateTeeth from store directly
 
     if (!selectedTeeth || selectedTeeth.length === 0) return null;
 
@@ -31,7 +32,7 @@ const DevelopmentDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
             }
             updates[toothNumber] = { ...action };
         });
-        updateTeeth(updates);
+        AppFacade.chart.updateTeethBatch(updates);
         onClose();
     };
 

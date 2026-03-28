@@ -101,13 +101,26 @@ class PatientService {
             patientData.name = patientData.fullName;
         }
         delete patientData.fullName; // Always strip fullName
-
+        
         // Split incoming unit-of-work into separate records
-        // This ensures the "One Table" optimization while keeping the API Patient-centric
-        const { history, treatmentPlan, ...metadata } = patientData;
+        const { history, treatmentPlan, ...incomingMetadata } = patientData;
+
+        // CRITICAL FIX: Fetch existing metadata and merge to prevent data loss during partial updates (like from PatientModal)
+        let finalMetadata = incomingMetadata;
+        try {
+            const existingFull = await this.getPatientFullRecord(id);
+            if (existingFull) {
+                // Strip items that are managed by separate tables to avoid re-including them in the METADATA# SK
+                const { history: _, treatmentPlan: __, ...existingMetadata } = existingFull;
+                finalMetadata = { ...existingMetadata, ...incomingMetadata };
+                console.log(`[PatientService] Merged incoming data with existing metadata for ${id}`);
+            }
+        } catch (err) {
+            console.log(`[PatientService] No existing patient found for merge during update of ${id}, proceeding with provided data.`);
+        }
 
         const updatePromises = [
-            this.patientRepository.updatePatient(id, metadata)
+            this.patientRepository.updatePatient(id, finalMetadata)
         ];
 
         if (history && history.completedItems) {

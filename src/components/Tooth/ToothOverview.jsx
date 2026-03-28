@@ -15,7 +15,7 @@ import DiagnosisModal from './DiagnosisModal';
 const ToothOverview = () => {
     const { tooth } = useOutletContext();
     const navigate = useNavigate();
-    const updateTooth = useAppStore(state => state.updateTooth);
+    // No longer using updateTooth from store directly
     const { selectedPatient, completeTreatmentPlanItem } = useAppStore();
 
     const [selectedTest, setSelectedTest] = useState(null);
@@ -48,7 +48,7 @@ const ToothOverview = () => {
         };
 
         const updatedEndo = { ...tooth.endodontic, ...endoUpdate };
-        updateTooth(tooth.isoNumber, { endodontic: updatedEndo });
+        AppFacade.chart.updateTooth(tooth.isoNumber, { endodontic: updatedEndo });
 
         const diagnosis = suggestPulpalDiagnosis(newResults);
         // ... rest of diagnosis logic
@@ -60,7 +60,7 @@ const ToothOverview = () => {
             // If diagnosis is 'Normal Pulp', apply it automatically without modal
             if (diagnosis === 'Normal Pulp') {
                 const updatedEndo = { ...tooth.endodontic, diagnosis: diagnosis };
-                updateTooth(tooth.isoNumber, { endodontic: updatedEndo });
+                AppFacade.chart.updateTooth(tooth.isoNumber, { endodontic: updatedEndo });
                 setShowDiagnosisModal(false);
             } else {
                 setShowDiagnosisModal(true);
@@ -77,7 +77,7 @@ const ToothOverview = () => {
         // Update the tooth model with the diagnosis
         // We need to ensure we are updating the endodontic object
         const updatedEndo = { ...tooth.endodontic, diagnosis: suggestedDiagnosis };
-        updateTooth(tooth.isoNumber, { endodontic: updatedEndo });
+        AppFacade.chart.updateTooth(tooth.isoNumber, { endodontic: updatedEndo });
         setShowDiagnosisModal(false);
     };
 
@@ -118,10 +118,10 @@ const ToothOverview = () => {
         if (modalState.action === 'reset') {
             // Reset the tooth
             tooth.reset();
-            updateTooth(tooth.isoNumber, { ...tooth });
+            AppFacade.chart.updateTooth(tooth.isoNumber, { ...tooth });
         } else if (modalState.action === 'missing') {
             // Mark tooth as missing
-            updateTooth(tooth.isoNumber, { isMissing: true });
+            AppFacade.chart.updateTooth(tooth.isoNumber, { isMissing: true });
         }
 
         setModalState({ isOpen: false, action: null, title: '', message: '' });

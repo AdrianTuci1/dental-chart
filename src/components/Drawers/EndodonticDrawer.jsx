@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../../core/store/appStore';
+import { AppFacade } from '../../core/AppFacade';
 import { Snowflake, Gavel, Hand, Flame, Zap, ChevronRight, ChevronLeft, X } from 'lucide-react';
 import './EndodonticDrawer.css';
 
 const EndodonticDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
-    const { teeth, updateTeeth } = useAppStore();
+    const { teeth } = useAppStore();
+    // No longer using updateTeeth from store directly
 
     const [activeTest, setActiveTest] = useState(null); // 'Cold', 'Heat', 'Percussion', 'Palpation', 'Electricity'
 
@@ -43,7 +45,7 @@ const EndodonticDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
                 };
             }
         });
-        updateTeeth(updates);
+        AppFacade.chart.updateTeethBatch(updates);
     };
 
     const handleTestValueChange = (testName, valueObject) => {
