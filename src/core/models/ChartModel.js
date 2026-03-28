@@ -1,5 +1,47 @@
 import { ToothModel } from './ToothModel';
 
+const cloneTeeth = (baseTeeth) => {
+    if (!baseTeeth) return {};
+
+    try {
+        return JSON.parse(JSON.stringify(baseTeeth));
+    } catch (error) {
+        console.error('[ChartModel] Failed to clone baseTeeth, falling back to empty', error);
+        return {};
+    }
+};
+
+const upsertArrayItem = (items = [], nextItem = {}) => {
+    const normalizedItems = Array.isArray(items) ? items : [];
+
+    if (!nextItem?.id) {
+        return [...normalizedItems, nextItem];
+    }
+
+    const existingIndex = normalizedItems.findIndex((item) => item?.id === nextItem.id);
+
+    if (existingIndex === -1) {
+        return [...normalizedItems, nextItem];
+    }
+
+    return normalizedItems.map((item, index) => (
+        index === existingIndex ? { ...item, ...nextItem } : item
+    ));
+};
+
+const mergeRecord = (currentValue, nextValue) => {
+    if (!nextValue) return currentValue;
+
+    if (!currentValue || typeof currentValue !== 'object') {
+        return { ...nextValue };
+    }
+
+    return {
+        ...currentValue,
+        ...nextValue,
+    };
+};
+
 /**
  * Domain-Driven Design Model for Chart.
  * Encapsulates all business logic related to a patient's mouth/chart.
@@ -58,17 +100,7 @@ export class ChartModel {
      * @returns {Object} Teeth map with conditions
      */
     static projectTeethFromInterventions(history = [], treatmentPlan = [], baseTeeth = null) {
-        let teeth = {};
-        
-        if (baseTeeth) {
-            // Deep clone to avoid mutating the source of truth directly here
-            try {
-                teeth = JSON.parse(JSON.stringify(baseTeeth));
-            } catch (e) {
-                console.error("[ChartModel] Failed to clone baseTeeth, falling back to empty", e);
-                teeth = {};
-            }
-        }
+        const teeth = cloneTeeth(baseTeeth);
 
         // Handle both array and object formats (aligned with PatientModels.js)
         const completedList = Array.isArray(history) ? history : (history?.completedItems || []);
@@ -83,16 +115,8 @@ export class ChartModel {
         ];
 
         ALL_VALID_TEETH.forEach(num => {
-            if (!teeth[num]) teeth[num] = {};
+            if (!teeth[num]) teeth[num] = ToothModel.create(num);
             ToothModel.initializeData(teeth[num], num);
-            
-            // Clear dynamic intervention arrays to avoid duplicates when re-projecting
-            // but preserve static properties (like endodontic tests, missing status etc)
-            teeth[num].pathology.decay = [];
-            teeth[num].restoration.fillings = [];
-            teeth[num].restoration.crowns = [];
-            teeth[num].restoration.veneers = [];
-            teeth[num].restoration.advancedRestorations = [];
         });
 
         allItems.forEach(item => {
@@ -105,23 +129,80 @@ export class ChartModel {
 
             switch (type) {
                 case 'decay':
-                    tooth.pathology.decay.push({ ...data, id: item.id });
+                    tooth.pathology.decay = upsertArrayItem(tooth.pathology.decay, {
+                        ...data,
+                        id: item.id,
+                    });
                     break;
                 case 'restoration':
                     if (subtype === 'filling') {
-                        tooth.restoration.fillings.push({ ...data, id: item.id });
+                        tooth.restoration.fillings = upsertArrayItem(tooth.restoration.fillings, {
+                            ...data,
+                            id: item.id,
+                        });
                     } else if (subtype === 'crown') {
-                        tooth.restoration.crowns.push({ ...data, id: item.id });
+                        tooth.restoration.crowns = upsertArrayItem(tooth.restoration.crowns, {
+                            ...data,
+                            id: item.id,
+                            type: data.type || data.crownType || 'Single Crown',
+                        });
+                    } else if (subtype === 'veneer') {
+                        tooth.restoration.veneers = upsertArrayItem(tooth.restoration.veneers, {
+                            ...data,
+                            id: item.id,
+                        });
+                    } else if (subtype) {
+                        tooth.restoration.advancedRestorations = upsertArrayItem(
+                            tooth.restoration.advancedRestorations,
+                            {
+                                ...data,
+                                id: item.id,
+                                type: data.type || subtype,
+                            }
+                        );
                     }
                     break;
                 case 'pathology':
                     if (subtype === 'fracture') {
-                        if (data.crown) tooth.pathology.fracture.crown = data.crown;
-                        if (data.root) tooth.pathology.fracture.root = data.root;
+                        tooth.pathology.fracture = mergeRecord(tooth.pathology.fracture, {
+                            ...data,
+                            id: item.id,
+                        });
+                    } else if (subtype === 'tooth-wear') {
+                        tooth.pathology.toothWear = mergeRecord(tooth.pathology.toothWear, {
+                            ...data,
+                            id: item.id,
+                            type: data.type || (data.wearType ? `${data.wearType.charAt(0).toUpperCase()}${data.wearType.slice(1)}` : undefined),
+                            surface: data.surface ? `${data.surface.charAt(0).toUpperCase()}${data.surface.slice(1)}` : undefined,
+                        });
+                    } else if (subtype === 'discoloration') {
+                        tooth.pathology.discoloration = mergeRecord(tooth.pathology.discoloration, {
+                            ...data,
+                            id: item.id,
+                            color: data.color ? `${data.color.charAt(0).toUpperCase()}${data.color.slice(1)}` : data.color,
+                        });
+                    } else if (subtype === 'apical') {
+                        tooth.pathology.apicalPathology = mergeRecord(tooth.pathology.apicalPathology, {
+                            ...data,
+                            id: item.id,
+                        });
+                    } else if (subtype === 'development-disorder') {
+                        tooth.pathology.developmentDisorder = mergeRecord(tooth.pathology.developmentDisorder, {
+                            ...data,
+                            id: item.id,
+                        });
                     }
                     break;
-                case 'endodontic':
-                    const endoData = { ...tooth.endodontic, ...data, id: item.id };
+                case 'endodontic': {
+                    const endoData = {
+                        ...tooth.endodontic,
+                        ...data,
+                        id: item.id,
+                        tests: {
+                            ...(tooth.endodontic.tests || {}),
+                            ...(data.tests || {}),
+                        },
+                    };
 
                     // 1. Handle structured tests (from UI)
                     if (data.tests) {
@@ -129,7 +210,9 @@ export class ChartModel {
                         if (data.tests.heat) endoData.heat = true;
                         if (data.tests.percussion) endoData.percussion = true;
                         if (data.tests.palpation) endoData.palpation = true;
-                        if (data.tests.electricity) endoData.electricity = true;
+                        if (data.tests.electricity !== undefined && data.tests.electricity !== null && data.tests.electricity !== '') {
+                            endoData.electricity = true;
+                        }
                     }
                     // 2. Fallback: Parse procedure string (from mockData)
                     else if (typeof data.procedure === 'string') {
@@ -143,6 +226,7 @@ export class ChartModel {
 
                     tooth.endodontic = endoData;
                     break;
+                }
                 case 'periodontal':
                     if (data.probingDepth) {
                         Object.keys(data.probingDepth).forEach(siteKey => {
@@ -162,9 +246,31 @@ export class ChartModel {
                             tooth.periodontal.sites[siteKey].bleeding = true;
                         });
                     }
+                    if (data.plaqueSites) {
+                        data.plaqueSites.forEach(siteKey => {
+                            if (!tooth.periodontal.sites[siteKey]) tooth.periodontal.sites[siteKey] = {};
+                            tooth.periodontal.sites[siteKey].plaque = true;
+                        });
+                    }
+                    if (data.pusSites) {
+                        data.pusSites.forEach(siteKey => {
+                            if (!tooth.periodontal.sites[siteKey]) tooth.periodontal.sites[siteKey] = {};
+                            tooth.periodontal.sites[siteKey].pus = true;
+                        });
+                    }
+                    if (data.tartarSites) {
+                        data.tartarSites.forEach(siteKey => {
+                            if (!tooth.periodontal.sites[siteKey]) tooth.periodontal.sites[siteKey] = {};
+                            tooth.periodontal.sites[siteKey].tartar = true;
+                        });
+                    }
+                    if (data.mobility !== undefined) {
+                        tooth.periodontal.mobility = data.mobility;
+                    }
                     break;
                 case 'missing':
                     tooth.isMissing = true;
+                    tooth.missingDate = item.date || tooth.missingDate;
                     break;
                 case 'extraction':
                     tooth.toBeExtracted = true;

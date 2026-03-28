@@ -49,24 +49,41 @@ const ChartQuickselect = () => {
                 case 'missing':
                     toothUpdate = { isMissing: !tooth.isMissing };
                     break;
-                case 'veneer': {
-                    const newRestorationVeneer = Object.assign(
-                        Object.create(Object.getPrototypeOf(tooth.restoration)),
-                        tooth.restoration
-                    );
-                    newRestorationVeneer.addVeneer('Ceramic', 'Sufficient', 'Flush');
-                    toothUpdate = { restoration: newRestorationVeneer };
+                case 'veneer':
+                    toothUpdate = {
+                        restoration: {
+                            ...tooth.restoration,
+                            veneers: [
+                                ...(tooth.restoration?.veneers || []),
+                                {
+                                    id: `veneer-${toothNumber}-${Date.now()}`,
+                                    material: 'Ceramic',
+                                    quality: 'Sufficient',
+                                    detail: 'Flush',
+                                    status: 'completed',
+                                },
+                            ],
+                        },
+                    };
                     break;
-                }
-                case 'pontic': {
-                    const newRestorationPontic = Object.assign(
-                        Object.create(Object.getPrototypeOf(tooth.restoration)),
-                        tooth.restoration
-                    );
-                    newRestorationPontic.addCrown('Ceramic', 'Sufficient', 'Pontic', 'Natural');
-                    toothUpdate = { restoration: newRestorationPontic };
+                case 'pontic':
+                    toothUpdate = {
+                        restoration: {
+                            ...tooth.restoration,
+                            crowns: [
+                                ...(tooth.restoration?.crowns || []),
+                                {
+                                    id: `pontic-${toothNumber}-${Date.now()}`,
+                                    material: 'Ceramic',
+                                    quality: 'Sufficient',
+                                    type: 'Pontic',
+                                    base: 'Natural',
+                                    status: 'completed',
+                                },
+                            ],
+                        },
+                    };
                     break;
-                }
             }
             updates[toothNumber] = toothUpdate;
         });

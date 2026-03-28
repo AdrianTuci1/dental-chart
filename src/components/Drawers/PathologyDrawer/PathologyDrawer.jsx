@@ -10,7 +10,8 @@ import PathologyWizard from './components/PathologyWizard';
 import { usePathologyForm } from './hooks/usePathologyForm';
 
 const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious }) => {
-    const { teeth, selectedPatient } = useAppStore(); // Removed updateTooth and addTreatmentPlanItem from destructuring
+    const { teeth, selectedPatient } = useAppStore();
+    const updateTooth = useAppStore((state) => state.updateTooth);
     const tooth = teeth[toothNumber];
 
     const [view, setView] = useState('list'); // 'list' or 'configure'

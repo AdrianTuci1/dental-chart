@@ -1,4 +1,5 @@
 import { PatientBuilder } from '../builders/PatientBuilder';
+import { ChartAdapter } from './ChartAdapter';
 
 /**
  * Adapter (Anti-Corruption Layer) for Patient data.
@@ -25,7 +26,7 @@ export class PatientAdapter {
             .withLastExamDate(apiResponse.lastExamDate || apiResponse.last_exam_date)
             .withTreatmentPlan(apiResponse.treatmentPlan?.items || apiResponse.treatment_plan?.items || [])
             .withHistory(apiResponse.history?.completedItems || apiResponse.history?.completed_items || [])
-            .withChartContext(apiResponse.dental_chart || apiResponse.chart)
+            .withChartContext(ChartAdapter.toDomain(apiResponse.dental_chart || apiResponse.chart))
             .withOralHealth(apiResponse.oralHealth || apiResponse.oral_health)
             .withBPE(apiResponse.bpe)
             .withMedicalIssues(apiResponse.medicalIssues || apiResponse.medical_issues);
@@ -53,7 +54,7 @@ export class PatientAdapter {
             lastExamDate: domainObject.lastExamDate,
             treatmentPlan: domainObject.treatmentPlan,
             history: domainObject.history,
-            dental_chart: domainObject.chart,
+            dental_chart: ChartAdapter.toApi(domainObject.chart),
             oralHealth: domainObject.oralHealth,
             bpe: domainObject.bpe,
             medicalIssues: domainObject.medicalIssues

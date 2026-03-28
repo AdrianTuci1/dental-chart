@@ -3,6 +3,32 @@ import { PatientModel } from '../../models/PatientModel';
 import { ChartModel } from '../../models/ChartModel';
 // import { ActionProxy } from '../../proxies/ActionProxy'; // Future use
 
+const syncSelectedPatientChart = (state) => {
+    if (!state.selectedPatient) return;
+
+    if (!state.selectedPatient.chart) {
+        state.selectedPatient.chart = { teeth: {} };
+    }
+
+    state.selectedPatient.chart.teeth = state.teeth;
+};
+
+const reprojectSelectedPatientTeeth = (state, patientId) => {
+    if (String(state.selectedPatient?.id) !== String(patientId)) return;
+
+    const baseTeeth = Object.keys(state.teeth || {}).length > 0
+        ? state.teeth
+        : state.selectedPatient?.chart?.teeth || null;
+
+    state.teeth = ChartModel.projectTeethFromInterventions(
+        state.selectedPatient.history?.completedItems || [],
+        state.selectedPatient.treatmentPlan?.items || [],
+        baseTeeth
+    );
+
+    syncSelectedPatientChart(state);
+};
+
 /**
  * Zustand Slice for Patient domain.
  * Dumb container: only holds state and delegates business logic to `PatientModel`.
@@ -34,6 +60,9 @@ export const createPatientSlice = (set) => ({
             }
             if (state.selectedPatient?.id === updatedPatient.id) {
                 state.selectedPatient = updatedPatient;
+                if (updatedPatient.chart?.teeth) {
+                    state.teeth = updatedPatient.chart.teeth;
+                }
             }
         }));
     },
@@ -65,14 +94,7 @@ export const createPatientSlice = (set) => ({
             patient.treatmentPlan.items.push(newItem);
         }
 
-        // Modular reprojection: automatically update visual teeth immediately
-        if (state.selectedPatient?.id === patientId) {
-            state.teeth = ChartModel.projectTeethFromInterventions(
-                state.selectedPatient.history?.completedItems || [],
-                state.selectedPatient.treatmentPlan?.items || [],
-                state.selectedPatient.chart?.teeth || null
-            );
-        }
+        reprojectSelectedPatientTeeth(state, patientId);
     })),
 
     completeTreatmentPlanItem: (patientId, itemId) => {
@@ -89,14 +111,7 @@ export const createPatientSlice = (set) => ({
                 PatientModel.completeTreatment(patient, itemId);
             }
 
-            // Modular reprojection
-            if (state.selectedPatient?.id === patientId) {
-                state.teeth = ChartModel.projectTeethFromInterventions(
-                    state.selectedPatient.history?.completedItems || [],
-                    state.selectedPatient.treatmentPlan?.items || [],
-                    state.selectedPatient.chart?.teeth || null
-                );
-            }
+            reprojectSelectedPatientTeeth(state, patientId);
         }));
     },
 
@@ -114,14 +129,7 @@ export const createPatientSlice = (set) => ({
                 PatientModel.addToHistory(patient, item);
             }
 
-            // Modular reprojection
-            if (state.selectedPatient?.id === patientId) {
-                state.teeth = ChartModel.projectTeethFromInterventions(
-                    state.selectedPatient.history?.completedItems || [],
-                    state.selectedPatient.treatmentPlan?.items || [],
-                    state.selectedPatient.chart?.teeth || null
-                );
-            }
+            reprojectSelectedPatientTeeth(state, patientId);
         }));
     },
 });

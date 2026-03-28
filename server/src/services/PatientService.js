@@ -17,7 +17,7 @@ class PatientService {
             throw new Error('medicId and name are required');
         }
 
-        const { fullName, ...rest } = patientData; // Strip fullName if present
+        const { fullName: _unusedFullName, ...rest } = patientData; // Strip fullName if present
 
         const newPatient = {
             id: rest.id || uuidv4(),
@@ -28,17 +28,13 @@ class PatientService {
         // Split data if history or treatmentPlan are present (even if empty)
         const { history, treatmentPlan, ...metadata } = newPatient;
         
-        const results = await Promise.all([
+        await Promise.all([
             this.patientRepository.createPatient(metadata),
             this.historyRepository.updateHistory(newPatient.id, history?.completedItems || []),
             this.treatmentPlanRepository.updateTreatmentPlan(newPatient.id, treatmentPlan?.items || [])
         ]);
 
-        return {
-            ...results[0],
-            history: { completedItems: history?.completedItems || [] },
-            treatmentPlan: { items: treatmentPlan?.items || [] }
-        };
+        return this.getPatientFullRecord(newPatient.id);
     }
 
     async getPatient(id) {
@@ -115,7 +111,7 @@ class PatientService {
                 finalMetadata = { ...existingMetadata, ...incomingMetadata };
                 console.log(`[PatientService] Merged incoming data with existing metadata for ${id}`);
             }
-        } catch (err) {
+        } catch {
             console.log(`[PatientService] No existing patient found for merge during update of ${id}, proceeding with provided data.`);
         }
 
@@ -131,16 +127,10 @@ class PatientService {
             updatePromises.push(this.treatmentPlanRepository.updateTreatmentPlan(id, treatmentPlan.items));
         }
 
-        const results = await Promise.all(updatePromises);
-        
-        // Construct and return the unified response
-        return {
-            ...results[0],
-            history: history || { completedItems: [] },
-            treatmentPlan: treatmentPlan || { items: [] }
-        };
+        await Promise.all(updatePromises);
+
+        return this.getPatientFullRecord(id);
     }
 }
 
 module.exports = PatientService;
-

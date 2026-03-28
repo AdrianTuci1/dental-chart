@@ -53,9 +53,9 @@ export class PatientModel {
 
         patient.history.completedItems.push({
             ...item,
-            id: Date.now().toString(),
-            date: new Date().toISOString().split('T')[0],
-            status: 'completed'
+            id: item.id || Date.now().toString(),
+            date: item.date || new Date().toISOString().split('T')[0],
+            status: item.status || 'completed'
         });
     }
 

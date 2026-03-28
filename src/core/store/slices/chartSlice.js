@@ -1,8 +1,17 @@
 import { produce } from 'immer';
 import { ChartModel } from '../../models/ChartModel';
 
+const syncSelectedPatientChart = (state) => {
+    if (!state.selectedPatient) return;
 
-export const createChartSlice = (set, get) => ({
+    if (!state.selectedPatient.chart) {
+        state.selectedPatient.chart = { teeth: {} };
+    }
+
+    state.selectedPatient.chart.teeth = state.teeth;
+};
+
+export const createChartSlice = (set) => ({
     teeth: {}, // Map of toothNumber -> Tooth object
     selectedTooth: null,
     chartView: 'normal', // 'normal', 'upper', or 'lower'
@@ -12,20 +21,20 @@ export const createChartSlice = (set, get) => ({
     showPerio: true,
     showDental: true,
 
-    setTeeth: (teeth) => set({ teeth }),
+    setTeeth: (teeth) => set(produce((state) => {
+        state.teeth = teeth || {};
+        syncSelectedPatientChart(state);
+    })),
     updateTooth: (toothNumber, updates) => {
-        console.log(`[chartSlice] updateTooth called for ${toothNumber} with updates:`, updates);
         set(produce((state) => {
             ChartModel.updateTooth(state, toothNumber, updates);
+            syncSelectedPatientChart(state);
         }));
-        console.log(`[chartSlice] after updateTooth for ${toothNumber}, new teeth object:`, get().teeth[toothNumber]);
-
-        // CROSS-SLICE UPDATES SHOULD BE HANDLED BY THE FACADE, NOT THE SLICE
-        // TO PREVENT CIRCULAR DEPENDENCIES
     },
     updateTeeth: (updates) => {
         set(produce((state) => {
             ChartModel.updateTeeth(state, updates);
+            syncSelectedPatientChart(state);
         }));
     },
     selectTooth: (toothNumber) => set({ selectedTooth: toothNumber }),
