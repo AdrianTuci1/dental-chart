@@ -19,7 +19,7 @@ class MedicRepository extends BaseRepository {
             Item: item
         });
 
-        await this.docClient.send(command);
+        await this.send(command);
         return item;
     }
 
@@ -32,7 +32,7 @@ class MedicRepository extends BaseRepository {
             }
         });
 
-        const response = await this.docClient.send(command);
+        const response = await this.send(command);
         return response.Item;
     }
     async getMedicByEmail(email) {
@@ -46,7 +46,7 @@ class MedicRepository extends BaseRepository {
             }
         });
 
-        const response = await this.docClient.send(command);
+        const response = await this.send(command);
         return response.Items && response.Items.length > 0 ? response.Items[0] : null;
     }
 }

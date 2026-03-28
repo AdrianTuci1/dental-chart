@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAppStore } from '../core/store/appStore';
+import { AppFacade } from '../core/AppFacade';
 import TreatmentPlan from '../components/Dashboard/TreatmentPlan';
 import History from '../components/Dashboard/History';
 import OralHealthMetrics from '../components/Dashboard/OralHealthMetrics';
@@ -17,12 +18,42 @@ import { RiToothLine } from 'react-icons/ri';
 const PatientDashboardPage = () => {
     const { selectedPatient, updatePatient } = useAppStore();
     const navigate = useNavigate();
+    const { patientId: id } = useParams();
     const [activeTab, setActiveTab] = useState('treatment');
+    const [isLoading, setIsLoading] = useState(true);
 
     // Dialog States
     const [isOralHealthOpen, setIsOralHealthOpen] = useState(false);
     const [isBPEOpen, setIsBPEOpen] = useState(false);
     const [isMedicalIssuesOpen, setIsMedicalIssuesOpen] = useState(false);
+
+    useEffect(() => {
+        let isMounted = true;
+        const loadPatient = async () => {
+            if (!id) return;
+            
+            if (selectedPatient && String(selectedPatient.id) === String(id)) {
+                if (isMounted) setIsLoading(false);
+                return;
+            }
+
+            if (isMounted) setIsLoading(true);
+            try {
+                await AppFacade.patient.loadFull(id);
+            } catch (error) {
+                console.error("Failed to load patient data", error);
+            } finally {
+                if (isMounted) setIsLoading(false);
+            }
+        };
+
+        loadPatient();
+        return () => { isMounted = false; };
+    }, [id]);
+
+    if (isLoading) {
+        return <div className="loading-container" style={{ padding: '50px', textAlign: 'center' }}>Loading patient data...</div>;
+    }
 
     if (!selectedPatient) return null;
 
@@ -38,29 +69,38 @@ const PatientDashboardPage = () => {
         return age;
     };
 
-    // Handlers for saving data
-    const handleSaveOralHealth = (data) => {
-        const updatedPatient = {
-            ...selectedPatient,
-            oralHealth: { ...selectedPatient.oralHealth, ...data }
-        };
-        updatePatient(updatedPatient);
+    // Handlers for saving data via Facade
+    const handleSaveOralHealth = async (data) => {
+        try {
+            await AppFacade.patient.update(selectedPatient.id, {
+                ...selectedPatient,
+                oralHealth: { ...selectedPatient.oralHealth, ...data }
+            });
+        } catch (error) {
+            console.error("Failed to update oral health", error);
+        }
     };
 
-    const handleSaveBPE = (data) => {
-        const updatedPatient = {
-            ...selectedPatient,
-            bpe: { ...selectedPatient.bpe, ...data }
-        };
-        updatePatient(updatedPatient);
+    const handleSaveBPE = async (data) => {
+        try {
+            await AppFacade.patient.update(selectedPatient.id, {
+                ...selectedPatient,
+                bpe: { ...selectedPatient.bpe, ...data }
+            });
+        } catch (error) {
+            console.error("Failed to update BPE", error);
+        }
     };
 
-    const handleSaveMedicalIssues = (data) => {
-        const updatedPatient = {
-            ...selectedPatient,
-            medicalIssues: { ...selectedPatient.medicalIssues, ...data }
-        };
-        updatePatient(updatedPatient);
+    const handleSaveMedicalIssues = async (data) => {
+        try {
+            await AppFacade.patient.update(selectedPatient.id, {
+                ...selectedPatient,
+                medicalIssues: { ...selectedPatient.medicalIssues, ...data }
+            });
+        } catch (error) {
+            console.error("Failed to update medical issues", error);
+        }
     };
 
     return (
@@ -69,7 +109,7 @@ const PatientDashboardPage = () => {
             <div className="dashboard-content-left">
                 <div className="dashboard-header">
                     <div className="patient-title-section">
-                        <h1 className="patient-name-large">{selectedPatient.fullName}</h1>
+                        <h1 className="patient-name-large">{selectedPatient.name}</h1>
                         <div className="patient-meta">
                             <span>{selectedPatient.gender}, {calculateAge(selectedPatient.dateOfBirth)}y</span>
                         </div>

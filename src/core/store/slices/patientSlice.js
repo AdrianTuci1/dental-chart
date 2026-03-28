@@ -1,9 +1,6 @@
 import { produce } from 'immer';
 import { PatientModel } from '../../models/PatientModel';
 // import { ActionProxy } from '../../proxies/ActionProxy'; // Future use
-import { BackendSyncStrategy } from '../../strategies/BackendSyncStrategy';
-
-const syncStrategy = new BackendSyncStrategy();
 
 /**
  * Zustand Slice for Patient domain.
@@ -36,8 +33,15 @@ export const createPatientSlice = (set) => ({
                 state.selectedPatient = updatedPatient;
             }
         }));
+    },
 
-        syncStrategy.sendUpdate('UPDATE_PATIENT', updatedPatient);
+    deletePatient: (id) => {
+        set(produce((state) => {
+            state.patients = state.patients.filter(p => p.id !== id);
+            if (state.selectedPatient?.id === id) {
+                state.selectedPatient = null;
+            }
+        }));
     },
 
     // Complex domain actions delegated to Model
@@ -67,8 +71,6 @@ export const createPatientSlice = (set) => ({
                 state.selectedPatient = patient;
             }
         }));
-
-        syncStrategy.sendUpdate('TREATMENT_COMPLETED', { patientId, itemId });
     },
 
     addToHistory: (patientId, item) => {
@@ -81,7 +83,5 @@ export const createPatientSlice = (set) => ({
                 state.selectedPatient = patient;
             }
         }));
-
-        syncStrategy.sendUpdate('ADD_TO_HISTORY', { patientId, item });
     },
 });

@@ -8,10 +8,19 @@ export class PatientBuilder {
     constructor() {
         this.patientData = {
             id: null,
+            medicId: null,
             name: '',
+            email: '',
+            phone: '',
+            dateOfBirth: '',
+            gender: '',
+            lastExamDate: 'N/A',
             treatmentPlan: { items: [] },
             history: { completedItems: [] },
-            chart: { teeth: {} }
+            chart: { teeth: {} },
+            oralHealth: {},
+            bpe: {},
+            medicalIssues: {}
         };
     }
 
@@ -20,8 +29,38 @@ export class PatientBuilder {
         return this;
     }
 
+    withMedicId(medicId) {
+        this.patientData.medicId = medicId;
+        return this;
+    }
+
     withName(name) {
         this.patientData.name = name;
+        return this;
+    }
+
+    withEmail(email) {
+        this.patientData.email = email;
+        return this;
+    }
+
+    withPhone(phone) {
+        this.patientData.phone = phone;
+        return this;
+    }
+
+    withDateOfBirth(dob) {
+        this.patientData.dateOfBirth = dob;
+        return this;
+    }
+
+    withGender(gender) {
+        this.patientData.gender = gender;
+        return this;
+    }
+
+    withLastExamDate(date) {
+        this.patientData.lastExamDate = date;
         return this;
     }
 
@@ -37,6 +76,21 @@ export class PatientBuilder {
 
     withChartContext(chartData) {
         this.patientData.chart = chartData || { teeth: {} };
+        return this;
+    }
+
+    withOralHealth(data) {
+        this.patientData.oralHealth = data || {};
+        return this;
+    }
+
+    withBPE(data) {
+        this.patientData.bpe = data || {};
+        return this;
+    }
+
+    withMedicalIssues(data) {
+        this.patientData.medicalIssues = data || {};
         return this;
     }
 

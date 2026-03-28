@@ -34,3 +34,13 @@ exports.getMedicPatients = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.seedMedicData = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await medicService.seedMedicData(id);
+        res.json({ message: 'Success: Seeded/Updated mock data for medic' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

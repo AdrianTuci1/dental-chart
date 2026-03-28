@@ -7,9 +7,9 @@ import { Gender } from './Enums';
  */
 
 export class Patient {
-    constructor(id, fullName, dateOfBirth, address, gender) {
+    constructor(id, name, dateOfBirth, address, gender) {
         this.id = id;
-        this.fullName = fullName;
+        this.name = name;
         this.dateOfBirth = dateOfBirth;
         this.address = address;
         this.gender = gender; // Use Gender enum

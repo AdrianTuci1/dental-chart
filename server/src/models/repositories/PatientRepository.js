@@ -19,7 +19,7 @@ class PatientRepository extends BaseRepository {
             Item: item
         });
 
-        await this.docClient.send(command);
+        await this.send(command);
         return item;
     }
 
@@ -32,7 +32,7 @@ class PatientRepository extends BaseRepository {
             }
         });
 
-        const response = await this.docClient.send(command);
+        const response = await this.send(command);
         return response.Item;
     }
 
@@ -46,7 +46,7 @@ class PatientRepository extends BaseRepository {
             }
         });
 
-        const response = await this.docClient.send(command);
+        const response = await this.send(command);
         return response.Items || [];
     }
 
@@ -64,9 +64,47 @@ class PatientRepository extends BaseRepository {
         });
 
         console.log(`[PatientRepository] Scanning for patients with medicId: ${medicId}`);
-        const response = await this.docClient.send(command);
+        const response = await this.send(command);
         console.log(`[PatientRepository] Found ${response.Items ? response.Items.length : 0} patients`);
         return response.Items || [];
+    }
+
+    async deletePatient(id) {
+        // First get all items for this patient (METADATA, HISTORY, PLAN)
+        const items = await this.getPatientWithChartAndHistory(id);
+        
+        if (items.length === 0) return;
+
+        const { DeleteCommand } = require('@aws-sdk/lib-dynamodb');
+        
+        // Delete each item found
+        for (const item of items) {
+            const command = new DeleteCommand({
+                TableName: this.tableName,
+                Key: {
+                    PK: item.PK,
+                    SK: item.SK
+                }
+            });
+            await this.send(command);
+        }
+    }
+
+    async updatePatient(id, patientData) {
+        const item = {
+            PK: `PATIENT#${id}`,
+            SK: `METADATA#`,
+            ...patientData,
+            updatedAt: new Date().toISOString()
+        };
+
+        const command = new PutCommand({
+            TableName: this.tableName,
+            Item: item
+        });
+
+        await this.send(command);
+        return item;
     }
 }
 

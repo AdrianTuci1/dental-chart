@@ -1,23 +1,44 @@
 const PatientRepository = require('../models/repositories/PatientRepository');
+const HistoryRepository = require('../models/repositories/HistoryRepository');
+const TreatmentPlanRepository = require('../models/repositories/TreatmentPlanRepository');
 const { v4: uuidv4 } = require('uuid');
 
 class PatientService {
     constructor() {
         this.patientRepository = new PatientRepository();
+        this.historyRepository = new HistoryRepository();
+        this.treatmentPlanRepository = new TreatmentPlanRepository();
     }
 
     async createPatient(patientData) {
-        // Validate using camelCase fields (matching frontend convention)
-        if (!patientData.medicId || !patientData.fullName) {
-            throw new Error('medicId and fullName are required');
+        // Normalize: accept both fullName and name, standardize to `name`
+        const name = patientData.name || patientData.fullName;
+        if (!patientData.medicId || !name) {
+            throw new Error('medicId and name are required');
         }
 
+        const { fullName, ...rest } = patientData; // Strip fullName if present
+
         const newPatient = {
-            id: patientData.id || uuidv4(),
-            ...patientData,
+            id: rest.id || uuidv4(),
+            ...rest,
+            name, // Standardized field
         };
 
-        return await this.patientRepository.createPatient(newPatient);
+        // Split data if history or treatmentPlan are present (even if empty)
+        const { history, treatmentPlan, ...metadata } = newPatient;
+        
+        const results = await Promise.all([
+            this.patientRepository.createPatient(metadata),
+            this.historyRepository.updateHistory(newPatient.id, history?.completedItems || []),
+            this.treatmentPlanRepository.updateTreatmentPlan(newPatient.id, treatmentPlan?.items || [])
+        ]);
+
+        return {
+            ...results[0],
+            history: { completedItems: history?.completedItems || [] },
+            treatmentPlan: { items: treatmentPlan?.items || [] }
+        };
     }
 
     async getPatient(id) {
@@ -61,6 +82,50 @@ class PatientService {
             throw new Error('Medic ID is required');
         }
         return await this.patientRepository.getPatientsByMedicId(medicId);
+    }
+
+    async deletePatient(id) {
+        if (!id) {
+            throw new Error('Patient ID is required');
+        }
+        return await this.patientRepository.deletePatient(id);
+    }
+
+    async updatePatient(id, patientData) {
+        if (!id) {
+            throw new Error('Patient ID is required');
+        }
+
+        // Normalize: accept both fullName and name, standardize to `name`
+        if (patientData.fullName && !patientData.name) {
+            patientData.name = patientData.fullName;
+        }
+        delete patientData.fullName; // Always strip fullName
+
+        // Split incoming unit-of-work into separate records
+        // This ensures the "One Table" optimization while keeping the API Patient-centric
+        const { history, treatmentPlan, ...metadata } = patientData;
+
+        const updatePromises = [
+            this.patientRepository.updatePatient(id, metadata)
+        ];
+
+        if (history && history.completedItems) {
+            updatePromises.push(this.historyRepository.updateHistory(id, history.completedItems));
+        }
+
+        if (treatmentPlan && treatmentPlan.items) {
+            updatePromises.push(this.treatmentPlanRepository.updateTreatmentPlan(id, treatmentPlan.items));
+        }
+
+        const results = await Promise.all(updatePromises);
+        
+        // Construct and return the unified response
+        return {
+            ...results[0],
+            history: history || { completedItems: [] },
+            treatmentPlan: treatmentPlan || { items: [] }
+        };
     }
 }
 

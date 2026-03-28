@@ -8,31 +8,66 @@ jest.mock('../src/config/dynamoConfig', () => ({
         send: jest.fn((cmd) => {
             if (!cmd || !cmd.constructor) return Promise.resolve({});
             const type = cmd.constructor.name;
-            if (type === 'PutCommand') return Promise.resolve({ Attributes: cmd.Item });
-            if (type === 'GetCommand') return Promise.resolve({
-                Item: {
-                    id: 'test-id',
-                    fullName: 'John Doe',
-                    name: 'Dr. Smith',
-                    email: 'dr@smith.com',
-                    dateOfBirth: '1980-05-15',
-                    gender: 'male',
-                    phone: '555-0123',
-                    SK: 'METADATA#',
-                }
-            });
+            const input = cmd.input || {};
+
+            if (type === 'PutCommand') return Promise.resolve({ Attributes: input.Item });
+
+            if (type === 'GetCommand') {
+                const sk = input.Key ? input.Key.SK : '';
+                if (sk === 'HISTORY#') return Promise.resolve({ Item: { SK: 'HISTORY#', data: { items: [] } } });
+                if (sk === 'PLAN#') return Promise.resolve({ Item: { SK: 'PLAN#', data: { items: [] } } });
+
+                return Promise.resolve({
+                    Item: {
+                        PK: input.Key ? input.Key.PK : 'PATIENT#p-1',
+                        SK: 'METADATA#',
+                        id: 'test-id',
+                        fullName: 'John Doe',
+                        name: 'Dr. Smith',
+                        email: 'dr@smith.com',
+                        data: {
+                            dateOfBirth: '1980-05-15',
+                            gender: 'male',
+                            phone: '555-0123'
+                        }
+                    }
+                });
+            }
+
             if (type === 'QueryCommand') return Promise.resolve({
                 Items: [
-                    { SK: 'METADATA#', id: 'test-id', fullName: 'John Doe', email: 'john@example.com' },
-                    { SK: 'HISTORY#2024-01-01#h-1', id: 'h-1', tooth: 11, type: 'restoration', procedure: 'Filling', status: 'completed' },
-                    { SK: 'PLAN#2024-01-01#tp-1', id: 'tp-1', tooth: 11, type: 'decay', procedure: 'Decay Treatment', status: 'planned' },
+                    {
+                        SK: 'METADATA#',
+                        id: 'test-id',
+                        fullName: 'John Doe',
+                        email: 'john@example.com'
+                    },
+                    {
+                        SK: 'HISTORY#',
+                        data: {
+                            items: [
+                                { id: 'h-1', tooth: 11, type: 'restoration', procedure: 'Filling', status: 'completed' }
+                            ]
+                        }
+                    },
+                    {
+                        SK: 'PLAN#',
+                        data: {
+                            items: [
+                                { id: 'tp-1', tooth: 11, type: 'decay', procedure: 'Decay Treatment', status: 'planned' }
+                            ]
+                        }
+                    },
                 ]
             });
+
             if (type === 'ScanCommand') return Promise.resolve({
                 Items: [
                     { SK: 'METADATA#', id: 'p-1', fullName: 'John Doe', medicId: 'm-1' },
                 ]
             });
+
+            if (type === 'DeleteCommand') return Promise.resolve({});
             return Promise.resolve({});
         })
     }
@@ -80,10 +115,6 @@ describe('API Routes CRUD Tests', () => {
             expect(res.statusCode).toEqual(400);
         });
 
-        it('GET /auth/me should return 501 (not implemented)', async () => {
-            const res = await request(app).get('/api/auth/me');
-            expect(res.statusCode).toEqual(501);
-        });
     });
 
     // ──────────────── Clinic Routes ────────────────
@@ -178,6 +209,11 @@ describe('API Routes CRUD Tests', () => {
             expect(res.body.history.completedItems.length).toBe(1);
             expect(res.body.history.completedItems[0]).toHaveProperty('tooth', 11);
             expect(res.body.history.completedItems[0]).toHaveProperty('type', 'restoration');
+        });
+
+        it('should delete a patient', async () => {
+            const res = await request(app).delete('/api/patients/p-1');
+            expect(res.statusCode).toEqual(204);
         });
     });
 

@@ -17,7 +17,7 @@ export const MOCK_HIERARCHY_DATA = [
         patients: [
             {
                 id: 'patient-1',
-                fullName: 'John Doe',
+                name: 'John Doe',
                 dateOfBirth: '1980-05-15',
                 gender: Gender.MALE,
                 phone: '555-0123',

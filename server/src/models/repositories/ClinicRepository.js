@@ -15,7 +15,7 @@ class ClinicRepository extends BaseRepository {
             Item: item
         });
 
-        await this.docClient.send(command);
+        await this.send(command);
         return item;
     }
 
@@ -28,7 +28,7 @@ class ClinicRepository extends BaseRepository {
             }
         });
 
-        const response = await this.docClient.send(command);
+        const response = await this.send(command);
         return response.Item;
     }
 }

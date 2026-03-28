@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { X } from 'lucide-react';
 import { useAppStore } from '../../core/store/appStore';
+import { AppFacade } from '../../core/AppFacade';
 import ToothZones from './ToothZones';
 import { getToothType } from '../../utils/toothUtils';
 import './ToothRestoration.css';
@@ -209,7 +210,7 @@ const ToothRestoration = () => {
         };
     }, [setPreviewData]);
 
-    const handleAction = (actionType) => {
+    const handleAction = async (actionType) => {
         if (!tooth || !selectedPatient) return;
 
         const parts = [];
@@ -251,14 +252,14 @@ const ToothRestoration = () => {
         };
 
         if (actionType === 'monitor' || actionType === 'treat') {
-            addTreatmentPlanItem(selectedPatient.id, {
+            useAppStore.getState().addTreatmentPlanItem(selectedPatient.id, {
                 ...baseItem,
                 status: actionType === 'monitor' ? 'monitoring' : 'planned'
             });
-            handleSave(actionType, newItemId, true);
+            handleSave(actionType, newItemId, true, false);
         } else if (actionType === 'save') {
-            handleSave(actionType, newItemId, true);
-            addToHistory(selectedPatient.id, {
+            handleSave(actionType, newItemId, true, false);
+            useAppStore.getState().addToHistory(selectedPatient.id, {
                 id: newItemId,
                 description: procedure,
                 provider: 'Dr. Current',
@@ -267,10 +268,13 @@ const ToothRestoration = () => {
             });
         }
 
+        // Sync everything at once to the backend
+        await AppFacade.patient.update(selectedPatient.id, useAppStore.getState().selectedPatient);
+
         navigate('../');
     };
 
-    const handleSave = (actionType = 'save', newItemId = Date.now().toString(), silent = false) => {
+    const handleSave = (actionType = 'save', newItemId = Date.now().toString(), silent = false, persistPatient = true) => {
         if (!tooth) return;
 
         const updatedRestoration = { ...tooth.restoration };
@@ -349,7 +353,11 @@ const ToothRestoration = () => {
         }
 
         if (hasChanges) {
-            updateTooth(tooth.toothNumber, { restoration: updatedRestoration });
+            if (persistPatient) {
+                AppFacade.chart.updateTooth(tooth.toothNumber, { restoration: updatedRestoration });
+            } else {
+                updateTooth(tooth.toothNumber, { restoration: updatedRestoration });
+            }
         }
 
         // Reset selections

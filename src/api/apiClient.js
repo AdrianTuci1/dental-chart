@@ -34,15 +34,25 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
             }
         }
         if (endpoint.startsWith('/patients/')) {
-            const patientId = endpoint.split('/')[2];
+            const parts = endpoint.split('/');
+            const patientId = parts[2];
+            
             for (const medic of MOCK_HIERARCHY_DATA) {
-                const patient = medic.patients.find(p => p.id === patientId);
+                const patient = medic.patients.find(p => String(p.id) === String(patientId));
                 if (patient) return patient;
             }
+            
+            // If not found in mock, return 404 error
+            throw new Error(`Patient ${patientId} not found in mock data`);
         }
 
         // Default fallback for mock
-        return { success: true, message: 'Mock data handled' };
+        const fallbackPaths = ['/auth/login', '/auth/signup', '/patients'];
+        if (customConfig.method === 'POST' || fallbackPaths.some(p => endpoint.includes(p))) {
+            return { success: true, message: 'Mock action successful', id: Date.now().toString() };
+        }
+
+        throw new Error(`Mock endpoint not found: ${endpoint}`);
     }
 
     const headers = {

@@ -16,10 +16,19 @@ export class PatientAdapter {
         // Use Builder to securely construct the object
         const builder = new PatientBuilder()
             .withId(apiResponse.patient_id || apiResponse.id) // Normalizing ID field names
-            .withName(apiResponse.full_name || apiResponse.name)
-            .withTreatmentPlan(apiResponse.treatment_plan?.items || [])
-            .withHistory(apiResponse.history?.completedItems || [])
-            .withChartContext(apiResponse.dental_chart || apiResponse.chart);
+            .withMedicId(apiResponse.medicId || apiResponse.medic_id)
+            .withName(apiResponse.full_name || apiResponse.fullName || apiResponse.name)
+            .withEmail(apiResponse.email)
+            .withPhone(apiResponse.phone)
+            .withDateOfBirth(apiResponse.dateOfBirth || apiResponse.date_of_birth)
+            .withGender(apiResponse.gender)
+            .withLastExamDate(apiResponse.lastExamDate || apiResponse.last_exam_date)
+            .withTreatmentPlan(apiResponse.treatmentPlan?.items || apiResponse.treatment_plan?.items || [])
+            .withHistory(apiResponse.history?.completedItems || apiResponse.history?.completed_items || [])
+            .withChartContext(apiResponse.dental_chart || apiResponse.chart)
+            .withOralHealth(apiResponse.oralHealth || apiResponse.oral_health)
+            .withBPE(apiResponse.bpe)
+            .withMedicalIssues(apiResponse.medicalIssues || apiResponse.medical_issues);
 
         return builder.build();
     }
@@ -34,11 +43,20 @@ export class PatientAdapter {
 
         // Strip UI-specific fields or transform to backend's required structure
         return {
-            patient_id: domainObject.id,
-            full_name: domainObject.name,
-            treatment_plan: domainObject.treatmentPlan,
+            id: domainObject.id,
+            medicId: domainObject.medicId,
+            name: domainObject.name || domainObject.fullName,
+            email: domainObject.email,
+            phone: domainObject.phone,
+            dateOfBirth: domainObject.dateOfBirth,
+            gender: domainObject.gender,
+            lastExamDate: domainObject.lastExamDate,
+            treatmentPlan: domainObject.treatmentPlan,
             history: domainObject.history,
-            dental_chart: domainObject.chart
+            dental_chart: domainObject.chart,
+            oralHealth: domainObject.oralHealth,
+            bpe: domainObject.bpe,
+            medicalIssues: domainObject.medicalIssues
         };
     }
 }

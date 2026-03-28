@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../../../core/store/appStore';
+import { AppFacade } from '../../../core/AppFacade';
 import styles from './RestorationDrawer.module.css';
 
 // Subcomponents
@@ -9,8 +10,8 @@ import RestorationWizard from './components/RestorationWizard';
 import { useRestorationForm } from './hooks/useRestorationForm';
 
 const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious, initialType = null }) => {
-    const { teeth, updateTooth } = useAppStore();
-    const { addTreatmentPlanItem, selectedPatient } = useAppStore();
+    const { teeth, selectedPatient } = useAppStore(); // Removed updateTooth and addTreatmentPlanItem
+    const updateTooth = useAppStore(state => state.updateTooth); // Added specific updateTooth selector
     const tooth = teeth[toothNumber];
 
     const [view, setView] = useState(initialType ? 'configure' : 'list'); // 'list' or 'configure'
@@ -38,7 +39,7 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
             setSelectedRestorationType(typeId);
             setView('configure');
             resetForm();
-            // We need to set the type again because resetForm clears it? 
+            // We need to set the type again because resetForm clears it?
             // No, restoration type is local state, form state contains details.
             // But if we want to support switching types mid-flow, we should be careful.
 
@@ -66,6 +67,7 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
 
         const newItemId = editingIndex !== null ? null : Date.now().toString();
         let procedureString = '';
+        let baseItem = {}; // Define baseItem for AppFacade call
 
         switch (selectedRestorationType) {
             case 'filling':
@@ -82,6 +84,11 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                     } else {
                         updatedRestoration.fillings = [...(updatedRestoration.fillings || []), newFilling];
                         procedureString = `Filling, ${fillingMaterial || 'Composite'}, ${fillingQuality || 'Sufficient'}, ${selectedZones.join(', ')}`;
+                        baseItem = {
+                            id: newItemId,
+                            tooth: toothNumber,
+                            procedure: procedureString,
+                        };
                     }
                 }
                 break;
@@ -100,6 +107,11 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                     } else {
                         updatedRestoration.veneers = [...(updatedRestoration.veneers || []), newVeneer];
                         procedureString = `Veneer, ${veneerMaterial || 'Ceramic'}, ${veneerQuality || 'Sufficient'}, ${veneerDetail || 'Flush'}`;
+                        baseItem = {
+                            id: newItemId,
+                            tooth: toothNumber,
+                            procedure: procedureString,
+                        };
                     }
                 }
                 break;
@@ -123,6 +135,11 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                     } else {
                         updatedRestoration.crowns = [...(updatedRestoration.crowns || []), newCrown];
                         procedureString = `Crown, ${crownMaterial || 'Ceramic'}, ${crownType || 'Single Crown'}, ${crownBase || 'Natural'}${extraInfo}`;
+                        baseItem = {
+                            id: newItemId,
+                            tooth: toothNumber,
+                            procedure: procedureString,
+                        };
                     }
                 }
                 break;
@@ -130,16 +147,18 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                 break;
         }
 
+        // 1. Update the tooth state in the store locally (no API call)
         updateTooth(toothNumber, { restoration: updatedRestoration });
 
-        // Add to treatment plan if it's a new item (not editing existing)
+        // 2. Add to treatment plan if it's a new item (triggers AppFacade sync)
         if (newItemId && procedureString && selectedPatient) {
-            addTreatmentPlanItem(selectedPatient.id, {
-                id: newItemId,
-                tooth: toothNumber,
-                procedure: procedureString,
+            AppFacade.patient.addTreatmentPlanItem(selectedPatient.id, {
+                ...baseItem,
                 status: 'planned'
             });
+        } else if (selectedPatient) {
+            // Force sync even if no new plan item (e.g. just updating existing tooth status)
+            AppFacade.patient.update(selectedPatient.id, useAppStore.getState().selectedPatient);
         }
 
         handleBack();

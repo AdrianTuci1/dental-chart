@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, NavLink, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useAppStore } from '../core/store/appStore';
+import { AppFacade } from '../core/AppFacade';
 import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 import ToothIcon from '../components/UI/ToothIcon';
 
@@ -8,9 +9,34 @@ import './PatientChartPage.css';
 
 const PatientChartPage = () => {
     const { selectedPatient, chartView, setChartView, historicalDate, setHistoricalDate } = useAppStore();
+    const { patientId } = useParams();
     const [showTimeline, setShowTimeline] = React.useState(false);
+    const [isLoading, setIsLoading] = React.useState(true);
     const location = useLocation();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        let isMounted = true;
+        const loadPatient = async () => {
+            if (!patientId) return;
+            
+            if (selectedPatient && String(selectedPatient.id) === String(patientId)) {
+                if (isMounted) setIsLoading(false);
+                return;
+            }
+
+            if (isMounted) setIsLoading(true);
+            try {
+                await AppFacade.patient.loadFull(patientId);
+            } catch (error) {
+                console.error("Failed to load patient for chart", error);
+            } finally {
+                if (isMounted) setIsLoading(false);
+            }
+        };
+        loadPatient();
+        return () => { isMounted = false; };
+    }, [patientId]);
 
     // Sync chartView with URL on initial load and path changes
     useEffect(() => {
@@ -72,11 +98,17 @@ const PatientChartPage = () => {
         return `${chartBase}/${basePath}`;
     };
 
+    if (isLoading) {
+        return <div className="loading-container" style={{ padding: '50px', textAlign: 'center' }}>Loading patient chart...</div>;
+    }
+
+    if (!selectedPatient) return null;
+
     return (
         <main className="chart-page-container" data-view="chart">
             {/* Patient Name - Top Left (Absolute) */}
             <div className="chart-patient-name">
-                {selectedPatient?.fullName || 'Patient'}
+                {selectedPatient.name}
             </div>
 
             {/* Chart Navigation - Top Center (Absolute) */}

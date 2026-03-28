@@ -39,3 +39,24 @@ exports.getPatientChart = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.deletePatient = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await patientService.deletePatient(id);
+        res.status(204).send();
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.updatePatient = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const patientData = req.body;
+        const updatedPatient = await patientService.updatePatient(id, patientData);
+        res.json(updatedPatient);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};

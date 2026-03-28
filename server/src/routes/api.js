@@ -21,11 +21,14 @@ router.get('/clinics/:id', clinicController.getClinic);
 router.post('/medics', medicController.createMedic);
 router.get('/medics/:id', medicController.getMedic);
 router.get('/medics/:id/patients', medicController.getMedicPatients);
+router.post('/medics/:id/seed', medicController.seedMedicData);
 
 // Patient Routes
 router.post('/patients', patientController.createPatient);
 router.get('/patients/:id', patientController.getPatient);
 router.get('/patients/:id/chart', patientController.getPatientChart);
+router.delete('/patients/:id', patientController.deletePatient);
+router.put('/patients/:id', patientController.updatePatient);
 router.post('/patients/:patientId/history', historyController.addHistoryRecord);
 router.get('/patients/:patientId/history', historyController.getPatientHistory);
 

@@ -31,7 +31,6 @@ const WaveInteractiveView = ({ children, direction = 'down', alignment = 'center
         renderer.setCanvas(canvas);
         const verticalOffset = (topOffset || 0) + (bottomOffset || 0);
         renderer.update({ width, height, direction, values, verticalOffset });
-        console.log('WaveInteractiveView drawing new values:', values);
         renderer.draw();
     }, [direction, values, topOffset, bottomOffset]);
 

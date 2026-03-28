@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../../../core/store/appStore';
+import { AppFacade } from '../../../core/AppFacade';
 import styles from './PathologyDrawer.module.css';
 
 // Subcomponents
@@ -9,8 +10,7 @@ import PathologyWizard from './components/PathologyWizard';
 import { usePathologyForm } from './hooks/usePathologyForm';
 
 const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious }) => {
-    const { teeth, updateTooth } = useAppStore();
-    const { addTreatmentPlanItem, selectedPatient } = useAppStore();
+    const { teeth, selectedPatient } = useAppStore(); // Removed updateTooth and addTreatmentPlanItem from destructuring
     const tooth = teeth[toothNumber];
 
     const [view, setView] = useState('list'); // 'list' or 'configure'
@@ -69,6 +69,12 @@ const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onP
 
         const newItemId = editingIndex !== null ? null : Date.now().toString();
         let procedureString = '';
+        let baseItem = {
+            id: newItemId,
+            tooth: toothNumber,
+            procedure: '', // Will be set below
+            status: 'planned'
+        };
 
         switch (selectedPathologyType) {
             case 'decay':
@@ -147,15 +153,19 @@ const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onP
                 break;
         }
 
+        // 1. Update tooth state in store locally
         updateTooth(toothNumber, { pathology: updatedPathology });
 
+        // 2. Add treatment plan item (triggers AppFacade sync)
         if (newItemId && procedureString && selectedPatient) {
-            addTreatmentPlanItem(selectedPatient.id, {
-                id: newItemId,
-                tooth: toothNumber,
+            AppFacade.patient.addTreatmentPlanItem(selectedPatient.id, {
+                ...baseItem,
                 procedure: procedureString,
                 status: 'planned'
             });
+        } else if (selectedPatient) {
+            // Force sync if no plan item
+            AppFacade.patient.update(selectedPatient.id, useAppStore.getState().selectedPatient);
         }
 
         handleBack();

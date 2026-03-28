@@ -2,10 +2,8 @@ import React from 'react';
 import { NavLink, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, FileText, Activity, ArrowLeft, Scan, Eye, EyeOff, Home } from 'lucide-react';
 import { useAppStore } from '../core/store/appStore';
-import ToothIcon from './UI/ToothIcon';
 import './PatientSidebar.css';
 import { RiToothLine } from 'react-icons/ri';
-import { FaRegFilePdf } from 'react-icons/fa';
 import { GrDocumentPdf } from 'react-icons/gr';
 
 const PatientSidebar = () => {

@@ -1,4 +1,4 @@
-const { PutCommand, QueryCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
+const { PutCommand, GetCommand, QueryCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
 const BaseRepository = require('./BaseRepository');
 
 class TreatmentPlanRepository extends BaseRepository {
@@ -19,7 +19,7 @@ class TreatmentPlanRepository extends BaseRepository {
             Item: item
         });
 
-        await this.docClient.send(command);
+        await this.send(command);
         return items;
     }
 
@@ -32,7 +32,7 @@ class TreatmentPlanRepository extends BaseRepository {
             }
         });
 
-        const response = await this.docClient.send(command);
+        const response = await this.send(command);
         return response.Item ? response.Item.items : [];
     }
 }

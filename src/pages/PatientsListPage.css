@@ -89,8 +89,7 @@
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-md);
     border: 1px solid var(--border-color);
-    overflow: hidden;
-    overflow-x: auto;
+    /* Removed overflow: hidden and overflow-x: auto to prevent context menu clipping */
 }
 
 .search-input-wrapper {
@@ -199,6 +198,12 @@
     /* bg-gray-50 equivalent */
 }
 
+.table-row.row-active {
+    position: relative;
+    z-index: 60;
+    background-color: var(--background-tertiary);
+}
+
 .table-cell {
     padding: 1rem 1.5rem;
     white-space: nowrap;
@@ -300,4 +305,140 @@
     padding: var(--spacing-8);
     text-align: center;
     color: var(--text-secondary);
+}
+
+.patient-actions-container {
+    position: relative;
+    display: flex;
+    justify-content: flex-end;
+    width: fit-content;
+    margin-left: auto;
+}
+
+.action-trigger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-full);
+    color: var(--text-tertiary);
+    transition: all 0.2s;
+    background: transparent;
+}
+
+.action-trigger-btn:hover, .action-trigger-btn.active {
+    background-color: var(--background-tertiary);
+    color: var(--color-primary);
+}
+
+.patient-context-menu {
+    position: absolute;
+    top: calc(100% + 5px);
+    right: 0;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 100;
+    min-width: 160px;
+    overflow: hidden;
+    animation: fadeIn 0.2s ease-out;
+    transform-origin: top right;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    transition: background-color 0.1s;
+    text-align: left;
+}
+
+.menu-item:hover {
+    background-color: var(--background-tertiary);
+}
+
+.menu-item svg {
+    color: var(--text-tertiary);
+}
+
+.menu-item.delete-item {
+    color: #ef4444;
+    border-top: 1px solid var(--border-color);
+}
+
+.menu-item.delete-item svg {
+    color: #ef4444;
+}
+
+.menu-item.delete-item:hover {
+    background-color: rgba(239, 68, 68, 0.05);
+}
+
+/* Confirm Modal Styles */
+.confirm-modal {
+    background-color: var(--background-secondary);
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 400px;
+    padding: var(--spacing-6);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border-color);
+}
+
+.confirm-modal-content h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--spacing-2);
+    color: var(--text-primary);
+}
+
+.confirm-modal-content p {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: var(--spacing-6);
+}
+
+.confirm-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-3);
+}
+
+.cancel-btn {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    transition: background-color 0.2s;
+}
+
+.cancel-btn:hover {
+    background-color: var(--background-tertiary);
+}
+
+.delete-btn-confirm {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 600;
+    background-color: #ef4444;
+    color: white;
+    transition: background-color 0.2s;
+}
+
+.delete-btn-confirm:hover {
+    background-color: #dc2626;
 }

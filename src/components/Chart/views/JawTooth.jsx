@@ -256,7 +256,6 @@ const JawTooth = ({
 
                     const wrappedContent = hasWave ? (
                         <WaveInteractiveView
-                            viewType={view}
                             direction={waveDirection}
                             model={modelToUse}
                             onClick={() => onToothClick(toothNumber)}

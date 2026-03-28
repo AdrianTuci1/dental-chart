@@ -1,157 +1,173 @@
-# 🦷 Dental Chart - Digital Dental Application
+# 🦷 Dental Chart — Digital Dental Application
 
 A modern web application for managing dental charts, treatment planning, and oral health monitoring.
 
 ![Chart Overview](./public/overview/chart-overview.png)
 
-## 📋 About the Project
+## 📋 About
 
-**Dental Chart** is a comprehensive web application for dental practices, offering complete patient and dental treatment management. The application uses the ISO 3950 numbering system and provides detailed visualizations for each tooth on 3 planes: frontal, occlusal, and lingual.
+**Dental Chart** is a full-stack web application for dental practices. It uses the **ISO 3950 numbering** system and provides detailed 3-plane (frontal, occlusal, lingual) visualizations for each tooth. The data model is **event-sourced**: the Chart is a visual projection of History (completed interventions) and Treatment Plan (planned/monitoring interventions).
 
-## ✨ Key Features
+---
 
-### 🏥 Patient Management
-- **Patient List** with search and filter functionality
-- **Patient Dashboard** with complete history
-- **Treatment Plan** personalized for each patient
-- **Treatment History** with time-travel (chronological visualization)
-- **Soft Tissue Exam**
-- **Oral Health Metrics**
-- **BPE (Basic Periodontal Examination)** with risk codes
-- **Medical Issues** and alerts
+## 🏗️ Architecture Overview
 
-### 📊 Dental Charting
-
-![Chart Overview](./public/overview/upper-jaw.png)
-
-#### Multiple Views
-- **Chart Overview** - Complete visualization with 4 rows:
-  - Upper Buccal (18-11, 21-28)
-  - Upper Occlusal
-  - Lower Occlusal 
-  - Lower Buccal (48-41, 31-38)
-- **Quick Select** - Rapid charting interface
-- **Periodontal Probing** - Full-screen interface for periodontal measurements
-- **Pathology View** - Pathology marking
-- **Restoration View** - Restoration planning
-
-#### View Toggles
-- 🔴 **Endo** - Show/hide root canals
-- 🟢 **Perio** - Show/hide gingival data
-- 🔵 **Dental** - Show/hide restorations
-
-### 🦷 Tooth Detail Page
-
-Each tooth can be viewed in detail with:
-
-#### 3-Plane 3D Visualization
-- **Frontal View** - Front view
-- **Top View** - Occlusal view
-- **Lingual View** - Lingual view
-
-#### Data Tabs
-1. **Overview** - General information
-2. **Endodontic** (5 tests):
-   - Percussion sensitivity
-   - Palpation sensitivity
-   - Vitality tests
-   - Response to stimuli
-   - Root canal assessment
-
-3. **Periodontal** (6-site measurements):
-   ![Periodontal](./public/overview/periodontal.png)
-   - Pocket depth
-   - Gingival recession
-   - Attachment level
-   - Bleeding on probing
-   - Mobility
-   - Furcation
-
-4. **Pathology** (6 categories):
-   ![Pathology](./public/overview/chart-pathology.png)
-   - Caries
-   - Fractures
-   - Resorptions
-   - Infections
-   - Periapical lesions
-   - Other pathologies
-
-5. **Restoration** (9 types):
-   ![Restoration](./public/overview/restoration.png)
-   - Amalgam
-   - Composite
-   - Crowns
-   - Bridges
-   - Implants
-   - Veneers
-   - Inlay/Onlay
-   - Temporary fillings
-   - Others
-
-### 📈 Dashboard & History
-
-![Dashboard History](./public/overview/dashboard-history.png)
-
-- Detailed treatment plan
-- Complete treatment history
-- Soft tissue examination
-- Sidebar with important metrics:
-  - Oral Health Metrics
-  - BPE with risk codes
-  - Medical Issues & Alerts
-
-### 📄 Reports
-- **Report type selection** customizable
-- **Report preview** in real-time
-- **Export options**:
-  - PDF Export
-  - Print
-  - Email
-
-### 🎨 Layer System (Z-Index)
 ```
-Layer 8: Selection Highlight (top-most)
+┌──────────────────────────────────────────────────────────────┐
+│  FRONTEND (React 18 + Vite)                                   │
+│                                                                │
+│  Pages ──→ AppFacade ──→ PatientAdapter ──→ apiClient ──→ API │
+│    ↕                         ↕                                 │
+│  Zustand Store          Domain Model                           │
+│  (patientSlice,         (PatientBuilder,                       │
+│   chartSlice,            PatientModel)                         │
+│   medicSlice)                                                  │
+└──────────────────────────────────────────────────────────────┘
+         ↕ HTTP (REST)
+┌──────────────────────────────────────────────────────────────┐
+│  BACKEND (Node.js + Express)                                  │
+│                                                                │
+│  Routes ──→ Controllers ──→ Services ──→ Repositories ──→ DB │
+│                                                                │
+│  Single-Table DynamoDB Design                                 │
+│  PK: PATIENT#<id> | MEDIC#<id> | CLINIC#<id>                 │
+│  SK: METADATA# | HISTORY# | PLAN#                            │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Technology Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18, Vite, Zustand, React Router v6 |
+| Styling | Vanilla CSS with CSS Variables |
+| Backend | Node.js, Express |
+| Database | Amazon DynamoDB (Single-Table Design) |
+| State | Zustand (slices: patient, chart, medic) |
+
+---
+
+## 📊 Data Flow
+
+The application follows a hierarchical navigation pattern:
+
+```
+Patient List → Patient Dashboard → Patient Chart → Tooth Detail
+                    │                    │               │
+                    │                    │               ├── Overview
+                    │                    │               ├── Endodontic
+                    │                    │               ├── Periodontal
+                    │                    │               ├── Pathology
+                    │                    │               └── Restoration
+                    │                    │
+                    │                    ├── Chart Overview (dental/perio/endo layers)
+                    │                    ├── Quickselect
+                    │                    ├── Periodontal Probing
+                    │                    ├── Pathology View
+                    │                    └── Restoration View
+                    │
+                    ├── Treatment Plan
+                    ├── History
+                    ├── Soft Tissue
+                    ├── Oral Health Metrics
+                    ├── BPE (Basic Periodontal Examination)
+                    └── Medical Issues
+```
+
+### Domain Model (standardized `name` field)
+
+```javascript
+// Patient domain object (as seen by frontend)
+{
+  id: string,
+  medicId: string,
+  name: string,          // Standardized — used everywhere
+  email: string,         // Optional
+  phone: string,         // Optional
+  dateOfBirth: string,
+  gender: string,
+  lastExamDate: string,
+  treatmentPlan: { items: [...] },
+  history: { completedItems: [...] },
+  chart: { teeth: { [toothNumber]: { pathology, restoration, endodontic, periodontal } } },
+  oralHealth: { plaqueIndex, bleedingIndex, halitosis },
+  bpe: { upperRight, upperAnterior, upperLeft, lowerRight, lowerAnterior, lowerLeft },
+  medicalIssues: { highBloodPressure, asthma, allergies, other }
+}
+```
+
+### Data Transformation Pipeline
+
+```
+Backend DB           →    PatientAdapter.toDomain()    →    Frontend Store
+(name, items, etc.)       (PatientBuilder)                  (Zustand)
+
+Frontend Store       →    PatientAdapter.toApi()       →    Backend DB
+(name, chart, etc.)       (strips UI-only fields)          (DynamoDB)
+```
+
+---
+
+## 🔌 API Routes
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `POST` | `/api/auth/register` | Register medic account |
+| `POST` | `/api/auth/login` | Login |
+| `GET` | `/api/auth/me` | Get current user |
+| `GET` | `/api/medics/:id/patients` | List patients for a medic |
+| `POST` | `/api/patients` | Create patient |
+| `GET` | `/api/patients/:id` | Get patient metadata |
+| `GET` | `/api/patients/:id/chart` | Get full patient record (metadata + history + plan) |
+| `PUT` | `/api/patients/:id` | Update patient (splits into METADATA, HISTORY, PLAN) |
+| `DELETE` | `/api/patients/:id` | Delete patient and all sub-records |
+| `POST` | `/api/patients/:patientId/history` | Add history record |
+| `GET` | `/api/patients/:patientId/history` | Get patient history |
+| `POST` | `/api/patients/:patientId/treatment-plans` | Add treatment plan item |
+| `GET` | `/api/patients/:patientId/treatment-plans` | Get treatment plans |
+
+---
+
+## ✨ Features
+
+### Patient Management
+- Patient CRUD with optional email/phone
+- Search and filter
+- Treatment Plan with status tracking
+- History with time-travel (chronological visualization)
+- Oral Health Metrics, BPE, Medical Issues panels
+
+### Dental Charting
+
+![Upper Jaw](./public/overview/upper-jaw.png)
+
+**Views**: Overview, Quickselect, Periodontal Probing, Pathology, Restoration
+
+**Layer System** (Z-Index):
+```
+Layer 8: Selection Highlight
 Layer 7: Annotations
 Layer 6: Periodontal Data
 Layer 5: Endodontic Indicators
 Layer 4: Pathology Markers
 Layer 3: Restorations
 Layer 2: Gingival Tissue
-Layer 1: Base Tooth Images (bottom)
+Layer 1: Base Tooth Images
 ```
 
-## 🏗️ Technical Architecture
+**View Toggles**: Endo 🔴 | Perio 🟢 | Dental 🔵
 
-### Technology Stack
-- **Frontend**: React 18 + Vite
-- **Routing**: React Router v6
-- **State Management**: Zustand
-- **Styling**: Modern CSS with CSS variables
-- **Animations**: CSS Animations & Transitions
+### Tooth Detail (3-plane visualization)
 
-### State Management Structure (Zustand)
+Each tooth has Frontal, Occlusal, and Lingual views plus 5 data tabs:
 
-```javascript
-authStore          // Authentication & user
-patientStore       // Patient management
-chartStore         // Dental chart & views
-toothStore         // Tooth-specific data
-dashboardStore     // Dashboard & metrics
-```
+1. **Overview** — General info
+2. **Endodontic** — Percussion, palpation, vitality, stimuli response, root canal
+3. **Periodontal** — 6-site pocket depth, recession, attachment, bleeding, mobility, furcation
+4. **Pathology** — Caries, fractures, resorptions, infections, periapical, other
+5. **Restoration** — Amalgam, composite, crowns, bridges, implants, veneers, inlay/onlay, temporary, others
 
-### Image Assets
-- **330+ tooth images** in `src/assets/teeth/`
-- Each tooth has:
-  - Frontal view (normal, implant, missing, no-roots)
-  - Occlusal view (top view)
-  - Lingual view
-- **Automatic mirroring** for symmetric teeth:
-  - 11-18 → Used directly
-  - 21-28 → Mirror 11-18 horizontally
-  - 41-48 → Used directly
-  - 31-38 → Mirror 41-48 horizontally
-
-### Numbering System (ISO 3950)
+### ISO 3950 Numbering System
 
 ```
                      Upper Jaw
@@ -161,137 +177,83 @@ dashboardStore     // Dashboard & metrics
  48 47 46 45 44 43 42 41 | 31 32 33 34 35 36 37 38
                 RIGHT    |    LEFT
                      Lower Jaw
-
-Deciduous (Baby Teeth):
-        Upper: 55 54 53 52 51 | 61 62 63 64 65
-        Lower: 85 84 83 82 81 | 71 72 73 74 75
 ```
 
-## 📱 Responsive Design
+---
 
-| Breakpoint | Layout | Features |
-|------------|--------|----------|
-| **Desktop** (1400px+) | Full layout | 4-jaw view, all features visible |
-| **Laptop** (1024-1399px) | Compact layout | 4-jaw view, most features |
-| **Tablet** (768-1023px) | 2-jaw view | Simplified controls, bottom sheets |
-| **Mobile** (<768px) | Single jaw | Bottom navigation, full-screen modals |
-
-
-## 📁 File Structure
+## 📁 Project Structure
 
 ```
 dchart-oneshot/
-├── public/
-│   └── overview/           # Screenshots & overview images
-├── src/
-│   ├── assets/
-│   │   └── teeth/          # 330+ tooth images
+├── server/                         # Backend (Node.js + Express)
+│   └── src/
+│       ├── config/                 # DynamoDB client config
+│       ├── controllers/            # Route handlers
+│       ├── models/
+│       │   ├── Enums.js            # Constants (Gender, ToothZone, Material, etc.)
+│       │   └── repositories/       # DynamoDB data access (Single-Table)
+│       │       ├── BaseRepository.js       # Outgoing/incoming transformations
+│       │       ├── PatientRepository.js    # PATIENT#<id> + METADATA#
+│       │       ├── HistoryRepository.js    # PATIENT#<id> + HISTORY#
+│       │       ├── TreatmentPlanRepository.js  # PATIENT#<id> + PLAN#
+│       │       └── MedicRepository.js      # MEDIC#<id> + METADATA#
+│       ├── services/               # Business logic
+│       ├── routes/api.js           # Route definitions
+│       └── utils/mockData.js       # Seed data templates
+│
+├── src/                            # Frontend (React 18 + Vite)
+│   ├── api/                        # HTTP client & service layer
+│   │   ├── apiClient.js            # Fetch wrapper
+│   │   ├── authService.js          # Auth endpoints
+│   │   └── patientService.js       # Patient CRUD endpoints
+│   ├── core/                       # Domain layer
+│   │   ├── adapters/PatientAdapter.js   # API ↔ Domain translation
+│   │   ├── builders/PatientBuilder.js   # Builder pattern for Patient
+│   │   ├── models/PatientModel.js       # Business logic (completeTreatment, addToHistory)
+│   │   ├── store/appStore.js            # Zustand root store
+│   │   ├── store/slices/                # patientSlice, chartSlice, medicSlice
+│   │   └── AppFacade.js                 # Central UI ↔ Domain entry point
 │   ├── components/
-│   │   ├── Tooth/          # Tooth visualization components
-│   │   ├── Chart/          # Chart components
-│   │   └── ...
-│   ├── models/             # Data models
-│   │   ├── DentalModels.js # Barrel file (exports all models)
-│   │   ├── Enums.js        # Constants & Enums
-│   │   ├── ToothModels.js  # Tooth related classes
-│   │   ├── ChartModels.js  # Chart related classes
-│   │   └── PatientModels.js # Patient related classes
-│   ├── pages/
-│   │   ├── HomePage.jsx
-│   │   ├── PatientsListPage.jsx
-│   │   ├── PatientDashboardPage.jsx
-│   │   ├── PatientChartPage.jsx
-│   │   ├── PatientReportPage.jsx
-│   │   └── ToothDetailPage.jsx
-│   ├── stores/             # Zustand stores
-│   │   ├── authStore.js
-│   │   ├── patientStore.js
-│   │   ├── chartStore.js
-│   │   ├── toothStore.js
-│   │   └── dashboardStore.js
-│   ├── llm-build-spec/     # one shot skeleton
-│   └── App.jsx
+│   │   ├── Chart/                  # Chart views (Overview, Quickselect, Perio, etc.)
+│   │   ├── Dashboard/              # TreatmentPlan, History, OralHealth, BPE, MedicalIssues
+│   │   ├── Drawers/                # Pathology/Restoration drawers
+│   │   ├── Tooth/                  # Tooth visualization components
+│   │   └── UI/                     # PatientModal, SettingsModal, etc.
+│   ├── pages/                      # Route pages
+│   │   ├── HomePage.jsx            # Login/Signup
+│   │   ├── PatientsListPage.jsx    # Patient list with search
+│   │   ├── PatientDashboardPage.jsx # Patient detail (dashboard)
+│   │   ├── PatientChartPage.jsx    # Dental chart
+│   │   ├── ToothDetailPage.jsx     # Individual tooth detail
+│   │   └── PatientReportPage.jsx   # Reports
+│   ├── assets/teeth/               # 330+ tooth images
+│   └── utils/mockData.js           # Frontend mock data
 └── package.json
 ```
 
-## ✅ Implementation Status Checklist
+---
 
-### Phase 1: Foundation ✅
-- [x] Project setup (React + Vite)
-- [x] Routing configuration
-- [x] Zustand stores implementation
-- [x] Global Sidebar
-- [x] Base structure
+## 🚀 Getting Started
 
-### Phase 2: Core Charting ✅
-- [x] ToothRenderer Component
-- [x] JawRow Component
-- [x] ChartOverview Page
-- [x] Click-to-detail navigation
-- [x] ToothDetailPage Layout
-- [x] 3-plane tooth visualization
+### Prerequisites
+- Node.js 18+
+- AWS DynamoDB (local or cloud) with a table named `DentalChart` (PK + SK keys)
 
-### Phase 3: Advanced Features 🚧
-- [x] Periodontal Probing (full-screen interface)
-- [x] Pathology Menu (6 categories)
-- [x] Restoration Menu (9 types)
-- [x] Endodontic Tests (5 tests)
-- [x] Quick Select charting
-- [/] Time Travel (in progress)
-- [ ] Annotations system
+### Backend
+```bash
+cd server
+npm install
+# Set env vars: DYNAMODB_TABLE_NAME, AWS credentials
+npm run dev
+```
 
-### Phase 4: Dashboard & Reports 🚧
-- [x] Patient Dashboard layout
-- [x] Treatment Plan component
-- [x] Treatment History
-- [x] Soft Tissue Exam
-- [x] Oral Health Metrics sidebar
-- [x] BPE calculations
-- [x] Medical Issues tracking
-- [/] Report generator (in progress)
-- [ ] PDF Export functionality
-- [ ] Email integration
+### Frontend
+```bash
+npm install
+npm run dev
+```
 
-### Phase 5: Enhancement & Polish 📋
-- [ ] Performance optimization
-- [ ] Unit tests
-- [ ] End-to-end tests
-- [ ] User documentation
-- [ ] Accessibility (WCAG 2.1)
-- [ ] Multi-language support
-- [ ] Dark mode
-- [ ] Backup & restore
+---
 
-### Future Features 🔮
-- [ ] Radiographic image integration
-- [ ] Interactive 3D charting
-- [ ] Machine learning for caries detection
-- [ ] Calendar & appointment integration
-- [ ] External API integrations
-
-## 🎯 Roadmap 2025-2026
-
-**2025**
-- ✅ Core charting functionality
-- ✅ Tooth detail views
-
-**Q1 2026**
-- 🚧 Advanced charting features
-- 🚧 Report generation
-- 📋 Dashboard completion
-- 📋 Export functionality
-- 📋 Performance optimization
-- 📋 Testing suite
-- 📋 User documentation
-
-**Q2 2026**
-- 🔮 Advanced features
-- 🔮 Mobile app
-- 🔮 Machine learning for caries detection
-- 🔮 Calendar & appointment integration
-- 🔮 External API integrations
-
-**Version**: 1.0.0-beta  
-**Last updated**: December 22, 2024
-
-For questions or support, contact the development team.
+**Version**: 1.0.0-beta
+**Last updated**: March 2026

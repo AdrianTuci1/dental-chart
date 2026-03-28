@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { ChevronLeft, PlusCircle, RefreshCw, XCircle, CheckCircle, Check } from 'lucide-react';
 import { useAppStore } from '../../core/store/appStore';
+import { AppFacade } from '../../core/AppFacade';
 import ConfirmationModal from '../UI/ConfirmationModal';
 import './ToothOverview.css';
 import EndodonticSection from './EndodonticSection';
@@ -132,7 +133,7 @@ const ToothOverview = () => {
 
     const handleDone = (itemId) => {
         if (selectedPatient) {
-            completeTreatmentPlanItem(selectedPatient.id, itemId);
+            AppFacade.patient.completeTreatment(selectedPatient.id, itemId);
         }
     };
 

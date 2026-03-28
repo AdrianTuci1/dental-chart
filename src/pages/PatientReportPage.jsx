@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Printer, Download, Mail, Activity, Heart, Wind, Cigarette, Wine, Snowflake, Flame, Hand, Gavel, Zap, Hourglass, AlertCircle } from 'lucide-react';
 import { useAppStore } from '../core/store/appStore';
+import { AppFacade } from '../core/AppFacade';
 import NormalView from '../components/Chart/views/NormalView';
 import UpperJawView from '../components/Chart/views/UpperJawView';
 import LowerJawView from '../components/Chart/views/LowerJawView';
@@ -9,8 +11,37 @@ import './PatientReportPage.css';
 
 const PatientReportPage = () => {
     const { selectedPatient, teeth } = useAppStore();
+    const { patientId: id } = useParams();
+    const [isLoading, setIsLoading] = React.useState(true);
 
-    if (!selectedPatient) return <div>Loading...</div>;
+    useEffect(() => {
+        let isMounted = true;
+        const loadPatient = async () => {
+            if (!id) return;
+            
+            if (selectedPatient && String(selectedPatient.id) === String(id)) {
+                if (isMounted) setIsLoading(false);
+                return;
+            }
+
+            if (isMounted) setIsLoading(true);
+            try {
+                await AppFacade.patient.loadFull(id);
+            } catch (error) {
+                console.error("Failed to load patient for report", error);
+            } finally {
+                if (isMounted) setIsLoading(false);
+            }
+        };
+        loadPatient();
+        return () => { isMounted = false; };
+    }, [id]);
+
+    if (isLoading) {
+        return <div className="report-loading">Loading report data...</div>;
+    }
+
+    if (!selectedPatient) return <div>Patient not found.</div>;
 
     // Helper to calculate age
     const calculateAge = (dob) => {
@@ -87,7 +118,7 @@ const PatientReportPage = () => {
                 <div className="patient-info-list">
                     <div className="info-row">
                         <span className="info-label">Patient name:</span>
-                        <span className="info-value">{selectedPatient.fullName}</span>
+                        <span className="info-value">{selectedPatient.name}</span>
                     </div>
                     <div className="info-row">
                         <span className="info-label">Date of birth:</span>

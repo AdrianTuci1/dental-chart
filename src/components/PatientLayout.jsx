@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
 import { useAppStore } from '../core/store/appStore';
-import { patientService } from '../api';
+import { AppFacade } from '../core/AppFacade';
 import { ChartModel } from '../core/models/ChartModel';
 import PatientSidebar from './PatientSidebar';
 import { Loader2 } from 'lucide-react';
@@ -23,20 +23,19 @@ const PatientLayout = () => {
 
             setIsLoading(true);
             try {
-                // Fetch ONLY the patient info. The chart is reconstructed locally.
-                const patientData = await patientService.getPatientFull(patientId);
+                // Use Facade for standardized loading
+                const patientData = await AppFacade.patient.loadFull(patientId);
 
                 if (isMounted && patientData) {
+                    // Reconstruct teeth state from interventions
                     const projectedTeeth = ChartModel.projectTeethFromInterventions(
                         patientData.history || [],
                         patientData.treatmentPlan || []
                     );
-
-                    selectPatient(patientData);
                     setTeeth(projectedTeeth);
                 }
             } catch (error) {
-                console.error("Failed to load patient or chart data", error);
+                console.error("Failed to load patient or chart data in layout", error);
             } finally {
                 if (isMounted) {
                     setIsLoading(false);
@@ -44,20 +43,28 @@ const PatientLayout = () => {
             }
         };
 
-        // Load full patient data to ensure we have medical history and treatment plans,
-        // which are not available in the list view.
         loadPatientData();
 
         return () => {
             isMounted = false;
         };
-    }, [patientId, selectPatient, setTeeth]); // Trigger when patient switching happens via URL
+    }, [patientId, setTeeth]);
 
-    if (isLoading || !selectedPatient) {
+    if (isLoading) {
         return (
-            <div className="loading-state" style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#666' }}>
-                <Loader2 className="spinner" style={{ animation: 'spin 1s linear infinite', marginRight: '10px' }} />
+            <div className="loading-state" style={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: '#666' }}>
+                <Loader2 className="spinner" style={{ animation: 'spin 1s linear infinite', marginBottom: '16px' }} />
                 <span>Loading patient data and charts...</span>
+            </div>
+        );
+    }
+
+    if (!selectedPatient) {
+        return (
+            <div className="error-state" style={{ height: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: '#ef4444' }}>
+                <h3>Error loading patient</h3>
+                <p>The requested patient could not be found or there was an API error.</p>
+                <button onClick={() => window.location.reload()} style={{ marginTop: '16px', padding: '8px 16px', background: '#ccc', borderRadius: '4px' }}>Retry</button>
             </div>
         );
     }
