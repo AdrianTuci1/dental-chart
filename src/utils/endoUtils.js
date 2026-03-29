@@ -10,6 +10,48 @@ export const ENDO_COLORS = {
     [ENDO_CATEGORIES.OBSERVE]: 'rgba(245, 158, 11, 0.7)' // Yellow
 };
 
+export const normalizeEndoTestKey = (testName) => {
+    if (!testName) return '';
+
+    const normalized = `${testName}`.trim().toLowerCase();
+
+    if (normalized === 'electric pulp test' || normalized === 'ept') {
+        return 'electricity';
+    }
+
+    return normalized;
+};
+
+export const getEndoTests = (endodontic = {}) => {
+    const normalizedTests = {};
+    const sourceTests = endodontic?.tests || {};
+
+    Object.entries(sourceTests).forEach(([key, value]) => {
+        const normalizedKey = normalizeEndoTestKey(key);
+        if (normalizedKey) {
+            normalizedTests[normalizedKey] = value;
+        }
+    });
+
+    return normalizedTests;
+};
+
+export const hasEndoTestResult = (endodontic = {}, testName) => {
+    const testKey = normalizeEndoTestKey(testName);
+    const tests = getEndoTests(endodontic);
+    const value = tests[testKey];
+
+    if (value !== null && value !== undefined && value !== '' && value !== 0) {
+        if (typeof value === 'object') {
+            return Object.values(value).some(Boolean);
+        }
+
+        return true;
+    }
+
+    return Boolean(endodontic?.[testKey]);
+};
+
 /**
  * Returns the endo asset name based on tooth number and view.
  */
@@ -91,6 +133,42 @@ export const mapEndoConditions = (tooth, isBeforeOrAtHistoricalDate, treatments,
                 type: 'endodontic'
             });
         }
+    }
+
+    const tests = getEndoTests(tooth.endodontic);
+    const hasRecordedTests = Object.values(tests).some((value) => {
+        if (value === null || value === undefined || value === '' || value === 0) {
+            return false;
+        }
+
+        if (typeof value === 'object') {
+            return Object.values(value).some(Boolean);
+        }
+
+        return true;
+    });
+
+    const diagnosis = (tooth.endodontic?.diagnosis || '').toLowerCase();
+    const hasDiagnosis = Boolean(diagnosis);
+
+    if (!conditions.some(c => c.zone === 'Endo') && (hasRecordedTests || hasDiagnosis)) {
+        let category = ENDO_CATEGORIES.OBSERVE;
+
+        if (
+            diagnosis.includes('necrosis') ||
+            diagnosis.includes('irreversible') ||
+            diagnosis.includes('symptomatic')
+        ) {
+            category = ENDO_CATEGORIES.TREAT;
+        }
+
+        conditions.push({
+            zone: 'Endo',
+            surface: 'Endo',
+            color: ENDO_COLORS[category],
+            opacity: 0.7,
+            type: 'endodontic'
+        });
     }
 };
 

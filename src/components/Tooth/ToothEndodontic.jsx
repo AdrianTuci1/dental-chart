@@ -1,9 +1,11 @@
 import { useOutletContext } from 'react-router-dom';
 import { AppFacade } from '../../core/AppFacade';
+import { getEndoTests } from '../../utils/endoUtils';
 
 const ToothEndodontic = () => {
     const { tooth } = useOutletContext();
     // No longer using updateTooth from store directly
+    const tests = getEndoTests(tooth.endodontic);
 
     const handleTestChange = (test, value) => {
         AppFacade.chart.updateTooth(tooth.toothNumber, {
@@ -48,7 +50,7 @@ const ToothEndodontic = () => {
                                     type="radio"
                                     name="cold"
                                     value={val}
-                                    checked={tooth.endodontic.tests.cold === val}
+                                    checked={tests.cold === val}
                                     onChange={(e) => handleTestChange('cold', e.target.value)}
                                     className="form-radio text-[var(--color-primary)]"
                                 />
@@ -68,7 +70,7 @@ const ToothEndodontic = () => {
                                     type="radio"
                                     name="heat"
                                     value={val}
-                                    checked={tooth.endodontic.tests.heat === val}
+                                    checked={tests.heat === val}
                                     onChange={(e) => handleTestChange('heat', e.target.value)}
                                     className="form-radio text-[var(--color-primary)]"
                                 />
@@ -88,7 +90,7 @@ const ToothEndodontic = () => {
                                     type="radio"
                                     name="percussion"
                                     value={val}
-                                    checked={tooth.endodontic.tests.percussion === val}
+                                    checked={tests.percussion === val}
                                     onChange={(e) => handleTestChange('percussion', e.target.value)}
                                     className="form-radio text-[var(--color-primary)]"
                                 />
@@ -105,7 +107,7 @@ const ToothEndodontic = () => {
                         type="number"
                         min="0"
                         max="80"
-                        value={tooth.endodontic.tests.electricity}
+                        value={tests.electricity}
                         onChange={(e) => handleTestChange('electricity', parseInt(e.target.value))}
                         className="block w-full max-w-xs border-gray-300 rounded-md shadow-sm focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)] sm:text-sm p-2 border"
                     />

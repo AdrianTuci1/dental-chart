@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../../../core/store/appStore';
 import { AppFacade } from '../../../core/AppFacade';
 import styles from './PathologyDrawer.module.css';
+import { buildPathologyPreview } from '../../../utils/toothPreviewBuilders';
 
 // Subcomponents
 import DrawerHeader from './components/DrawerHeader';
@@ -9,7 +10,7 @@ import TypeSelector from './components/TypeSelector';
 import PathologyWizard from './components/PathologyWizard';
 import { usePathologyForm } from './hooks/usePathologyForm';
 
-const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious }) => {
+const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious, onPreviewChange }) => {
     const { teeth, selectedPatient } = useAppStore();
     const updateTooth = useAppStore((state) => state.updateTooth);
     const tooth = teeth[toothNumber];
@@ -26,6 +27,17 @@ const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onP
         // We defer some of these to initialization or specific events
         resetForm();
     }, [toothNumber, resetForm]);
+
+    useEffect(() => {
+        if (!onPreviewChange) return undefined;
+
+        const previewTooth = buildPathologyPreview(tooth, selectedPathologyType, formState);
+        onPreviewChange(toothNumber, previewTooth);
+
+        return () => {
+            onPreviewChange(toothNumber, null);
+        };
+    }, [tooth, toothNumber, selectedPathologyType, formState, onPreviewChange]);
 
     const pathologyTypes = [
         { id: 'decay', label: 'Decay', route: 'decay' },

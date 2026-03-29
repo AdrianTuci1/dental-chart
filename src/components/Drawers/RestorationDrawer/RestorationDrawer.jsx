@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../../../core/store/appStore';
 import { AppFacade } from '../../../core/AppFacade';
 import styles from './RestorationDrawer.module.css';
+import { buildRestorationPreview } from '../../../utils/toothPreviewBuilders';
 
 // Subcomponents
 import DrawerHeader from './components/DrawerHeader';
@@ -9,7 +10,7 @@ import TypeSelector from './components/TypeSelector';
 import RestorationWizard from './components/RestorationWizard';
 import { useRestorationForm } from './hooks/useRestorationForm';
 
-const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious, initialType = null }) => {
+const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious, initialType = null, onPreviewChange }) => {
     const { teeth, selectedPatient } = useAppStore(); // Removed updateTooth and addTreatmentPlanItem
     const updateTooth = useAppStore(state => state.updateTooth); // Added specific updateTooth selector
     const tooth = teeth[toothNumber];
@@ -25,6 +26,17 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
         // Reset local variables only once on mount or tooth change
         resetForm();
     }, [toothNumber, resetForm]);
+
+    useEffect(() => {
+        if (!onPreviewChange) return undefined;
+
+        const previewTooth = buildRestorationPreview(tooth, selectedRestorationType, formState);
+        onPreviewChange(toothNumber, previewTooth);
+
+        return () => {
+            onPreviewChange(toothNumber, null);
+        };
+    }, [tooth, toothNumber, selectedRestorationType, formState, onPreviewChange]);
 
     const restorationTypes = [
         { id: 'filling', label: 'Filling', route: 'filling' },

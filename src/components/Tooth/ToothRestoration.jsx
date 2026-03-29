@@ -6,13 +6,14 @@ import { AppFacade } from '../../core/AppFacade';
 import ToothZones from './ToothZones';
 import { getToothType } from '../../utils/toothUtils';
 import './ToothRestoration.css';
+import { buildRestorationPreview } from '../../utils/toothPreviewBuilders';
 
 const ToothRestoration = () => {
     const { type } = useParams();
     const navigate = useNavigate();
     const { tooth } = useOutletContext();
     const { updateTooth } = useAppStore();
-    const { selectedPatient, addTreatmentPlanItem, addToHistory } = useAppStore();
+    const { selectedPatient } = useAppStore();
 
     // Track if a restoration type is selected (null means none selected)
     const [selectedRestorationType, setSelectedRestorationType] = useState(type || null);
@@ -104,86 +105,23 @@ const ToothRestoration = () => {
     React.useEffect(() => {
         if (!tooth || !setPreviewData) return;
 
-        if (!selectedRestorationType) {
-            setPreviewData(null);
-            return;
-        }
+        const previewTooth = buildRestorationPreview(tooth, selectedRestorationType, {
+            selectedZones,
+            fillingMaterial,
+            fillingQuality,
+            veneerMaterial,
+            veneerQuality,
+            veneerDetail,
+            crownMaterial,
+            crownType,
+            crownBase,
+            implantType,
+            advancedMaterial,
+            advancedQuality,
+            advancedDetail,
+        });
 
-        const previewRestoration = JSON.parse(JSON.stringify(tooth.restoration || {}));
-        let isValidPreview = false;
-
-        switch (selectedRestorationType) {
-            case 'filling':
-                if (fillingMaterial || selectedZones.length > 0) {
-                    const newFilling = {
-                        zones: selectedZones,
-                        material: fillingMaterial || 'Unknown',
-                        quality: fillingQuality || 'Sufficient'
-                    };
-                    previewRestoration.fillings = [...(previewRestoration.fillings || []), newFilling];
-                    isValidPreview = true;
-                }
-                break;
-            case 'veneer':
-                if (veneerMaterial || selectedZones.length > 0) {
-                    const newVeneer = {
-                        zones: selectedZones,
-                        material: veneerMaterial || 'Unknown',
-                        quality: veneerQuality || 'Sufficient',
-                        detail: veneerDetail || 'Flush'
-                    };
-                    if (!previewRestoration.veneers) previewRestoration.veneers = [];
-                    previewRestoration.veneers = [...previewRestoration.veneers, newVeneer];
-                    isValidPreview = true;
-                }
-                break;
-            case 'crown':
-                if (crownMaterial) {
-                    const newCrown = {
-                        material: crownMaterial,
-                        quality: 'Sufficient',
-                        type: crownType || 'Single Crown',
-                        base: crownBase || 'Natural'
-                    };
-                    if (crownBase === 'Implant' && implantType) {
-                        newCrown.implantType = implantType;
-                    }
-                    previewRestoration.crowns = [...(previewRestoration.crowns || []), newCrown];
-                    isValidPreview = true;
-                }
-                break;
-            case 'inlay':
-            case 'onlay':
-            case 'partial_crown':
-                if (advancedMaterial || selectedZones.length > 0) {
-                    // For preview, we might just store it like an inlay/onlay in custom array 
-                    // or just reuse 'advanced' property, but for now just mock it or add to proper place
-                    // assuming the backend/visualization supports advanced or maps them. 
-                    // If visualization doesn't support inlay explicitly, it might just draw the zones 
-                    // if mapped as fillings or similar. 
-                    // Let's add them to a generic 'advancedRestorations' array for preview so we don't crash
-                    if (!previewRestoration.advancedRestorations) previewRestoration.advancedRestorations = [];
-                    previewRestoration.advancedRestorations.push({
-                        type: selectedRestorationType,
-                        zones: selectedZones,
-                        material: advancedMaterial || 'Unknown',
-                        quality: advancedQuality || 'Sufficient',
-                        detail: advancedDetail || 'Flush'
-                    });
-                    isValidPreview = true;
-                }
-                break;
-        }
-
-        if (isValidPreview) {
-            setPreviewData({
-                ...tooth,
-                restoration: previewRestoration
-            });
-        } else {
-            setPreviewData(null);
-        }
-
+        setPreviewData(previewTooth);
     }, [
         tooth,
         selectedRestorationType,

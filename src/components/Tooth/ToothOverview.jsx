@@ -11,6 +11,7 @@ import { ToothModel } from '../../core/models/ToothModel';
 
 import EndoTestDetail from './EndoTestDetail';
 import { suggestPulpalDiagnosis } from '../../utils/endoDiagnosis';
+import { getEndoTests } from '../../utils/endoUtils';
 import DiagnosisModal from './DiagnosisModal';
 
 const ToothOverview = () => {
@@ -20,7 +21,6 @@ const ToothOverview = () => {
     const { selectedPatient } = useAppStore();
 
     const [selectedTest, setSelectedTest] = useState(null);
-    const [testResults, setTestResults] = useState(tooth?.endodontic?.tests || {});
     const [suggestedDiagnosis, setSuggestedDiagnosis] = useState(null);
 
     const handleTestSelect = (testName) => {
@@ -35,11 +35,10 @@ const ToothOverview = () => {
 
     const handleSaveTest = (testName, data) => {
         const testKey = testName.toLowerCase();
-        const newResults = { ...testResults, [testKey]: data };
+        const newResults = { ...getEndoTests(tooth?.endodontic), [testKey]: data };
         if (!data) {
             delete newResults[testKey];
         }
-        setTestResults(newResults);
 
         // Update tooth in store with structured data
         // We also set boolean flags (cold, heat, etc) for NormalView icons

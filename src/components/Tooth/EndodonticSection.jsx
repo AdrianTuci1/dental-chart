@@ -1,9 +1,9 @@
 import React from 'react';
 import { Snowflake, Gavel, Hand, Flame, Zap, ChevronRight } from 'lucide-react';
-
+import { getEndoTests } from '../../utils/endoUtils';
 
 const EndodonticSection = ({ onTestSelect, tooth }) => {
-    const tests = tooth?.endodontic?.tests || {};
+    const tests = getEndoTests(tooth?.endodontic);
 
     const getIcon = (test) => {
         switch (test) {
@@ -16,6 +16,26 @@ const EndodonticSection = ({ onTestSelect, tooth }) => {
         }
     };
 
+    const getBadgeDetails = (result) => {
+        if (result === null || result === undefined || result === '') {
+            return null;
+        }
+
+        if (typeof result === 'object') {
+            if (!result.result) return null;
+
+            return {
+                label: result.detail ? `${result.result} (${result.detail})` : result.result,
+                className: result.result.toLowerCase(),
+            };
+        }
+
+        return {
+            label: `${result}`,
+            className: 'recorded',
+        };
+    };
+
     return (
         <div className="section-card">
             <div className="section-header">
@@ -25,20 +45,20 @@ const EndodonticSection = ({ onTestSelect, tooth }) => {
                 {['Cold', 'Percussion', 'Palpation', 'Heat', 'Electricity'].map(test => {
                     const testKey = test.toLowerCase();
                     const result = tests[testKey];
+                    const badge = getBadgeDetails(result);
 
                     return (
                         <div
                             key={test}
-                            className={`endo-item cursor-pointer ${result ? 'has-result' : ''}`}
+                            className={`endo-item cursor-pointer ${badge ? 'has-result' : ''}`}
                             onClick={() => onTestSelect && onTestSelect(test)}
                         >
                             <div className="endo-label">
                                 {getIcon(test)}
                                 <span className="test-name">{test}</span>
-                                {result && (
-                                    <span className={`test-badge ${result.result?.toLowerCase()}`}>
-                                        {result.result}
-                                        {result.detail && <span className="test-detail"> ({result.detail})</span>}
+                                {badge && (
+                                    <span className={`test-badge ${badge.className}`}>
+                                        {badge.label}
                                     </span>
                                 )}
                             </div>

@@ -158,6 +158,7 @@ const ChartQuickselect = () => {
 
             {isEndoDrawerOpen && (
                 <EndodonticDrawer
+                    key={Array.from(selectedTeeth).join('-')}
                     selectedTeeth={Array.from(selectedTeeth)}
                     position={getDrawerPosition()}
                     onClose={closeDrawers}

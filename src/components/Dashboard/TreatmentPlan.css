@@ -31,6 +31,12 @@
     gap: var(--spacing-3);
 }
 
+.plan-empty-state {
+    padding: 0.75rem 0;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
 .plan-item-grouped {
     display: flex;
     align-items: center;

@@ -164,25 +164,6 @@ export const mapToothDataToConditions = (tooth, historicalDate = null, treatment
         [Material.NON_PRECIOUS]: '#7f8ebbff' // Dark Gray
     };
 
-    // Specific colors for Anterior zones (requested by User)
-    const COLOR_RED_POINT = '#8C0D0D';
-    const COLOR_BLUE_CLASS4 = '#0D5B8C';
-    const COLOR_GREEN_INCISAL = '#259E00';
-    const COLOR_ORANGE_BODY = '#FF8F0F';
-
-    // Helper to determine color
-    const getColor = (zoneKey, baseColor) => {
-        if (!isAnterior) return baseColor; // Default for Molars
-
-        // Anterior specific overrides
-        if (zoneKey === 'mesial' || zoneKey === 'distal') return COLOR_RED_POINT;
-        if (zoneKey === 'incisal') return COLOR_GREEN_INCISAL;
-        if (zoneKey === 'class4_mesial' || zoneKey === 'class4_distal') return COLOR_BLUE_CLASS4;
-        if (zoneKey === 'surface') return COLOR_ORANGE_BODY; // Buccal/Palatal surface
-
-        return baseColor;
-    };
-
     // Map Restorations (Fillings)
     if (tooth.restoration && tooth.restoration.fillings) {
         tooth.restoration.fillings.filter(f => isBeforeOrAtHistoricalDate(f)).forEach(filling => {
@@ -199,7 +180,7 @@ export const mapToothDataToConditions = (tooth, historicalDate = null, treatment
                         conditions.push({
                             surface: surface,
                             zone: zone, // Preserve original zone for filtering (e.g. Buccal vs Palatal)
-                            color: getColor(surface, baseColor),
+                            color: baseColor,
                             opacity: 0.6
                         });
                     }
@@ -223,7 +204,7 @@ export const mapToothDataToConditions = (tooth, historicalDate = null, treatment
                         conditions.push({
                             surface: surface,
                             zone: zone,
-                            color: getColor(surface, baseColor),
+                            color: baseColor,
                             opacity: 0.6
                         });
                     }
@@ -249,13 +230,10 @@ export const mapToothDataToConditions = (tooth, historicalDate = null, treatment
                     if (surface) {
                         const baseColor = '#EF4444'; // Standard Red
                         // For Anterior decay points, we might want the Dark Red Point color too
-                        // or keep standard red to differentiate from the "marker"?
-                        // User said "punctele rosii mici: mesial si distal". Assuming this refers to the zone representation itself.
-
                         conditions.push({
                             surface: surface,
                             zone: zone, // Preserve original zone
-                            color: getColor(surface, baseColor),
+                            color: baseColor,
                             opacity: 0.6
                         });
                     }
@@ -380,4 +358,3 @@ export const getToothCondition = (tooth, historicalDate = null) => {
 
     return 'withRoots';
 };
-

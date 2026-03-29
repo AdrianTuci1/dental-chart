@@ -8,6 +8,14 @@ const TreatmentPlan = ({ plan }) => {
     const { patientId } = useParams();
     const treatments = plan?.items || [];
 
+    if (treatments.length === 0) {
+        return (
+            <div className="treatment-plan-card">
+                <div className="plan-empty-state">Currently there are no treatments pending.</div>
+            </div>
+        );
+    }
+
     // Group treatments by tooth
     const groupedTreatments = treatments.reduce((acc, item) => {
         const toothKey = item.tooth || 'General';

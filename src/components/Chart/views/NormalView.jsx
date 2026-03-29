@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Snowflake, Gavel, Hand, Flame, Zap } from 'lucide-react';
 import JawTooth from './JawTooth';
 import { useAppStore } from '../../../core/store/appStore';
+import { hasEndoTestResult } from '../../../utils/endoUtils';
 import './NormalView.css';
 
 const NormalView = ({
@@ -40,11 +41,11 @@ const NormalView = ({
     const getEndoIcons = (tooth, type) => {
         if (!showEndo || !tooth || !tooth.endodontic) return null;
         const iconDefs = [
-            { key: 'cold', val: tooth.endodontic.cold, icon: <Snowflake size={18} className="endo-icon-cold" /> },
-            { key: 'percussion', val: tooth.endodontic.percussion, icon: <Gavel size={18} className="endo-icon-percussion" /> },
-            { key: 'palpation', val: tooth.endodontic.palpation, icon: <Hand size={18} className="endo-icon-palpation" /> },
-            { key: 'heat', val: tooth.endodontic.heat, icon: <Flame size={18} className="endo-icon-heat" /> },
-            { key: 'electricity', val: tooth.endodontic.electricity, icon: <Zap size={18} className="endo-icon-electricity" /> },
+            { key: 'cold', val: hasEndoTestResult(tooth.endodontic, 'cold'), icon: <Snowflake size={18} className="endo-icon-cold" /> },
+            { key: 'percussion', val: hasEndoTestResult(tooth.endodontic, 'percussion'), icon: <Gavel size={18} className="endo-icon-percussion" /> },
+            { key: 'palpation', val: hasEndoTestResult(tooth.endodontic, 'palpation'), icon: <Hand size={18} className="endo-icon-palpation" /> },
+            { key: 'heat', val: hasEndoTestResult(tooth.endodontic, 'heat'), icon: <Flame size={18} className="endo-icon-heat" /> },
+            { key: 'electricity', val: hasEndoTestResult(tooth.endodontic, 'electricity'), icon: <Zap size={18} className="endo-icon-electricity" /> },
         ];
 
         const activeIcons = iconDefs.filter(d => d.val);

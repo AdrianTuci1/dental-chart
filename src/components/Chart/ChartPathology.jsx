@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { useAppStore } from '../../core/store/appStore';
 import { useOutletContext } from 'react-router-dom';
 
@@ -10,12 +10,35 @@ import PathologyDrawer from '../Drawers/PathologyDrawer/PathologyDrawer';
 const ChartPathology = () => {
     const { teeth, selectTooth, selectedTooth } = useAppStore();
     const { chartView } = useOutletContext();
+    const [previewTeeth, setPreviewTeeth] = useState({});
+
+    const renderedTeeth = useMemo(() => ({
+        ...teeth,
+        ...previewTeeth,
+    }), [teeth, previewTeeth]);
+
+    const handlePreviewChange = (toothNumber, previewTooth) => {
+        setPreviewTeeth((current) => {
+            const next = { ...current };
+
+            if (previewTooth) {
+                next[toothNumber] = previewTooth;
+            } else {
+                delete next[toothNumber];
+            }
+
+            return next;
+        });
+    };
 
     const handleToothClick = (toothNumber) => {
         selectTooth(toothNumber);
     };
 
     const handleCloseDrawer = () => {
+        if (selectedTooth) {
+            handlePreviewChange(selectedTooth, null);
+        }
         selectTooth(null);
     };
 
@@ -25,6 +48,7 @@ const ChartPathology = () => {
         const toothNumbers = Object.keys(teeth).map(Number).sort((a, b) => a - b);
         const currentIndex = toothNumbers.indexOf(current);
         if (currentIndex !== -1 && currentIndex < toothNumbers.length - 1) {
+            handlePreviewChange(selectedTooth, null);
             selectTooth(toothNumbers[currentIndex + 1]);
         }
     };
@@ -35,6 +59,7 @@ const ChartPathology = () => {
         const toothNumbers = Object.keys(teeth).map(Number).sort((a, b) => a - b);
         const currentIndex = toothNumbers.indexOf(current);
         if (currentIndex > 0) {
+            handlePreviewChange(selectedTooth, null);
             selectTooth(toothNumbers[currentIndex - 1]);
         }
     };
@@ -50,7 +75,7 @@ const ChartPathology = () => {
 
     const renderView = () => {
         const props = {
-            teeth,
+            teeth: renderedTeeth,
             onToothClick: handleToothClick,
             activeTooth: selectedTooth
         };
@@ -75,6 +100,7 @@ const ChartPathology = () => {
                     onClose={handleCloseDrawer}
                     onNext={handleNextTooth}
                     onPrevious={handlePreviousTooth}
+                    onPreviewChange={handlePreviewChange}
                 />
             )}
         </div>
