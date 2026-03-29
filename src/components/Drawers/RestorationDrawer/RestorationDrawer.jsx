@@ -3,6 +3,7 @@ import { useAppStore } from '../../../core/store/appStore';
 import { AppFacade } from '../../../core/AppFacade';
 import styles from './RestorationDrawer.module.css';
 import { buildRestorationPreview } from '../../../utils/toothPreviewBuilders';
+import { getRestorationPresetZones } from '../../../utils/restorationZonePresets';
 
 // Subcomponents
 import DrawerHeader from './components/DrawerHeader';
@@ -26,6 +27,14 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
         // Reset local variables only once on mount or tooth change
         resetForm();
     }, [toothNumber, resetForm]);
+
+    useEffect(() => {
+        const presetZones = getRestorationPresetZones(selectedRestorationType, toothNumber);
+
+        if (presetZones.length > 0) {
+            updateForm({ selectedZones: presetZones });
+        }
+    }, [selectedRestorationType, toothNumber, updateForm]);
 
     useEffect(() => {
         if (!onPreviewChange) return undefined;
@@ -132,6 +141,7 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                     const newCrown = {
                         id: newItemId,
                         status: 'planned',
+                        zones: selectedZones,
                         material: crownMaterial || 'Ceramic',
                         quality: 'Sufficient',
                         type: crownType || 'Single Crown',
@@ -150,6 +160,12 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                         baseItem = {
                             id: newItemId,
                             tooth: toothNumber,
+                            type: 'restoration',
+                            subtype: 'crown',
+                            material: newCrown.material,
+                            crownType: newCrown.type,
+                            base: newCrown.base,
+                            zones: selectedZones,
                             procedure: procedureString,
                         };
                     }

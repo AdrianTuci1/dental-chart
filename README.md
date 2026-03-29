@@ -257,3 +257,7 @@ npm run dev
 
 **Version**: 1.0.0-beta
 **Last updated**: March 2026
+## Architecture Map
+
+- Open [docs/architecture-map.md](/Users/adriantucicovenco/Proiecte/dchart-oneshot/docs/architecture-map.md) with `markmap-vscode` for a navigable project mindmap.
+- Use it together with CodeGraphy: CodeGraphy shows imports, while the architecture map explains why files exist and how features are grouped.

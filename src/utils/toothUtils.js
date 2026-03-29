@@ -164,53 +164,50 @@ export const mapToothDataToConditions = (tooth, historicalDate = null, treatment
         [Material.NON_PRECIOUS]: '#7f8ebbff' // Dark Gray
     };
 
+    const pushZoneConditions = (items = []) => {
+        items.filter(entry => isBeforeOrAtHistoricalDate(entry)).forEach(entry => {
+            if (!entry.zones || !Array.isArray(entry.zones)) {
+                return;
+            }
+
+            entry.zones.forEach(zone => {
+                let surface = zoneMap[zone];
+
+                if (!surface && typeof zone === 'string') {
+                    surface = zone;
+                }
+
+                if (surface) {
+                    const baseColor = materialColorMap[entry.material] || '#3B82F6';
+                    conditions.push({
+                        surface,
+                        zone,
+                        color: baseColor,
+                        opacity: 0.6
+                    });
+                }
+            });
+        });
+    };
+
     // Map Restorations (Fillings)
     if (tooth.restoration && tooth.restoration.fillings) {
-        tooth.restoration.fillings.filter(f => isBeforeOrAtHistoricalDate(f)).forEach(filling => {
-            if (filling.zones && Array.isArray(filling.zones)) {
-                filling.zones.forEach(zone => {
-                    let surface = zoneMap[zone];
-                    // Fallback for direct string matches if enum fails
-                    if (!surface && typeof zone === 'string') {
-                        surface = zone;
-                    }
+        pushZoneConditions(tooth.restoration.fillings);
+    }
 
-                    if (surface) {
-                        const baseColor = materialColorMap[filling.material] || '#3B82F6';
-                        conditions.push({
-                            surface: surface,
-                            zone: zone, // Preserve original zone for filtering (e.g. Buccal vs Palatal)
-                            color: baseColor,
-                            opacity: 0.6
-                        });
-                    }
-                });
-            }
-        });
+    // Map Crowns
+    if (tooth.restoration && tooth.restoration.crowns) {
+        pushZoneConditions(tooth.restoration.crowns);
     }
 
     // Map Advanced Restorations (Inlay, Onlay, Partial Crown)
     if (tooth.restoration && tooth.restoration.advancedRestorations) {
-        tooth.restoration.advancedRestorations.filter(r => isBeforeOrAtHistoricalDate(r)).forEach(rest => {
-            if (rest.zones && Array.isArray(rest.zones)) {
-                rest.zones.forEach(zone => {
-                    let surface = zoneMap[zone];
-                    if (!surface && typeof zone === 'string') {
-                        surface = zone;
-                    }
+        pushZoneConditions(tooth.restoration.advancedRestorations);
+    }
 
-                    if (surface) {
-                        const baseColor = materialColorMap[rest.material] || '#3B82F6';
-                        conditions.push({
-                            surface: surface,
-                            zone: zone,
-                            color: baseColor,
-                            opacity: 0.6
-                        });
-                    }
-                });
-            }
-        });
+    // Map Veneers
+    if (tooth.restoration && tooth.restoration.veneers) {
+        pushZoneConditions(tooth.restoration.veneers);
     }
 
     // Map Pathology (Decay)
@@ -319,6 +316,7 @@ export const mapViewToImageView = (view, toothNumber) => {
  */
 export const getToothCondition = (tooth, historicalDate = null) => {
     if (!tooth) return 'withRoots';
+    const developmentState = tooth.developmentState?.toLowerCase();
 
     const isBeforeOrAtHistoricalDate = (item) => {
         if (!historicalDate) return true; // Show everything in current view
@@ -334,6 +332,12 @@ export const getToothCondition = (tooth, historicalDate = null) => {
         if (!item.date) return true; // Show legacy items unconditionally
         return new Date(item.date) <= new Date(historicalDate);
     };
+
+    if (developmentState === 'not yet developed') return 'notYetDeveloped';
+
+    if (developmentState === 'baby tooth missing' || developmentState === 'adult tooth missing') {
+        return 'missing';
+    }
 
     // 1. Check for Missing
     if (tooth.isMissing && isBeforeOrAtHistoricalDate(tooth.missingDate)) return 'missing';

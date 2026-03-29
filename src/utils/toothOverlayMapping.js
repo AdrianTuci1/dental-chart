@@ -34,6 +34,7 @@ const PREMOLAR_MAP = {
     'buccal cusp': 'molar-buccal-cusp.svg',
     'lingual cusp': 'molar-palatal-cusp.svg',
     'Buccal Surf': 'molar-buccal-surface.svg',
+    'Palatal Surf': 'molar-palatal-surface.svg',
     'Lingual Surf': 'molar-palatal-surface.svg'
 };
 

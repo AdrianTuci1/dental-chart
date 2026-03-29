@@ -5,6 +5,7 @@ import { useAppStore } from '../../core/store/appStore';
 import { AppFacade } from '../../core/AppFacade';
 import ToothZones from './ToothZones';
 import { getToothType } from '../../utils/toothUtils';
+import { getRestorationPresetZones } from '../../utils/restorationZonePresets';
 import './ToothRestoration.css';
 import { buildRestorationPreview } from '../../utils/toothPreviewBuilders';
 
@@ -92,14 +93,12 @@ const ToothRestoration = () => {
 
     // Effect for default zone selection
     useEffect(() => {
-        if (selectedRestorationType === 'inlay') {
-            setSelectedZones(['Occlusal', 'Mesial', 'Distal']);
-        } else if (selectedRestorationType === 'onlay') {
-            setSelectedZones(['Mesial', 'Distal']);
-        } else if (selectedRestorationType === 'partial_crown') {
-            setSelectedZones(['Buccal', 'Buccal Cusp']);
+        const presetZones = getRestorationPresetZones(selectedRestorationType, tooth?.toothNumber);
+
+        if (presetZones.length > 0) {
+            setSelectedZones(presetZones);
         }
-    }, [selectedRestorationType]);
+    }, [selectedRestorationType, tooth?.toothNumber]);
 
     // Effect for Real-time Preview
     React.useEffect(() => {
@@ -181,10 +180,12 @@ const ToothRestoration = () => {
             if (crownType) parts.push(crownType);
             if (crownBase) parts.push(crownBase);
             if (implantType) parts.push(implantType);
+            if (selectedZones.length > 0) parts.push(selectedZones.join(', '));
             structuredFields.subtype = 'crown';
             structuredFields.material = crownMaterial || 'Ceramic';
             structuredFields.crownType = crownType || 'Single Crown';
             structuredFields.base = crownBase || 'Natural';
+            structuredFields.zones = selectedZones;
             if (crownBase === 'Implant' && implantType) {
                 structuredFields.implantType = implantType;
             }
@@ -282,6 +283,7 @@ const ToothRestoration = () => {
             case 'crown':
                 if (crownMaterial || crownType || crownBase) {
                     const newCrown = attachMeta({
+                        zones: selectedZones,
                         material: crownMaterial || 'Ceramic',
                         quality: 'Sufficient',
                         type: crownType || 'Single Crown',

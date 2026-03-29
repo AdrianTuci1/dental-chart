@@ -21,7 +21,8 @@ const ToothRenderer = ({
 
     const imageView = mapViewToImageView(view, toothNumber);
     const condition = toothData ? getToothCondition(toothData, historicalDate) : 'withRoots';
-    const toothImagePath = getToothImage(toothNumber, condition, imageView);
+    const isNotYetDeveloped = condition === 'notYetDeveloped';
+    const toothImagePath = isNotYetDeveloped ? null : getToothImage(toothNumber, condition, imageView);
 
     // For the overlay mask, we need a shape that includes the coronal part.
     // If the tooth relies on an implant image, the implant image itself doesn't have a crown shape
@@ -81,7 +82,14 @@ const ToothRenderer = ({
                     transform: containerTransform
                 }}
             >
-                {toothImagePath ? (
+                {isNotYetDeveloped ? (
+                    <div className={`tooth-placeholder not-developed ${view === 'topview' ? 'top-view' : 'side-view'}`}>
+                        <div className="not-developed-marker">
+                            <span className="not-developed-line" />
+                            <span className="not-developed-circle" />
+                        </div>
+                    </div>
+                ) : toothImagePath ? (
                     <>
                         <img
                             src={toothImagePath}

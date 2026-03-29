@@ -18,6 +18,7 @@ describe('ChartModel.projectTeethFromInterventions', () => {
                     type: 'restoration',
                     subtype: 'crown',
                     material: 'Ceramic',
+                    zones: ['Buccal', 'Occlusal', 'Palatal'],
                     crownType: 'Pontic',
                     base: 'Natural',
                     status: 'completed',
@@ -102,6 +103,7 @@ describe('ChartModel.projectTeethFromInterventions', () => {
         expect(teeth[11].developmentState).toBe('baby tooth');
         expect(teeth[11].restoration.crowns).toHaveLength(1);
         expect(teeth[11].restoration.crowns[0].type).toBe('Pontic');
+        expect(teeth[11].restoration.crowns[0].zones).toEqual(['Buccal', 'Occlusal', 'Palatal']);
         expect(teeth[11].restoration.veneers[0].id).toBe('plan-veneer');
         expect(teeth[11].restoration.advancedRestorations[0].type).toBe('inlay');
         expect(teeth[11].pathology.fracture.crown).toBe(true);

@@ -151,6 +151,7 @@ export const buildRestorationPreview = (tooth, selectedRestorationType, formStat
         case 'crown':
             if (crownMaterial) {
                 const previewCrown = {
+                    zones: selectedZones,
                     material: crownMaterial,
                     quality: 'Sufficient',
                     type: crownType || 'Single Crown',

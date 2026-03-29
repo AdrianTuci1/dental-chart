@@ -110,8 +110,7 @@ const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumbe
                             style={style}
                             onClick={() => handleZoneClick(zone.id, isZoneInactive)}
                         >
-                            {/* Don't show label text in inactive mode */}
-                            {!isZoneInactive && zone.label}
+                            {(!isZoneInactive || isSelected) && zone.label}
                         </li>
                     );
                 })}
