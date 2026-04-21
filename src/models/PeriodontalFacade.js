@@ -108,16 +108,30 @@ export class PeriodontalFacade {
         const pd = {};
         const gm = {};
         const bleeding = [];
+        const plaque = [];
+        const pus = [];
+        const tartar = [];
 
         Object.keys(this.tooth.periodontal.sites).forEach(siteKey => {
             const siteData = this.tooth.periodontal.sites[siteKey];
             if (siteData.probingDepth !== undefined) pd[siteKey] = siteData.probingDepth;
             if (siteData.gingivalMargin !== undefined) gm[siteKey] = siteData.gingivalMargin;
             if (siteData.bleeding) bleeding.push(siteKey);
+            if (siteData.plaque) plaque.push(siteKey);
+            if (siteData.pus) pus.push(siteKey);
+            if (siteData.tartar) tartar.push(siteKey);
         });
 
         // Only generate an event if there's actual data
-        if (Object.keys(pd).length === 0 && Object.keys(gm).length === 0 && bleeding.length === 0) {
+        if (
+            Object.keys(pd).length === 0 &&
+            Object.keys(gm).length === 0 &&
+            bleeding.length === 0 &&
+            plaque.length === 0 &&
+            pus.length === 0 &&
+            tartar.length === 0 &&
+            !this.tooth.periodontal.mobility
+        ) {
             return null;
         }
 
@@ -130,7 +144,11 @@ export class PeriodontalFacade {
             date: new Date().toISOString().split('T')[0],
             probingDepth: pd,
             gingivalMargin: gm,
-            bleedingSites: bleeding
+            bleedingSites: bleeding,
+            plaqueSites: plaque,
+            pusSites: pus,
+            tartarSites: tartar,
+            mobility: this.tooth.periodontal.mobility || null,
         };
     }
 }

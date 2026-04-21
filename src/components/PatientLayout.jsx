@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
 import { useAppStore } from '../core/store/appStore';
 import { AppFacade } from '../core/AppFacade';
-import { ChartModel } from '../core/models/ChartModel';
 import PatientSidebar from './PatientSidebar';
 import { Loader2 } from 'lucide-react';
 
@@ -10,8 +9,7 @@ import './PatientLayout.css';
 
 const PatientLayout = () => {
     const { patientId } = useParams();
-    const { selectedPatient, selectPatient } = useAppStore();
-    const { setTeeth } = useAppStore();
+    const { selectedPatient } = useAppStore();
 
     const [isLoading, setIsLoading] = useState(true);
 
@@ -23,17 +21,7 @@ const PatientLayout = () => {
 
             setIsLoading(true);
             try {
-                // Use Facade for standardized loading
-                const patientData = await AppFacade.patient.loadFull(patientId);
-
-                if (isMounted && patientData) {
-                    // Reconstruct teeth state from interventions
-                    const projectedTeeth = ChartModel.projectTeethFromInterventions(
-                        patientData.history || [],
-                        patientData.treatmentPlan || []
-                    );
-                    setTeeth(projectedTeeth);
-                }
+                await AppFacade.patient.loadFull(patientId);
             } catch (error) {
                 console.error("Failed to load patient or chart data in layout", error);
             } finally {
@@ -48,7 +36,7 @@ const PatientLayout = () => {
         return () => {
             isMounted = false;
         };
-    }, [patientId, setTeeth]);
+    }, [patientId]);
 
     if (isLoading) {
         return (
@@ -82,4 +70,3 @@ const PatientLayout = () => {
 };
 
 export default PatientLayout;
-

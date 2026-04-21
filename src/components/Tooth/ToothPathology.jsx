@@ -5,13 +5,14 @@ import { useAppStore } from '../../core/store/appStore';
 import { AppFacade } from '../../core/AppFacade';
 import ToothZones from './ToothZones';
 import './ToothPathology.css';
+import { buildPathologyPreview } from '../../utils/toothPreviewBuilders';
 
 const ToothPathology = () => {
     const { type } = useParams();
     const navigate = useNavigate();
     const { tooth } = useOutletContext();
     const { updateTooth } = useAppStore();
-    const { selectedPatient, addTreatmentPlanItem, addToHistory } = useAppStore();
+    const { selectedPatient } = useAppStore();
 
     // Track if a pathology type is selected (null means none selected)
     const [selectedPathologyType, setSelectedPathologyType] = useState(type || null);
@@ -84,79 +85,21 @@ const ToothPathology = () => {
     React.useEffect(() => {
         if (!tooth || !setPreviewData) return;
 
-        // If no pathology type selected, clear preview
-        if (!selectedPathologyType) {
-            setPreviewData(null);
-            return;
-        }
+        const previewTooth = buildPathologyPreview(tooth, selectedPathologyType, {
+            selectedZones,
+            decayMaterial,
+            cavitation,
+            cavitationLevel,
+            fractureLocation,
+            fractureDirection,
+            toothWearType,
+            toothWearSurface,
+            discolorationColor,
+            apicalPresent,
+            developmentDisorderPresent,
+        });
 
-        // Construct preview pathology object based on current selections
-        const previewPathology = JSON.parse(JSON.stringify(tooth.pathology || {}));
-
-        // Helper to check if minimum requirements for preview are met
-        let isValidPreview = false;
-
-        switch (selectedPathologyType) {
-            case 'decay':
-                if (selectedZones.length > 0) {
-                    // Creating a temporary decay item for preview even if incomplete
-                    const newDecay = {
-                        type: `${decayMaterial || '?'}-${cavitation || '?'}-${cavitationLevel || '?'}`,
-                        zones: selectedZones
-                    };
-                    previewPathology.decay = [...(previewPathology.decay || []), newDecay];
-                    isValidPreview = true;
-                }
-                break;
-            case 'fracture':
-                if (fractureLocation === 'crown') {
-                    previewPathology.fracture.crown = true;
-                    isValidPreview = true;
-                } else if (fractureLocation === 'root' && fractureDirection) {
-                    previewPathology.fracture.root = fractureDirection === 'vertical' ? 'Vertical' : 'Horizontal';
-                    isValidPreview = true;
-                }
-                break;
-            case 'tooth-wear':
-                // For wear, we need type and surface to render properly? Or just mock it?
-                // Visualizer might need surface.
-                if (toothWearType && toothWearSurface) {
-                    previewPathology.toothWear = {
-                        type: toothWearType === 'abrasion' ? 'Abrasion' : 'Erosion',
-                        surface: toothWearSurface === 'buccal' ? 'Buccal' : 'Palatal'
-                    };
-                    isValidPreview = true;
-                }
-                break;
-            case 'discoloration':
-                if (discolorationColor) {
-                    previewPathology.discoloration = discolorationColor.charAt(0).toUpperCase() + discolorationColor.slice(1);
-                    isValidPreview = true;
-                }
-                break;
-            case 'apical':
-                if (apicalPresent !== null) {
-                    previewPathology.apicalPathology = apicalPresent;
-                    isValidPreview = true;
-                }
-                break;
-            case 'development-disorder':
-                if (developmentDisorderPresent !== null) {
-                    previewPathology.developmentDisorder = developmentDisorderPresent;
-                    isValidPreview = true;
-                }
-                break;
-        }
-
-        if (isValidPreview) {
-            setPreviewData({
-                ...tooth,
-                pathology: previewPathology
-            });
-        } else {
-            setPreviewData(null);
-        }
-
+        setPreviewData(previewTooth);
     }, [
         tooth,
         selectedPathologyType,

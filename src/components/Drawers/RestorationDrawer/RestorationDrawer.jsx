@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../../../core/store/appStore';
 import { AppFacade } from '../../../core/AppFacade';
 import styles from './RestorationDrawer.module.css';
+import { buildRestorationPreview } from '../../../utils/toothPreviewBuilders';
+import { getRestorationPresetZones } from '../../../utils/restorationZonePresets';
 
 // Subcomponents
 import DrawerHeader from './components/DrawerHeader';
@@ -9,7 +11,7 @@ import TypeSelector from './components/TypeSelector';
 import RestorationWizard from './components/RestorationWizard';
 import { useRestorationForm } from './hooks/useRestorationForm';
 
-const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious, initialType = null }) => {
+const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious, initialType = null, onPreviewChange }) => {
     const { teeth, selectedPatient } = useAppStore(); // Removed updateTooth and addTreatmentPlanItem
     const updateTooth = useAppStore(state => state.updateTooth); // Added specific updateTooth selector
     const tooth = teeth[toothNumber];
@@ -25,6 +27,25 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
         // Reset local variables only once on mount or tooth change
         resetForm();
     }, [toothNumber, resetForm]);
+
+    useEffect(() => {
+        const presetZones = getRestorationPresetZones(selectedRestorationType, toothNumber);
+
+        if (presetZones.length > 0) {
+            updateForm({ selectedZones: presetZones });
+        }
+    }, [selectedRestorationType, toothNumber, updateForm]);
+
+    useEffect(() => {
+        if (!onPreviewChange) return undefined;
+
+        const previewTooth = buildRestorationPreview(tooth, selectedRestorationType, formState);
+        onPreviewChange(toothNumber, previewTooth);
+
+        return () => {
+            onPreviewChange(toothNumber, null);
+        };
+    }, [tooth, toothNumber, selectedRestorationType, formState, onPreviewChange]);
 
     const restorationTypes = [
         { id: 'filling', label: 'Filling', route: 'filling' },
@@ -120,6 +141,7 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                     const newCrown = {
                         id: newItemId,
                         status: 'planned',
+                        zones: selectedZones,
                         material: crownMaterial || 'Ceramic',
                         quality: 'Sufficient',
                         type: crownType || 'Single Crown',
@@ -138,6 +160,12 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                         baseItem = {
                             id: newItemId,
                             tooth: toothNumber,
+                            type: 'restoration',
+                            subtype: 'crown',
+                            material: newCrown.material,
+                            crownType: newCrown.type,
+                            base: newCrown.base,
+                            zones: selectedZones,
                             procedure: procedureString,
                         };
                     }

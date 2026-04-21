@@ -21,21 +21,20 @@ const ToothItem = ({ toothNumber, toothData, isSelected, onSelectTooth, treatmen
         ? ['frontal', 'topview', 'lingual']
         : ['lingual', 'topview', 'frontal'];
 
-    const OFFSETS = [1, 2, 1];
-    const getSiteData = (data, key) => (data?.periodontal?.sites?.[key] || { probingDepth: 0, gingivalMargin: 0 });
-
-    const getDataValues = (keys) => {
-        const pd = [];
-        const gm = [];
-        keys.forEach((key, index) => {
-            const d = getSiteData(toothData, key);
-            pd.push((d.probingDepth || 0) + OFFSETS[index]);
-            gm.push(Math.abs(d.gingivalMargin || 0) + OFFSETS[index]);
-        });
-        return { pd, gm };
-    };
-
     const models = React.useMemo(() => {
+        const offsets = [1, 2, 1];
+        const getSiteData = (key) => (toothData?.periodontal?.sites?.[key] || { probingDepth: 0, gingivalMargin: 0 });
+        const getDataValues = (keys) => {
+            const pd = [];
+            const gm = [];
+            keys.forEach((key, index) => {
+                const data = getSiteData(key);
+                pd.push((data.probingDepth || 0) + offsets[index]);
+                gm.push(Math.abs(data.gingivalMargin || 0) + offsets[index]);
+            });
+            return { pd, gm };
+        };
+
         const buccalModel = new WaveInteractionModel();
         const lingualModel = new WaveInteractionModel();
 
@@ -118,8 +117,6 @@ const ToothVisualization = ({ toothNumber, onSelectTooth, overrideToothData }) =
     const sidebarScrollRef = useRef(null);
     const teeth = useAppStore(state => state.teeth);
     const { selectedPatient } = useAppStore();
-
-    console.log(`[ToothVisualization] Render! Current tooth data:`, teeth[currentTooth]?.periodontal?.sites);
 
     const [displayState, setDisplayState] = useState({
         teeth: [currentTooth],

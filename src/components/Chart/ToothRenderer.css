@@ -89,3 +89,46 @@
 .tooth-renderer.no-scale .tooth-inner {
     transform: none;
 }
+
+.tooth-placeholder {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tooth-placeholder.side-view {
+    aspect-ratio: 54 / 172;
+}
+
+.tooth-placeholder.top-view {
+    aspect-ratio: 54 / 94;
+}
+
+.not-developed-marker {
+    position: relative;
+    width: 46%;
+    height: 46%;
+    min-width: 18px;
+    min-height: 18px;
+}
+
+.not-developed-line {
+    position: absolute;
+    top: -10%;
+    bottom: -10%;
+    left: 50%;
+    width: 2px;
+    transform: translateX(-50%);
+    background: rgba(100, 116, 139, 0.9);
+    border-radius: 999px;
+}
+
+.not-developed-circle {
+    position: absolute;
+    inset: 22%;
+    border: 2px solid rgba(100, 116, 139, 0.9);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.8);
+}

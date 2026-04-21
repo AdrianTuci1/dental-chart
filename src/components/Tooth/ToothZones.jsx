@@ -1,9 +1,7 @@
-import React from 'react';
-
 import { ToothZone } from '../../models/Enums';
 import './ToothZones.css';
 
-const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumber, zoneColor, className, restorationType }) => {
+const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumber, className, restorationType }) => {
 
     // Determine last 4 zones based on tooth index (last digit)
     const getDynamicZones = () => {
@@ -103,12 +101,6 @@ const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumbe
                     const isSelected = selectedZones.includes(zone.id);
                     const style = {
                         gridArea: zone.area,
-                        // Apply dynamic color if selected, otherwise rely on CSS class
-                        ...(isSelected && zoneColor ? {
-                            backgroundColor: zoneColor,
-                            color: '#ffffff', // Ensure text is readable on colored background
-                            borderColor: zoneColor
-                        } : {})
                     };
 
                     return (
@@ -118,8 +110,7 @@ const ToothZones = ({ selectedZones = [], onChange, inactive = false, toothNumbe
                             style={style}
                             onClick={() => handleZoneClick(zone.id, isZoneInactive)}
                         >
-                            {/* Don't show label text in inactive mode */}
-                            {!isZoneInactive && zone.label}
+                            {(!isZoneInactive || isSelected) && zone.label}
                         </li>
                     );
                 })}

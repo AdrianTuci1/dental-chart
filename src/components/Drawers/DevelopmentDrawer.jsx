@@ -1,5 +1,4 @@
 import React from 'react';
-import { useAppStore } from '../../core/store/appStore';
 import { AppFacade } from '../../core/AppFacade';
 import './DevelopmentDrawer.css';
 
@@ -14,7 +13,7 @@ const DevelopmentDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
     });
 
     const options = [
-        { id: 'not-yet-developed', label: 'Not yet developed', action: { developmentState: 'not yet developed', isMissing: true } },
+        { id: 'not-yet-developed', label: 'Not yet developed', action: { developmentState: 'not yet developed', isMissing: false } },
         ...(hasAnteriorOrPremolar ? [
             { id: 'baby-tooth', label: 'Baby tooth', action: { developmentState: 'baby tooth', isMissing: false } },
             { id: 'baby-tooth-missing', label: 'Baby tooth missing', action: { developmentState: 'baby tooth missing', isMissing: true } }
@@ -30,7 +29,10 @@ const DevelopmentDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
             if (isMolar && (action.developmentState === 'baby tooth' || action.developmentState === 'baby tooth missing')) {
                 return;
             }
-            updates[toothNumber] = { ...action };
+            updates[toothNumber] = {
+                ...action,
+                missingDate: action.isMissing ? new Date().toISOString() : null,
+            };
         });
         AppFacade.chart.updateTeethBatch(updates);
         onClose();

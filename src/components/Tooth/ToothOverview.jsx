@@ -7,19 +7,20 @@ import ConfirmationModal from '../UI/ConfirmationModal';
 import './ToothOverview.css';
 import EndodonticSection from './EndodonticSection';
 import PeriodontalSection from './PeriodontalSection';
+import { ToothModel } from '../../core/models/ToothModel';
 
 import EndoTestDetail from './EndoTestDetail';
 import { suggestPulpalDiagnosis } from '../../utils/endoDiagnosis';
+import { getEndoTests } from '../../utils/endoUtils';
 import DiagnosisModal from './DiagnosisModal';
 
 const ToothOverview = () => {
     const { tooth } = useOutletContext();
     const navigate = useNavigate();
     // No longer using updateTooth from store directly
-    const { selectedPatient, completeTreatmentPlanItem } = useAppStore();
+    const { selectedPatient } = useAppStore();
 
     const [selectedTest, setSelectedTest] = useState(null);
-    const [testResults, setTestResults] = useState(tooth?.endodontic?.tests || {});
     const [suggestedDiagnosis, setSuggestedDiagnosis] = useState(null);
 
     const handleTestSelect = (testName) => {
@@ -34,11 +35,10 @@ const ToothOverview = () => {
 
     const handleSaveTest = (testName, data) => {
         const testKey = testName.toLowerCase();
-        const newResults = { ...testResults, [testKey]: data };
+        const newResults = { ...getEndoTests(tooth?.endodontic), [testKey]: data };
         if (!data) {
             delete newResults[testKey];
         }
-        setTestResults(newResults);
 
         // Update tooth in store with structured data
         // We also set boolean flags (cold, heat, etc) for NormalView icons
@@ -115,13 +115,15 @@ const ToothOverview = () => {
     };
 
     const handleConfirm = () => {
+        const toothNumber = tooth.isoNumber || tooth.toothNumber;
+
         if (modalState.action === 'reset') {
-            // Reset the tooth
-            tooth.reset();
-            AppFacade.chart.updateTooth(tooth.isoNumber, { ...tooth });
+            AppFacade.chart.updateTooth(toothNumber, ToothModel.create(toothNumber));
         } else if (modalState.action === 'missing') {
-            // Mark tooth as missing
-            AppFacade.chart.updateTooth(tooth.isoNumber, { isMissing: true });
+            AppFacade.chart.updateTooth(toothNumber, {
+                isMissing: true,
+                missingDate: new Date().toISOString(),
+            });
         }
 
         setModalState({ isOpen: false, action: null, title: '', message: '' });

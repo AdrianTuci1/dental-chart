@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Snowflake, Gavel, Hand, Flame, Zap } from 'lucide-react';
 import JawTooth from './JawTooth';
 import { useAppStore } from '../../../core/store/appStore';
+import { hasEndoTestResult } from '../../../utils/endoUtils';
+import { getPrimaryCounterpart } from '../../../utils/toothUtils';
 import './NormalView.css';
 
 const NormalView = ({
-    teeth,
+    resolvedTeeth,
     onToothClick,
     selectedTeeth,
     activeTooth,
@@ -37,14 +39,16 @@ const NormalView = ({
     const upperTeethNumbers = [...q1, ...q2];
     const lowerTeethNumbers = [...q4, ...q3];
 
+
+
     const getEndoIcons = (tooth, type) => {
         if (!showEndo || !tooth || !tooth.endodontic) return null;
         const iconDefs = [
-            { key: 'cold', val: tooth.endodontic.cold, icon: <Snowflake size={18} className="endo-icon-cold" /> },
-            { key: 'percussion', val: tooth.endodontic.percussion, icon: <Gavel size={18} className="endo-icon-percussion" /> },
-            { key: 'palpation', val: tooth.endodontic.palpation, icon: <Hand size={18} className="endo-icon-palpation" /> },
-            { key: 'heat', val: tooth.endodontic.heat, icon: <Flame size={18} className="endo-icon-heat" /> },
-            { key: 'electricity', val: tooth.endodontic.electricity, icon: <Zap size={18} className="endo-icon-electricity" /> },
+            { key: 'cold', val: hasEndoTestResult(tooth.endodontic, 'cold'), icon: <Snowflake size={18} className="endo-icon-cold" /> },
+            { key: 'percussion', val: hasEndoTestResult(tooth.endodontic, 'percussion'), icon: <Gavel size={18} className="endo-icon-percussion" /> },
+            { key: 'palpation', val: hasEndoTestResult(tooth.endodontic, 'palpation'), icon: <Hand size={18} className="endo-icon-palpation" /> },
+            { key: 'heat', val: hasEndoTestResult(tooth.endodontic, 'heat'), icon: <Flame size={18} className="endo-icon-heat" /> },
+            { key: 'electricity', val: hasEndoTestResult(tooth.endodontic, 'electricity'), icon: <Zap size={18} className="endo-icon-electricity" /> },
         ];
 
         const activeIcons = iconDefs.filter(d => d.val);
@@ -69,51 +73,57 @@ const NormalView = ({
             <div className="full-mouth jaw-box">
                 {/* Upper Jaw */}
                 <ol className="jaw" data-type="upper">
-                    {upperTeethNumbers.map((number, index) => (
-                        <li key={number} className="tooth-container">
-                            <div className="endo-labels-container">
-                                {getEndoIcons(teeth[number], 'upper')}
-                            </div>
-                            <JawTooth
-                                toothNumber={number}
-                                toothData={teeth[number]}
-                                views={upperJawViews}
-                                onToothClick={onToothClick}
-                                isSelected={selectedTeeth && selectedTeeth.has(number)}
-                                isDimmed={activeTooth && activeTooth !== number}
-                                showPerioGrid={showPerioGrid}
-                                showPerioLabels={index === 0}
-                                showWaves={showWaves}
-                            />
-                        </li>
-                    ))}
+                    {upperTeethNumbers.map((baseNumber, index) => {
+                        const resolved = resolvedTeeth[baseNumber] || { displayNumber: baseNumber, toothData: undefined };
+                        const number = resolved.displayNumber;
+                        return (
+                            <li key={number} className="tooth-container">
+                                <div className="endo-labels-container">
+                                    {getEndoIcons(resolved.toothData, 'upper')}
+                                </div>
+                                <JawTooth
+                                    toothNumber={number}
+                                    toothData={resolved.toothData}
+                                    views={upperJawViews}
+                                    onToothClick={onToothClick}
+                                    isSelected={selectedTeeth && selectedTeeth.has(number)}
+                                    isDimmed={activeTooth && activeTooth !== number}
+                                    showPerioGrid={showPerioGrid}
+                                    showPerioLabels={index === 0}
+                                    showWaves={showWaves}
+                                />
+                            </li>
+                        );
+                    })}
                 </ol>
 
                 {/* Lower Jaw */}
                 <ol className="jaw" data-type="lower">
-                    {lowerTeethNumbers.map((number, index) => (
-                        <li key={number} className="tooth-container">
-                            <JawTooth
-                                toothNumber={number}
-                                toothData={teeth[number]}
-                                views={lowerJawViews}
-                                onToothClick={onToothClick}
-                                isSelected={selectedTeeth && selectedTeeth.has(number)}
-                                isDimmed={activeTooth && activeTooth !== number}
-                                showPerioGrid={showPerioGrid}
-                                showPerioLabels={index === 0}
-                                showWaves={showWaves}
-                            />
-                            <div className="endo-labels-container">
-                                {getEndoIcons(teeth[number], 'lower')}
-                            </div>
-                        </li>
-                    ))}
+                    {lowerTeethNumbers.map((baseNumber, index) => {
+                        const resolved = resolvedTeeth[baseNumber] || { displayNumber: baseNumber, toothData: undefined };
+                        const number = resolved.displayNumber;
+                        return (
+                            <li key={number} className="tooth-container">
+                                <JawTooth
+                                    toothNumber={number}
+                                    toothData={resolved.toothData}
+                                    views={lowerJawViews}
+                                    onToothClick={onToothClick}
+                                    isSelected={selectedTeeth && selectedTeeth.has(number)}
+                                    isDimmed={activeTooth && activeTooth !== number}
+                                    showPerioGrid={showPerioGrid}
+                                    showPerioLabels={index === 0}
+                                    showWaves={showWaves}
+                                />
+                                <div className="endo-labels-container">
+                                    {getEndoIcons(resolved.toothData, 'lower')}
+                                </div>
+                            </li>
+                        );
+                    })}
                 </ol>
-
-
             </div>
-        </div >
+        </div>
     );
 };
 

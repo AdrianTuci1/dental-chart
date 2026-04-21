@@ -1,5 +1,4 @@
-import React from 'react';
-import { getToothImage, mapViewToImageView, getToothCondition } from '../../utils/toothUtils';
+import { getToothImage, mapViewToImageView, getToothCondition, isUpperJaw as checkIsUpperJaw } from '../../utils/toothUtils';
 import ToothMask from './ToothMask';
 import './ToothRenderer.css';
 
@@ -15,13 +14,14 @@ const ToothRenderer = ({
     historicalDate = null
 }) => {
     const tNum = parseInt(toothNumber, 10);
-    const isUpperJaw = (tNum >= 11 && tNum <= 28) || (tNum >= 51 && tNum <= 65);
+    const isUpperJaw = checkIsUpperJaw(tNum);
     const isLower = !isUpperJaw;
     const jawClass = isUpperJaw ? 'upper-jaw' : 'lower-jaw';
 
     const imageView = mapViewToImageView(view, toothNumber);
     const condition = toothData ? getToothCondition(toothData, historicalDate) : 'withRoots';
-    const toothImagePath = getToothImage(toothNumber, condition, imageView);
+    const isNotYetDeveloped = condition === 'notYetDeveloped';
+    const toothImagePath = isNotYetDeveloped ? null : getToothImage(toothNumber, condition, imageView);
 
     // For the overlay mask, we need a shape that includes the coronal part.
     // If the tooth relies on an implant image, the implant image itself doesn't have a crown shape
@@ -43,8 +43,8 @@ const ToothRenderer = ({
     // Right Side (11-18, 41-48): INSIDE (lingual) -> FLIP.
     // Left Side (21-28, 31-38): OUTSIDE (frontal/buccal) -> FLIP.
     // All others: NO FLIP.
-    const isRightSide = (tNum >= 11 && tNum <= 18) || (tNum >= 41 && tNum <= 48);
-    const isLeftSide = (tNum >= 21 && tNum <= 28) || (tNum >= 31 && tNum <= 38);
+    const isRightSide = (tNum >= 11 && tNum <= 18) || (tNum >= 41 && tNum <= 48) || (tNum >= 51 && tNum <= 55) || (tNum >= 81 && tNum <= 85);
+    const isLeftSide = (tNum >= 21 && tNum <= 28) || (tNum >= 31 && tNum <= 38) || (tNum >= 61 && tNum <= 65) || (tNum >= 71 && tNum <= 75);
 
     let shouldMirrorImage = false;
     if (isRightSide && view === 'lingual') shouldMirrorImage = true;
@@ -81,7 +81,14 @@ const ToothRenderer = ({
                     transform: containerTransform
                 }}
             >
-                {toothImagePath ? (
+                {isNotYetDeveloped ? (
+                    <div className={`tooth-placeholder not-developed ${view === 'topview' ? 'top-view' : 'side-view'}`}>
+                        <div className="not-developed-marker">
+                            <span className="not-developed-line" />
+                            <span className="not-developed-circle" />
+                        </div>
+                    </div>
+                ) : toothImagePath ? (
                     <>
                         <img
                             src={toothImagePath}

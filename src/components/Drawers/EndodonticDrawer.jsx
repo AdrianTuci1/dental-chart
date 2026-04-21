@@ -1,8 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppStore } from '../../core/store/appStore';
 import { AppFacade } from '../../core/AppFacade';
 import { Snowflake, Gavel, Hand, Flame, Zap, ChevronRight, ChevronLeft, X } from 'lucide-react';
+import { getEndoTests, normalizeEndoTestKey } from '../../utils/endoUtils';
 import './EndodonticDrawer.css';
+
+const EMPTY_TESTS = {
+    cold: null,
+    heat: null,
+    percussion: null,
+    palpation: null,
+    electricity: ''
+};
+
+const buildInitialFormState = (selectedTeeth = [], teeth = {}) => {
+    const primaryTooth = selectedTeeth.length > 0 ? teeth[selectedTeeth[0]] : null;
+
+    return {
+        hasRootCanal: Boolean(primaryTooth?.endodontic?.hasRootCanal),
+        tests: {
+            ...EMPTY_TESTS,
+            ...getEndoTests(primaryTooth?.endodontic)
+        }
+    };
+};
 
 const EndodonticDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
     const { teeth } = useAppStore();
@@ -11,22 +32,7 @@ const EndodonticDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
     const [activeTest, setActiveTest] = useState(null); // 'Cold', 'Heat', 'Percussion', 'Palpation', 'Electricity'
 
     // We store the full state for all tests here
-    const [formState, setFormState] = useState({
-        hasRootCanal: false,
-        tests: {
-            Cold: null,
-            Heat: null,
-            Percussion: null,
-            Palpation: null,
-            Electricity: ''
-        }
-    });
-
-    useEffect(() => {
-        if (selectedTeeth && selectedTeeth.length > 0) {
-            // we will let the user trigger the load manually, or load once in state init
-        }
-    }, [selectedTeeth, teeth]);
+    const [formState, setFormState] = useState(() => buildInitialFormState(selectedTeeth, teeth));
 
     const persistChanges = (newFormState) => {
         const updates = {};
@@ -49,12 +55,13 @@ const EndodonticDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
     };
 
     const handleTestValueChange = (testName, valueObject) => {
+        const testKey = normalizeEndoTestKey(testName);
         setFormState(prev => {
             const newState = {
                 ...prev,
                 tests: {
                     ...prev.tests,
-                    [testName]: valueObject
+                    [testKey]: valueObject
                 }
             };
             persistChanges(newState);
@@ -68,7 +75,7 @@ const EndodonticDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
                 ...prev,
                 tests: {
                     ...prev.tests,
-                    Electricity: val
+                    electricity: val
                 }
             };
             persistChanges(newState);
@@ -120,7 +127,7 @@ const EndodonticDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
                                     <span>{test}</span>
                                 </div>
                                 <div className="endo-item-action">
-                                    {(formState.tests[test] !== null && formState.tests[test] !== '') ? 'Edit' : 'Test'}
+                                    {(formState.tests[normalizeEndoTestKey(test)] !== null && formState.tests[normalizeEndoTestKey(test)] !== '') ? 'Edit' : 'Test'}
                                     <ChevronRight size={16} className="ml-1" />
                                 </div>
                             </div>
@@ -129,7 +136,7 @@ const EndodonticDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
                 ) : (
                     <TestDetailView
                         testName={activeTest}
-                        currentValue={formState.tests[activeTest]}
+                        currentValue={formState.tests[normalizeEndoTestKey(activeTest)]}
                         onSave={(testName, value) => handleTestValueChange(testName, value)}
                         onElectricityChange={(val) => handleElectricityChange(val)}
                         onBack={() => setActiveTest(null)}

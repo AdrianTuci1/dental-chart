@@ -10,7 +10,6 @@ image = (
     .run_commands(
         "mkdir -p /models",
         # Download Pathology model
-        "huggingface-cli download nsitnov/8024-yolov8-model best.pt --local-dir /models/pathology",
         # Download Tooth detection model (using a common anatomy model)
         "huggingface-cli download keremberke/yolov8m-dental-radiography best.pt --local-dir /models/anatomy"
     )

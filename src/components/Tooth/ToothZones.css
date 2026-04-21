@@ -63,6 +63,10 @@
     pointer-events: none;
 }
 
+.zone-pad.inactive.selected {
+    opacity: 1;
+}
+
 .zone-pad.inactive:hover {
     background: var(--background-tertiary);
     border-color: var(--border-color);
