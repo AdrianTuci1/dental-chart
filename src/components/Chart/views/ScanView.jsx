@@ -5,7 +5,7 @@ import DetectionsPanel from './DetectionsPanel';
 import { MOCK_DETECTIONS } from '../../../utils/mockData';
 import './ScanView.css';
 
-const ScanView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
+const ScanView = ({ teeth, resolvedTeeth, onToothClick, selectedTeeth, activeTooth }) => {
     const [scanImage, setScanImage] = useState('/chart.png');
     const [detections, setDetections] = useState(MOCK_DETECTIONS);
     const [isProcessing, setIsProcessing] = useState(false);
@@ -187,7 +187,7 @@ const ScanView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
                             }}
                         >
                             <NormalView
-                                teeth={teeth}
+                                resolvedTeeth={resolvedTeeth || {}}
                                 onToothClick={onToothClick}
                                 selectedTeeth={selectedTeeth}
                                 activeTooth={activeTooth}

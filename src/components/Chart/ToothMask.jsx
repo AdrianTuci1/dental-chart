@@ -4,6 +4,7 @@ import { getOverlayPath, getOverlaySlice } from '../../utils/toothOverlayMapping
 import { getMaskTransforms } from '../../utils/toothMaskTransforms';
 import { getEndoTransforms } from '../../utils/endoUtils';
 import { getApicalCoordinates } from '../../utils/apicalConfig';
+import { isUpperJaw as checkIsUpperJaw } from '../../utils/toothUtils';
 import './ToothMask.css';
 
 const ToothMask = ({
@@ -20,7 +21,7 @@ const ToothMask = ({
     const APICAL_LINE_WIDTH = 1;
 
     const tNum = parseInt(toothNumber, 10);
-    const isUpperJaw = (tNum >= 11 && tNum <= 28) || (tNum >= 51 && tNum <= 65);
+    const isUpperJaw = checkIsUpperJaw(tNum);
     const canvasRef = useRef(null);
 
     // Draw conditions on overlay canvas (when image is available)
@@ -75,7 +76,7 @@ const ToothMask = ({
                 if (!overlayPath) return null;
 
                 let viewForSlice = view;
-                const isLowerJaw = tNum >= 31 && tNum <= 48;
+                const isLowerJaw = !isUpperJaw;
                 if (isLowerJaw) {
                     if (view === 'frontal') {
                         viewForSlice = 'lingual';

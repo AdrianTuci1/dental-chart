@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
 import './DashboardDialog.css';
 import './BPEPanel.css';
 

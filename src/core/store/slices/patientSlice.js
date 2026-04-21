@@ -1,6 +1,7 @@
 import { produce } from 'immer';
 import { PatientModel } from '../../models/PatientModel';
 import { ChartModel } from '../../models/ChartModel';
+import { resolveDentition } from '../../../utils/toothUtils';
 // import { ActionProxy } from '../../proxies/ActionProxy'; // Future use
 
 const syncSelectedPatientChart = (state) => {
@@ -11,6 +12,7 @@ const syncSelectedPatientChart = (state) => {
     }
 
     state.selectedPatient.chart.teeth = state.teeth;
+    state.resolvedTeeth = resolveDentition(state.teeth);
 };
 
 const reprojectSelectedPatientTeeth = (state, patientId) => {
@@ -62,6 +64,7 @@ export const createPatientSlice = (set) => ({
                 state.selectedPatient = updatedPatient;
                 if (updatedPatient.chart?.teeth) {
                     state.teeth = updatedPatient.chart.teeth;
+                    state.resolvedTeeth = resolveDentition(state.teeth);
                 }
             }
         }));

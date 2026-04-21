@@ -8,7 +8,7 @@ const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3001') + '/a
  * - Auth token injection
  * - Error handling
  */
-const useMock = () => !import.meta.env.VITE_API_URL;
+const useMock = () => import.meta.env.VITE_DEV_MODE === 'true' || !import.meta.env.VITE_API_URL;
 
 /**
  * Generic API client wrapper around fetch.

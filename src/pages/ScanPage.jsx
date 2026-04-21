@@ -4,7 +4,7 @@ import { useAppStore } from '../core/store/appStore';
 import ScanView from '../components/Chart/views/ScanView';
 
 const ScanPage = () => {
-    const { teeth, selectTooth } = useAppStore();
+    const { selectedPatient, teeth, resolvedTeeth, selectTooth, selectedTooth } = useAppStore();
     const { patientId } = useParams();
     const navigate = useNavigate();
 
@@ -17,8 +17,9 @@ const ScanPage = () => {
     return (
         <div className="scan-page-wrapper">
             <main className="scan-page-main">
-                <ScanView
-                    teeth={teeth}
+                    <ScanView
+                        teeth={teeth}
+                        resolvedTeeth={resolvedTeeth || {}}
                     onToothClick={handleToothClick}
                     selectedTeeth={new Set()}
                     activeTooth={null}

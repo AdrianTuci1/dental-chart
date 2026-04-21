@@ -12,7 +12,7 @@ import DevelopmentDrawer from '../Drawers/DevelopmentDrawer';
 import RestorationDrawer from '../Drawers/RestorationDrawer/RestorationDrawer';
 
 const ChartQuickselect = () => {
-    const { teeth, selectTooth } = useAppStore();
+    const { teeth, resolvedTeeth, selectTooth } = useAppStore();
     // No longer using updateTeeth from store directly
     const { chartView } = useOutletContext();
     const [selectedTeeth, setSelectedTeeth] = useState(new Set());
@@ -116,7 +116,7 @@ const ChartQuickselect = () => {
 
     const renderView = () => {
         const props = {
-            teeth,
+            resolvedTeeth: resolvedTeeth || {},
             onToothClick: handleToothClick,
             selectedTeeth
         };

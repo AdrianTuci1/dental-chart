@@ -106,5 +106,34 @@ export const TOOTH_TRANSFORMS = {
     38: {
         frontal: { rotate: 0, y: 4 },
         lingual: { rotate: 0, y: -4 }
-    }
+    },
+
+    // --- Primary Teeth (Deciduous) ---
+    // Upper Right (51-55)
+    51: { frontal: { rotate: 0, y: 0 }, lingual: { rotate: 180, y: 0 } },
+    52: { frontal: { rotate: 0, y: 5 }, lingual: { rotate: 180, y: 8 } },
+    53: { frontal: { rotate: 0, y: 0 }, lingual: { rotate: 180, y: 0 } },
+    54: { frontal: { rotate: 0, y: 10 }, lingual: { rotate: 180, y: 4 } },
+    55: { frontal: { rotate: 0, y: 10 }, lingual: { rotate: 180, y: 8 } },
+
+    // Upper Left (61-65)
+    61: { frontal: { rotate: 0, y: 0 }, lingual: { rotate: 180, y: 0 } },
+    62: { frontal: { rotate: 0, y: 5 }, lingual: { rotate: 180, y: 8 } },
+    63: { frontal: { rotate: 0, y: 0 }, lingual: { rotate: 180, y: 0 } },
+    64: { frontal: { rotate: 0, y: 10 }, lingual: { rotate: 180, y: 4 } },
+    65: { frontal: { rotate: 0, y: 10 }, lingual: { rotate: 180, y: 8 } },
+
+    // Lower Left (71-75)
+    71: { frontal: { rotate: 0, y: 0 }, lingual: { rotate: 0, y: 0 } },
+    72: { frontal: { rotate: 0, y: -4 }, lingual: { rotate: 0, y: 4 } },
+    73: { frontal: { rotate: 0, y: 0 }, lingual: { rotate: 0, y: 0 } },
+    74: { frontal: { rotate: 0, y: -6 }, lingual: { rotate: 0, y: 6 } },
+    75: { frontal: { rotate: 0, y: -10 }, lingual: { rotate: 0, y: 10 } },
+
+    // Lower Right (81-85)
+    81: { frontal: { rotate: 0, y: 0 }, lingual: { rotate: 0, y: 0 } },
+    82: { frontal: { rotate: 0, y: -4 }, lingual: { rotate: 0, y: 4 } },
+    83: { frontal: { rotate: 0, y: 0 }, lingual: { rotate: 0, y: 0 } },
+    84: { frontal: { rotate: 0, y: -6 }, lingual: { rotate: 0, y: 6 } },
+    85: { frontal: { rotate: 0, y: -10 }, lingual: { rotate: 0, y: 10 } }
 };

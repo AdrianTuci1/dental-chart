@@ -1,7 +1,7 @@
 import React from 'react';
 import JawTooth from './JawTooth';
 
-const LowerJawView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
+const LowerJawView = ({ resolvedTeeth, onToothClick, selectedTeeth, activeTooth }) => {
     // Quadrants following standard dental notation
     // Q4 (Lower Right) - teeth 48-41
     // Q3 (Lower Left) - teeth 31-38
@@ -15,20 +15,24 @@ const LowerJawView = ({ teeth, onToothClick, selectedTeeth, activeTooth }) => {
             <div className="full-mouth jaw-box">
                 {/* Lower Jaw */}
                 <ol className="jaw" data-type="lower">
-                    {lowerTeethNumbers.map((number, index) => (
-                        <JawTooth
-                            key={number}
-                            toothNumber={number}
-                            toothData={teeth[number]}
-                            views={['lingual', 'topview', 'frontal']}
-                            onToothClick={onToothClick}
-                            isSelected={selectedTeeth && selectedTeeth.has(number)}
-                            isDimmed={activeTooth && activeTooth !== number}
-                            showPerioGrid={true}
-                            showPerioLabels={index === 0}
-                            showNumberAtBottom={true}
-                        />
-                    ))}
+                    {lowerTeethNumbers.map((baseNumber, index) => {
+                        const resolved = resolvedTeeth[baseNumber] || { displayNumber: baseNumber, toothData: undefined };
+                        const number = resolved.displayNumber;
+                        return (
+                            <JawTooth
+                                key={number}
+                                toothNumber={number}
+                                toothData={resolved.toothData}
+                                views={['lingual', 'topview', 'frontal']}
+                                onToothClick={onToothClick}
+                                isSelected={selectedTeeth && selectedTeeth.has(number)}
+                                isDimmed={activeTooth && activeTooth !== number}
+                                showPerioGrid={true}
+                                showPerioLabels={index === 0}
+                                showNumberAtBottom={true}
+                            />
+                        );
+                    })}
                 </ol>
             </div>
         </div>

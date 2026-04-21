@@ -8,14 +8,24 @@ import LowerJawView from './views/LowerJawView';
 import RestorationDrawer from '../Drawers/RestorationDrawer/RestorationDrawer';
 
 const ChartRestoration = () => {
-    const { teeth, selectTooth, selectedTooth } = useAppStore();
+    const { teeth, resolvedTeeth, selectTooth, selectedTooth } = useAppStore();
     const { chartView } = useOutletContext();
     const [previewTeeth, setPreviewTeeth] = useState({});
 
-    const renderedTeeth = useMemo(() => ({
-        ...teeth,
-        ...previewTeeth,
-    }), [teeth, previewTeeth]);
+    const renderedResolvedTeeth = useMemo(() => {
+        if (!resolvedTeeth) return {};
+        const next = { ...resolvedTeeth };
+        for (const [previewKey, previewData] of Object.entries(previewTeeth)) {
+            const baseKey = Object.keys(next).find(k => String(next[k].displayNumber) === String(previewKey));
+            if (baseKey) {
+                next[baseKey] = {
+                    ...next[baseKey],
+                    toothData: { ...next[baseKey].toothData, ...previewData }
+                };
+            }
+        }
+        return next;
+    }, [resolvedTeeth, previewTeeth]);
 
     const handlePreviewChange = (toothNumber, previewTooth) => {
         setPreviewTeeth((current) => {
@@ -75,7 +85,7 @@ const ChartRestoration = () => {
 
     const renderView = () => {
         const props = {
-            teeth: renderedTeeth,
+            resolvedTeeth: renderedResolvedTeeth,
             onToothClick: handleToothClick,
             activeTooth: selectedTooth
         };

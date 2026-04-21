@@ -1,5 +1,6 @@
 import { produce } from 'immer';
 import { ChartModel } from '../../models/ChartModel';
+import { resolveDentition } from '../../../utils/toothUtils';
 
 const syncSelectedPatientChart = (state) => {
     if (!state.selectedPatient) return;
@@ -9,10 +10,12 @@ const syncSelectedPatientChart = (state) => {
     }
 
     state.selectedPatient.chart.teeth = state.teeth;
+    state.resolvedTeeth = resolveDentition(state.teeth);
 };
 
 export const createChartSlice = (set) => ({
     teeth: {}, // Map of toothNumber -> Tooth object
+    resolvedTeeth: {}, // Computed Map of permanent array indices -> display tooth info
     selectedTooth: null,
     chartView: 'normal', // 'normal', 'upper', or 'lower'
     viewMode: 'overview', // 'overview', 'endo', 'perio', 'restoration'

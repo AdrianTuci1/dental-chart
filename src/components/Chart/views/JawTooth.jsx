@@ -7,6 +7,7 @@ import { mapToothDataToConditions } from '../../../utils/toothUtils';
 import PerioGrid from './PerioGrid';
 import { TOOTH_TRANSFORMS } from './JawToothConfig';
 import { useAppStore } from '../../../core/store/appStore';
+import { isUpperJaw as checkIsUpperJaw } from '../../../utils/toothUtils';
 const JawTooth = ({
     toothNumber,
     toothData,
@@ -20,7 +21,7 @@ const JawTooth = ({
     showWaves = true
 }) => {
     // Determine if tooth is in upper or lower jaw
-    const isUpperJaw = toothNumber >= 11 && toothNumber <= 28;
+    const isUpperJaw = checkIsUpperJaw(toothNumber);
     const { selectedPatient, showEndo, showPerio, showDental } = useAppStore();
     const historicalDate = useAppStore(state => state.historicalDate);
 

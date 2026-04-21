@@ -10,7 +10,7 @@ const HomePage = () => {
     const location = useLocation();
     const login = useAuthStore((state) => state.login);
     const successMessage = location.state?.message;
-    const isMock = !import.meta.env.VITE_API_URL;
+    const isMock = import.meta.env.VITE_DEV_MODE === 'true' || !import.meta.env.VITE_API_URL;
     const [email, setEmail] = useState(isMock ? 'demo@example.com' : '');
     const [password, setPassword] = useState(isMock ? 'password' : '');
     const [error, setError] = useState('');
@@ -21,12 +21,19 @@ const HomePage = () => {
 
         if (isMock) {
             // Demo login - accept any credentials
-            login({
-                id: '1',
-                name: 'Dr. Demo',
+            const userData = {
+                id: 'medic-1',
+                name: 'Dr. Daniel Smith',
                 email: email,
                 role: 'dentist'
-            });
+            };
+            
+            login(userData);
+            
+            // Set medicProfile in appStore so PatientsListPage has it immediately
+            const { useAppStore } = await import('../core/store/appStore');
+            useAppStore.getState().setMedicProfile(userData);
+
             navigate('/patients');
             return;
         }

@@ -9,7 +9,7 @@ import LowerJawView from './views/LowerJawView';
 import PeriodontalDrawer from '../Drawers/PeriodontalDrawer';
 
 const ChartPeriodontalProbing = () => {
-    const { teeth, selectTooth, selectedTooth } = useAppStore();
+    const { teeth, resolvedTeeth, selectTooth, selectedTooth } = useAppStore();
     const { chartView } = useOutletContext();
 
     const handleToothClick = (toothNumber) => {
@@ -58,7 +58,7 @@ const ChartPeriodontalProbing = () => {
 
     const renderView = () => {
         const props = {
-            teeth,
+            resolvedTeeth: resolvedTeeth || {},
             onToothClick: handleToothClick,
             activeTooth: selectedTooth // Pass selectedTooth as activeTooth for dimming effect
         };

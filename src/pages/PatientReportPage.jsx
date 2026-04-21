@@ -10,7 +10,7 @@ import LowerJawView from '../components/Chart/views/LowerJawView';
 import './PatientReportPage.css';
 
 const PatientReportPage = () => {
-    const { selectedPatient, teeth } = useAppStore();
+    const { selectedPatient, teeth, resolvedTeeth } = useAppStore();
     const { patientId: id } = useParams();
     const [isLoading, setIsLoading] = React.useState(true);
 
@@ -211,7 +211,7 @@ const PatientReportPage = () => {
                         <div className="chart-view-wrapper">
                             <h3 className="jaw-view-title">FULL JAW VIEW</h3>
                             <NormalView
-                                teeth={teeth}
+                                resolvedTeeth={resolvedTeeth || {}}
                                 onToothClick={() => { }}
                                 selectedTeeth={new Set()}
                                 activeTooth={null}
@@ -337,7 +337,7 @@ const PatientReportPage = () => {
                             <h3 className="jaw-view-title">UPPER JAW</h3>
                             <div className="jaw-view-container">
                                 <UpperJawView
-                                    teeth={teeth}
+                                    resolvedTeeth={resolvedTeeth || {}}
                                     onToothClick={() => { }}
                                     selectedTeeth={new Set()}
                                     activeTooth={null}
@@ -350,7 +350,7 @@ const PatientReportPage = () => {
                             <h3 className="jaw-view-title">LOWER JAW</h3>
                             <div className="jaw-view-container">
                                 <LowerJawView
-                                    teeth={teeth}
+                                    resolvedTeeth={resolvedTeeth || {}}
                                     onToothClick={() => { }}
                                     selectedTeeth={new Set()}
                                     activeTooth={null}

@@ -1,4 +1,5 @@
 import { Gender, ToothZone, Material, Quality, ActionType } from '../models/DentalModels.js';
+import { generateDentitionByAge } from './toothUtils.js';
 
 /**
  * --- HIERARCHICAL MOCK DATA ---
@@ -54,6 +55,7 @@ export const MOCK_HIERARCHY_DATA = [
                         { id: 'tp-ext-1', tooth: 44, type: 'extraction', procedure: 'Extraction', status: 'planned' },
                         { id: 'tp-ext-2', tooth: 27, type: 'extraction', procedure: 'Extraction', status: 'planned' },
                         { id: 'tp-endo-lower-1', tooth: 47, type: 'endodontic', procedure: 'RCT (Root Canal)', status: 'planned', cost: 1100 },
+                        { id: 'tp-dec-99', tooth: 54, type: 'decay', procedure: 'Primary Decay Treatment', zones: [ToothZone.OCCLUSAL], status: 'planned' },
                         { id: 'tp-endo-lower-2', tooth: 34, type: 'endodontic', procedure: 'Tratament endodontic', status: 'planned' }
                     ]
                 },
@@ -75,17 +77,55 @@ export const MOCK_HIERARCHY_DATA = [
                         { id: 'h-miss-1', tooth: 38, type: 'missing', status: 'completed', date: '2019-11-20', procedure: 'Missing Tooth' },
                         { id: 'h-pon-1', tooth: 46, type: 'restoration', subtype: 'crown', crownType: 'Pontic', material: Material.CERAMIC, status: 'completed', date: '2024-01-15', procedure: 'Ceramic Pontic' },
                         { id: 'h-pon-2', tooth: 45, type: 'restoration', subtype: 'crown', crownType: 'Pontic', material: Material.COMPOSITE, status: 'completed', date: '2024-01-15', procedure: 'Composite Pontic' },
-                        { id: 'h-pon-fill-2', tooth: 45, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: [ToothZone.DISTAL, ToothZone.MESIAL], status: 'completed', date: '2024-01-15', procedure: 'Pontic Filling' },
-                        { id: 'h-fill-47', tooth: 47, type: 'restoration', subtype: 'filling', material: Material.GOLD, zones: [ToothZone.OCCLUSAL, ToothZone.LINGUAL], status: 'completed', date: '2023-03-30', procedure: 'Gold Filling' }
+                        { id: 'h-pon-fill-2', tooth: 45, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: [ToothZone.DISTAL, ToothZone.MESIAL], status: 'completed', date: '2024-01-15', procedure: 'Pontic Filling' }
                     ]
                 },
-                chart: { id: 'chart-1', lastUpdated: '2024-10-01', teeth: [] }
+                chart: { id: 'chart-1', lastUpdated: '2024-10-01', teeth: {} }
+            },
+            {
+                id: 'patient-2',
+                name: 'Timmy Doe',
+                dateOfBirth: '2018-05-10', // ~8 years old
+                gender: Gender.MALE,
+                phone: '555-0124',
+                email: 'parent.doe@example.com',
+                medicalIssues: {
+                    highBloodPressure: false,
+                    asthma: true,
+                    allergies: [],
+                    other: []
+                },
+                oralHealth: {
+                    plaqueIndex: 20,
+                    bleedingIndex: 5,
+                    halitosis: false
+                },
+                bpe: {
+                    upperRight: 0,
+                    upperAnterior: 0,
+                    upperLeft: 0,
+                    lowerRight: 0,
+                    lowerAnterior: 0,
+                    lowerLeft: 0
+                },
+                lastExamDate: '2024-10-20',
+                treatmentPlan: {
+                    items: [
+                        { id: 'tp-pedo-1', tooth: 54, type: 'decay', procedure: 'Caries Treatment', zones: [ToothZone.OCCLUSAL], status: 'planned' }
+                    ]
+                },
+                history: {
+                    completedItems: []
+                },
+                // The generateDentitionByAge function will automatically mark 53, 54, 55 (and equivalents) as baby teeth
+                chart: { id: 'chart-2', lastUpdated: '2024-10-20', teeth: generateDentitionByAge('2018-05-10') }
             }
         ]
     }
 ];
 
 export const user0profile = {
+    id: 'medic-1',
     name: 'Daniel Smith',
     title: 'Senior Dental Surgeon',
     bio: 'Dedicated to providing high-quality dental care with over 12 years of experience.',

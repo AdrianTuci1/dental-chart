@@ -8,7 +8,7 @@ import UpperJawView from './views/UpperJawView';
 import LowerJawView from './views/LowerJawView';
 
 const ChartOverview = () => {
-    const { teeth, selectTooth } = useAppStore();
+    const { teeth, resolvedTeeth, selectTooth } = useAppStore();
     const navigate = useNavigate();
     const { patientId } = useParams();
     const { chartView } = useOutletContext();
@@ -22,11 +22,11 @@ const ChartOverview = () => {
     const renderView = () => {
         switch (chartView) {
             case 'upper':
-                return <UpperJawView teeth={teeth} onToothClick={handleToothClick} />;
+                return <UpperJawView resolvedTeeth={resolvedTeeth || {}} onToothClick={handleToothClick} />;
             case 'lower':
-                return <LowerJawView teeth={teeth} onToothClick={handleToothClick} />;
+                return <LowerJawView resolvedTeeth={resolvedTeeth || {}} onToothClick={handleToothClick} />;
             default:
-                return <NormalView teeth={teeth} onToothClick={handleToothClick} />;
+                return <NormalView resolvedTeeth={resolvedTeeth || {}} onToothClick={handleToothClick} />;
         }
     };
 
