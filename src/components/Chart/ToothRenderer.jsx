@@ -28,7 +28,7 @@ const ToothRenderer = ({
     // to mask against, so the fillings get clipped out. We use the 'crown' shape for masks on implants/pontics,
     // or 'withRoots' for standard/missing.
     let maskCondition = condition;
-    if (condition === 'implant') maskCondition = 'crown';
+    if (condition === 'implant' || condition === 'crown') maskCondition = 'withRoots';
     if (condition === 'missing') maskCondition = 'withRoots'; // Allow drawing on empty space if needed
 
     const maskImagePath = getToothImage(toothNumber, maskCondition, imageView);
@@ -51,7 +51,8 @@ const ToothRenderer = ({
     if (isLeftSide && (view === 'frontal' || view === 'buccal' || view === 'topview')) shouldMirrorImage = true;
 
     // Build container transform (incorporating the CSS scale)
-    const baseScale = 1.35; // Base scale from CSS
+    const isDeciduous = tNum >= 51 && tNum <= 85;
+    const baseScale = isDeciduous ? 1.35 * 0.85 : 1.35; // Base scale from CSS, reduced for baby teeth
     let containerTransformParts = [`scale(${baseScale})`];
     if (shouldRotateImage) containerTransformParts.push('rotate(180deg)');
     if (shouldMirrorImage) containerTransformParts.push('scaleX(-1)');
@@ -82,12 +83,17 @@ const ToothRenderer = ({
                 }}
             >
                 {isNotYetDeveloped ? (
-                    <div className={`tooth-placeholder not-developed ${view === 'topview' ? 'top-view' : 'side-view'}`}>
-                        <div className="not-developed-marker">
-                            <span className="not-developed-line" />
-                            <span className="not-developed-circle" />
-                        </div>
-                    </div>
+                    <>
+                        <img
+                            src={getToothImage(toothNumber, 'missing', imageView)}
+                            className="tooth-image"
+                            style={{
+                                visibility: 'hidden',
+                                scale: `${imageScale}`
+                            }}
+                            alt="spacer"
+                        />
+                    </>
                 ) : toothImagePath ? (
                     <>
                         <img
@@ -110,6 +116,14 @@ const ToothRenderer = ({
                     </>
                 ) : null}
             </div>
+            {isNotYetDeveloped && (
+                <div className="not-developed-wrapper">
+                    <div className="not-developed-marker">
+                        <span className="not-developed-line" />
+                        <span className="not-developed-circle" />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

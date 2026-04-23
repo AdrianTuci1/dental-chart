@@ -1,22 +1,22 @@
 <svg width="54" height="482" viewBox="0 0 54 482" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_37_32)">
-<path d="M39.1296 240.014C39.1296 244.268 43.5664 248.714 46.2141 251.516C48.8944 254.351 52.4764 261.184 54.1123 261.184C57.364 261.184 60 248.52 60 239.958C60 231.396 57.364 219.732 54.1123 219.732C52.4764 219.732 48.8944 225.954 46.2141 228.789C43.5664 231.591 39.1296 235.759 39.1296 240.014Z" fill="#D9D9D9"/>
+<g clip-path="url(#clip0_67_20)">
+<path d="M36 240C36 244.254 42.3523 249.198 45 252C47.6803 254.835 51.81 260.67 53.4459 260.67C56.6976 260.67 59.3336 248.006 59.3336 239.444C59.3336 230.882 56.6976 219.218 53.4459 219.218C51.81 219.218 47.6803 224.665 45 227.5C42.3523 230.302 36 234.5 36 239V240Z" fill="#D9D9D9"/>
+<mask id="mask0_67_20" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="0" width="54" height="172">
+<path d="M0 0H54V172H0V0Z" fill="white"/>
+</mask>
+<g mask="url(#mask0_67_20)">
+<path d="M42.5294 128.473H89.6766C91.8858 128.473 93.6766 130.264 93.6766 132.473V208.039C93.6766 210.248 91.8858 212.039 89.6766 212.039H42.5294C40.3203 212.039 38.5294 210.248 38.5294 208.039V132.473C38.5294 130.264 40.3203 128.473 42.5294 128.473Z" fill="#D9D9D9"/>
 </g>
-<g clip-path="url(#clip1_37_32)">
-<rect width="55.1472" height="83.5659" rx="4" transform="matrix(-1 0 0 1 93.6766 128.473)" fill="#D9D9D9"/>
+<mask id="mask1_67_20" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="0" y="310" width="54" height="172">
+<path d="M54 482H0V310H54V482Z" fill="white"/>
+</mask>
+<g mask="url(#mask1_67_20)">
+<path d="M87.5737 353.527H40.4265C38.2174 353.527 36.4265 351.736 36.4265 349.527V273.961C36.4265 271.752 38.2174 269.961 40.4265 269.961H87.5737C89.7829 269.961 91.5737 271.752 91.5737 273.961V349.527C91.5737 351.736 89.7829 353.527 87.5737 353.527Z" fill="#D9D9D9"/>
 </g>
-<g clip-path="url(#clip2_37_32)">
-<rect width="55.1472" height="83.5659" rx="4" transform="matrix(1 0 0 -1 36.4265 353.527)" fill="#D9D9D9"/>
 </g>
 <defs>
-<clipPath id="clip0_37_32">
-<rect width="54" height="94" fill="white" transform="matrix(-1 0 0 1 54 194)"/>
-</clipPath>
-<clipPath id="clip1_37_32">
-<rect width="54" height="172" fill="white" transform="matrix(-1 0 0 1 54 0)"/>
-</clipPath>
-<clipPath id="clip2_37_32">
-<rect width="54" height="172" fill="white" transform="matrix(1 0 0 -1 0 482)"/>
+<clipPath id="clip0_67_20">
+<rect width="54" height="482" fill="white"/>
 </clipPath>
 </defs>
 </svg>

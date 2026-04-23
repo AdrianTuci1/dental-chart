@@ -110,58 +110,93 @@ const ToothMask = ({
             const offCtx = offCanvas.getContext('2d');
             offCtx.scale(scale, scale);
 
+            // Group conditions by color+opacity so same-color masks merge without
+            // darkening at overlap (source-atop keeps max coverage, not additive).
+            const colorGroups = new Map();
             overlayData.forEach((data, index) => {
                 const img = loadedOverlayImages[index];
                 if (!img) return;
+                const color = data.cond.color || 'rgba(100, 150, 255, 0.9)';
+                const opacity = data.cond.opacity !== undefined ? data.cond.opacity : 0.9;
+                const type = data.cond.type || 'unknown';
+                const key = `${color}|${opacity}|${type}`;
+                if (!colorGroups.has(key)) colorGroups.set(key, []);
+                colorGroups.get(key).push({ ...data, img });
+            });
 
-                const { cond, slice } = data;
+            colorGroups.forEach((group, key) => {
+                const [color, opacityStr, type] = key.split('|');
+                // Shared per-group canvas — merges all shapes of the same color
+                const groupCanvas = document.createElement('canvas');
+                groupCanvas.width = width * scale;
+                groupCanvas.height = height * scale;
+                const groupCtx = groupCanvas.getContext('2d');
+                groupCtx.scale(scale, scale);
 
-                offCtx.clearRect(0, 0, width, height);
-                offCtx.save();
+                group.forEach(({ cond, slice, img }) => {
+                    offCtx.clearRect(0, 0, width, height);
+                    offCtx.save();
 
-                const { needsHorizontalFlip, needsRotation } = getMaskTransforms(toothNumber, view);
+                    const { needsHorizontalFlip, needsRotation } = getMaskTransforms(toothNumber, view);
 
-                let useHorizontalFlip = needsHorizontalFlip;
-                let useVerticalFlip = (isUpperJaw && view === 'lingual');
-                let useRotation = needsRotation;
+                    let useHorizontalFlip = needsHorizontalFlip;
+                    let useVerticalFlip = (isUpperJaw && view === 'lingual');
+                    let useRotation = needsRotation;
 
-                if (cond.zone === 'Endo') {
-                    const endoTransforms = getEndoTransforms(toothNumber, view, { needsHorizontalFlip, needsRotation });
-                    useHorizontalFlip = endoTransforms.useHorizontalFlip;
-                    useVerticalFlip = endoTransforms.useVerticalFlip;
-                    useRotation = endoTransforms.useRotation;
+                    if (cond.zone === 'Endo') {
+                        const endoTransforms = getEndoTransforms(toothNumber, view, { needsHorizontalFlip, needsRotation });
+                        useHorizontalFlip = endoTransforms.useHorizontalFlip;
+                        useVerticalFlip = endoTransforms.useVerticalFlip;
+                        useRotation = endoTransforms.useRotation;
+                    }
+
+                    if (useRotation) {
+                        offCtx.translate(width / 2, height / 2);
+                        offCtx.rotate(Math.PI);
+                        offCtx.translate(-width / 2, -height / 2);
+                    }
+                    if (useHorizontalFlip) {
+                        offCtx.translate(width, 0);
+                        offCtx.scale(-1, 1);
+                    }
+                    if (useVerticalFlip) {
+                        offCtx.translate(0, height);
+                        offCtx.scale(1, -1);
+                    }
+
+                    offCtx.drawImage(
+                        img,
+                        0, slice.y, img.width, slice.h,
+                        0, 0, width, height
+                    );
+                    offCtx.restore();
+
+                    // Color the shape
+                    offCtx.globalCompositeOperation = 'source-in';
+                    offCtx.fillStyle = cond.color || 'rgba(100, 150, 255, 0.9)';
+                    offCtx.globalAlpha = 1; // opacity handled at group composite step
+                    offCtx.fillRect(0, 0, width, height);
+                    offCtx.globalCompositeOperation = 'source-over';
+
+                    // Merge into group canvas: source-atop prevents overlap darkening
+                    // for identical colors; union of shapes is drawn at uniform color.
+                    groupCtx.globalCompositeOperation = 'source-over';
+                    groupCtx.drawImage(offCanvas, 0, 0, width, height);
+                });
+
+                // Composite the group onto main ctx at the group opacity
+                ctx.globalAlpha = parseFloat(opacityStr);
+
+                // If this is a restoration, clear the area underneath it first
+                // so pathology colors don't bleed through
+                if (type === 'restoration') {
+                    ctx.globalCompositeOperation = 'destination-out';
+                    ctx.drawImage(groupCanvas, 0, 0, width, height);
                 }
 
-                if (useRotation) {
-                    offCtx.translate(width / 2, height / 2);
-                    offCtx.rotate(Math.PI);
-                    offCtx.translate(-width / 2, -height / 2);
-                }
-
-                if (useHorizontalFlip) {
-                    offCtx.translate(width, 0);
-                    offCtx.scale(-1, 1);
-                }
-
-                if (useVerticalFlip) {
-                    offCtx.translate(0, height);
-                    offCtx.scale(1, -1);
-                }
-
-                offCtx.drawImage(
-                    img,
-                    0, slice.y, img.width, slice.h,
-                    0, 0, width, height
-                );
-                offCtx.restore();
-
-                offCtx.globalCompositeOperation = 'source-in';
-                offCtx.fillStyle = cond.color || 'rgba(100, 150, 255, 0.7)';
-                offCtx.globalAlpha = cond.opacity || 0.7;
-                offCtx.fillRect(0, 0, width, height);
-
-                offCtx.globalCompositeOperation = 'source-over';
-                ctx.drawImage(offCanvas, 0, 0, width, height);
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.drawImage(groupCanvas, 0, 0, width, height);
+                ctx.globalAlpha = 1;
             });
 
             // 4. Apply Masking (Destination-in clips condition layers to tooth alpha)

@@ -216,6 +216,46 @@ export const getToothType = (toothNumber) => {
     return 'molar';
 };
 
+/**
+ * Returns all zones covered by a full-coverage restoration (Implant, Pontic, Full Crown)
+ * based on the tooth type.
+ */
+export const getFullCoverageZones = (toothNumber) => {
+    const type = getToothType(toothNumber);
+    if (type === 'anterior') {
+        return [
+            ToothZone.MESIAL,
+            ToothZone.DISTAL,
+            ToothZone.BUCCAL,
+            ToothZone.PALATAL,
+            ToothZone.OCCLUSAL // Maps to Incisal in anterior
+        ];
+    }
+    if (type === 'premolar') {
+        return [
+            ToothZone.MESIAL,
+            ToothZone.DISTAL,
+            'Buccal Cusp',
+            'Lingual Cusp',
+            'Buccal Surf',
+            'Palatal Surf',
+            ToothZone.OCCLUSAL
+        ];
+    }
+    // Molar
+    return [
+        ToothZone.MESIAL,
+        ToothZone.DISTAL,
+        ToothZone.MESIO_BUCCAL_CUSP,
+        ToothZone.DISTO_BUCCAL_CUSP,
+        ToothZone.MESIO_PALATAL_CUSP,
+        ToothZone.DISTO_PALATAL_CUSP,
+        'Buccal Surf',
+        'Palatal Surf',
+        ToothZone.OCCLUSAL
+    ];
+};
+
 export const mapToothDataToConditions = (tooth, historicalDate = null, treatments = []) => {
     if (!tooth) {
         // Even if there's no tooth data (historical), we might have treatment plan items
@@ -246,13 +286,21 @@ export const mapToothDataToConditions = (tooth, historicalDate = null, treatment
 
     const conditions = [];
 
-    // --- Map Endodontic Treatments ---
-    mapEndoConditions(tooth, isBeforeOrAtHistoricalDate, treatments, conditions);
-
-    // Check for Implant or Pontic (to exclude fractures)
+    // Check for Implant, Pontic or Missing first — endo is irrelevant for these teeth
     const hasImplantOrPontic = tooth.restoration && tooth.restoration.crowns && tooth.restoration.crowns.some(c =>
-        (c.base === 'Implant' || c.type === 'Pontic') && isBeforeOrAtHistoricalDate(c)
+        (c.base === 'Implant' || c.type === 'Pontic' || c.crownType === 'Pontic') && isBeforeOrAtHistoricalDate(c)
     );
+    const isMissingTooth = tooth.isMissing && isBeforeOrAtHistoricalDate(tooth.missingDate);
+
+    // If the tooth is missing and has no structure (implant/pontic), don't draw any masks
+    if (isMissingTooth && !hasImplantOrPontic) {
+        return [];
+    }
+
+    // --- Map Endodontic Treatments (only for natural teeth or those with structure) ---
+    if (!hasImplantOrPontic) {
+        mapEndoConditions(tooth, isBeforeOrAtHistoricalDate, treatments, conditions);
+    }
 
     // Map Fractures (Only if natural tooth / not implant/pontic)
     if (!hasImplantOrPontic && tooth.pathology && tooth.pathology.fracture && isBeforeOrAtHistoricalDate(tooth.pathology.fracture)) {
@@ -322,11 +370,15 @@ export const mapToothDataToConditions = (tooth, historicalDate = null, treatment
 
     const pushZoneConditions = (items = []) => {
         items.filter(entry => isBeforeOrAtHistoricalDate(entry)).forEach(entry => {
-            if (!entry.zones || !Array.isArray(entry.zones)) {
+            // IF it's an implant or pontic, use full coverage zones regardless of entry.zones
+            const isFullCoverage = entry.base === 'Implant' || entry.type === 'Pontic' || entry.crownType === 'Pontic';
+            const zonesToMap = isFullCoverage ? getFullCoverageZones(toothNum) : (entry.zones || []);
+
+            if (!zonesToMap || !Array.isArray(zonesToMap)) {
                 return;
             }
 
-            entry.zones.forEach(zone => {
+            zonesToMap.forEach(zone => {
                 let surface = zoneMap[zone];
 
                 if (!surface && typeof zone === 'string') {
@@ -339,32 +391,13 @@ export const mapToothDataToConditions = (tooth, historicalDate = null, treatment
                         surface,
                         zone,
                         color: baseColor,
-                        opacity: 0.6
+                        opacity: 0.9,
+                        type: 'restoration'
                     });
                 }
             });
         });
     };
-
-    // Map Restorations (Fillings)
-    if (tooth.restoration && tooth.restoration.fillings) {
-        pushZoneConditions(tooth.restoration.fillings);
-    }
-
-    // Map Crowns
-    if (tooth.restoration && tooth.restoration.crowns) {
-        pushZoneConditions(tooth.restoration.crowns);
-    }
-
-    // Map Advanced Restorations (Inlay, Onlay, Partial Crown)
-    if (tooth.restoration && tooth.restoration.advancedRestorations) {
-        pushZoneConditions(tooth.restoration.advancedRestorations);
-    }
-
-    // Map Veneers
-    if (tooth.restoration && tooth.restoration.veneers) {
-        pushZoneConditions(tooth.restoration.veneers);
-    }
 
     // Map Pathology (Decay)
     if (tooth.pathology && tooth.pathology.decay) {
@@ -387,12 +420,60 @@ export const mapToothDataToConditions = (tooth, historicalDate = null, treatment
                             surface: surface,
                             zone: zone, // Preserve original zone
                             color: baseColor,
-                            opacity: 0.6
+                            opacity: 0.8,
+                            type: 'decay'
                         });
                     }
                 });
             }
         });
+    }
+
+    // Map Restorations (Fillings)
+    if (tooth.restoration && tooth.restoration.fillings) {
+        pushZoneConditions(tooth.restoration.fillings);
+    }
+
+    // Map Crowns
+    if (tooth.restoration && tooth.restoration.crowns) {
+        pushZoneConditions(tooth.restoration.crowns);
+    }
+
+    // Map Advanced Restorations (Inlay, Onlay, Partial Crown)
+    if (tooth.restoration && tooth.restoration.advancedRestorations) {
+        pushZoneConditions(tooth.restoration.advancedRestorations);
+    }
+
+    // Map Veneers
+    if (tooth.restoration && tooth.restoration.veneers) {
+        pushZoneConditions(tooth.restoration.veneers);
+    }
+
+    // Map Tooth Wear (Abrasion & Erosion)
+    if (tooth.pathology && tooth.pathology.toothWear && tooth.pathology.toothWear.type) {
+        const wear = tooth.pathology.toothWear;
+        const surface = (wear.surface || '').toLowerCase();
+        const WEAR_COLOR = '#888888'; // Grey for tooth wear
+
+        if (wear.type === 'Abrasion') {
+            // Abrasion: cervical band — buccal side if Buccal, lingual/palatal if Lingual/Palatal
+            if (surface === 'buccal') {
+                conditions.push({ zone: 'Abrasion Buccal', surface: 'Abrasion Buccal', color: WEAR_COLOR, opacity: 0.8, type: 'wear' });
+            } else {
+                conditions.push({ zone: 'Abrasion Lingual', surface: 'Abrasion Lingual', color: WEAR_COLOR, opacity: 0.8, type: 'wear' });
+                conditions.push({ zone: 'Abrasion Palatal', surface: 'Abrasion Palatal', color: WEAR_COLOR, opacity: 0.8, type: 'wear' });
+            }
+        }
+
+        if (wear.type === 'Erosion') {
+            // Erosion: full buccal or palatal surface with hatching
+            if (surface === 'buccal') {
+                conditions.push({ zone: 'Erosion Buccal', surface: 'Erosion Buccal', color: WEAR_COLOR, opacity: 0.8, type: 'wear' });
+            } else {
+                conditions.push({ zone: 'Erosion Lingual', surface: 'Erosion Lingual', color: WEAR_COLOR, opacity: 0.8, type: 'wear' });
+                conditions.push({ zone: 'Erosion Palatal', surface: 'Erosion Palatal', color: WEAR_COLOR, opacity: 0.8, type: 'wear' });
+            }
+        }
     }
 
     // Map Apical Pathology
@@ -404,7 +485,17 @@ export const mapToothDataToConditions = (tooth, historicalDate = null, treatment
         });
     }
 
-    return conditions;
+    // Deduplicate by zone: last condition added for a given zone wins.
+    // This ensures a newer restoration fully covers any older mask on the same surface.
+    const zoneMap2 = new Map();
+    conditions.forEach((cond, i) => {
+        if (cond.zone) zoneMap2.set(cond.zone, i);
+    });
+    const deduped = conditions.filter((cond, i) =>
+        !cond.zone || zoneMap2.get(cond.zone) === i
+    );
+
+    return deduped;
 };
 
 // --- Tooth Image Loading Utilities ---
@@ -440,7 +531,7 @@ export const getToothImage = (toothNumber, condition = 'withRoots', view = 'bucc
 
     // If primary tooth (quadrants 5-8), use the deciduous assets folder
     const quadrant = Math.floor(toothNum / 10);
-    if (quadrant >= 5 && quadrant <= 8) {
+    if (quadrant >= 5 && quadrant <= 8 && convCondition !== 'missing') {
         baseUrl = '/assets/decidous/';
     }
 
@@ -497,30 +588,29 @@ export const getToothCondition = (tooth, historicalDate = null) => {
 
     if (developmentState === 'not yet developed') return 'notYetDeveloped';
 
-    if (developmentState === 'baby tooth missing' || developmentState === 'adult tooth missing') {
-        return 'missing';
-    }
-
-    // 1. Check for Missing
-    if (tooth.isMissing && isBeforeOrAtHistoricalDate(tooth.missingDate)) return 'missing';
-
-    // 2. Check for Restorations (Crowns)
+    // 1. Check for Restorations (Crowns/Implants/Pontics) FIRST
+    // If a tooth is missing BUT replaced by an implant or pontic, we want to see the replacement
     if (tooth.restoration && tooth.restoration.crowns && tooth.restoration.crowns.length > 0) {
         const crowns = tooth.restoration.crowns.filter(c => isBeforeOrAtHistoricalDate(c));
         if (crowns.length > 0) {
-            // Evaluate the most significant crown (usually the last one added or just the first one if multiple exist)
-            // For simplicity, we check if ANY crown matches the criteria
-
             // Check for Implant supported crown
             const hasImplant = crowns.some(c => c.base === 'Implant');
             if (hasImplant) return 'implant';
 
-            // Check for Pontic with Natural base (or just any other crown)
-            // User specific request: "Daca avem pontic si natural la restoration ar trebui sa afisam imaginea cu _crown"
-            // This generally falls under generic crown
+            // Check for Pontic
+            const hasPontic = crowns.some(c => c.type === 'Pontic' || c.crownType === 'Pontic');
+            if (hasPontic) return 'crown'; // Use crown image for pontics
+
             return 'crown';
         }
     }
+
+    if (developmentState === 'baby tooth missing' || developmentState === 'adult tooth missing') {
+        return 'missing';
+    }
+
+    // 2. Check for Missing
+    if (tooth.isMissing && isBeforeOrAtHistoricalDate(tooth.missingDate)) return 'missing';
 
     return 'withRoots';
 };
