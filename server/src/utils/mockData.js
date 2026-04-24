@@ -8,7 +8,7 @@ const { Gender, ToothZone, Material, Quality, ActionType } = require('../models/
 const MOCK_PATIENTS_TEMPLATES = [
     {
         id: 'patient-1',
-        name: 'Johnny Doeli',
+        name: 'John Doe',
         dateOfBirth: '1980-05-15',
         gender: Gender.MALE,
         phone: '555-0123',
@@ -32,6 +32,14 @@ const MOCK_PATIENTS_TEMPLATES = [
             lowerAnterior: 0,
             lowerLeft: 1
         },
+        softTissue: {
+            upperLip: '', lowerLip: '', rCommissure: '', lCommissure: '',
+            upperLabialMucosa: '', upperSulci: '', upperGingivae: '',
+            hardPalate: '', softPalate: '', pharynxTonsillarArea: '',
+            tongueDorsum: '', tongueRLateralBorder: '', tongueLLateralBorder: '', tongueVentral: '',
+            floorOfMouth: '', rBuccalMucosa: '', lBuccalMucosa: '',
+            lowerGingivae: '', lowerSulci: '', lowerLabialMucosa: ''
+        },
         lastExamDate: '2024-10-01',
         treatmentPlan: {
             items: [
@@ -45,12 +53,13 @@ const MOCK_PATIENTS_TEMPLATES = [
                 { id: 'tp-ext-1', tooth: 44, type: 'extraction', procedure: 'Extraction', status: 'planned' },
                 { id: 'tp-ext-2', tooth: 27, type: 'extraction', procedure: 'Extraction', status: 'planned' },
                 { id: 'tp-endo-lower-1', tooth: 47, type: 'endodontic', procedure: 'RCT (Root Canal)', status: 'planned', cost: 1100 },
+                { id: 'tp-dec-99', tooth: 54, type: 'decay', procedure: 'Primary Decay Treatment', zones: [ToothZone.OCCLUSAL], status: 'planned' },
                 { id: 'tp-endo-lower-2', tooth: 34, type: 'endodontic', procedure: 'Tratament endodontic', status: 'planned' }
             ]
         },
         history: {
             completedItems: [
-                { id: 'h-1', tooth: 11, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: [ToothZone.INCISAL, ToothZone.CERVICAL_BUCCAL], status: 'completed', date: '2024-05-10', procedure: 'Composite Filling' },
+                { id: 'h-1', tooth: 11, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: ['Incisal', ToothZone.CERVICAL_BUCCAL], status: 'completed', date: '2024-05-10', procedure: 'Composite Filling' },
                 { id: 'h-2', tooth: 12, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: ['Class 4 Mesial', 'Class 4 Distal'], status: 'completed', date: '2024-05-10', procedure: 'Composite Filling' },
                 { id: 'h-3', tooth: 12, type: 'restoration', subtype: 'filling', material: Material.GOLD, zones: [ToothZone.PALATAL], status: 'completed', date: '2023-11-20', procedure: 'Gold Filling' },
                 { id: 'h-6', tooth: 26, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: [ToothZone.CERVICAL_BUCCAL], status: 'completed', date: '2022-04-12', procedure: 'Composite Filling' },
@@ -60,15 +69,10 @@ const MOCK_PATIENTS_TEMPLATES = [
                 { id: 'h-imp-1', tooth: 35, type: 'restoration', subtype: 'crown', material: Material.GOLD, base: 'Implant', status: 'completed', date: '2021-06-10', procedure: 'Gold Implant Crown' },
                 { id: 'h-imp-2', tooth: 36, type: 'restoration', subtype: 'crown', material: Material.NON_PRECIOUS, base: 'Implant', status: 'completed', date: '2021-06-10', procedure: 'Non-Precious Implant Crown' },
                 { id: 'h-imp-3', tooth: 16, type: 'restoration', subtype: 'crown', material: Material.CERAMIC, base: 'Implant', status: 'completed', date: '2022-09-05', procedure: 'Ceramic Implant Crown' },
-                { id: 'h-imp-fill-1', tooth: 35, type: 'restoration', subtype: 'filling', material: Material.CERAMIC, zones: [ToothZone.MESIAL, ToothZone.OCCLUSAL, ToothZone.DISTAL, 'Buccal Cusp', 'Lingual Cusp', 'Buccal Surf', 'Lingual Surf', ToothZone.BUCCAL, ToothZone.LINGUAL], status: 'completed', date: '2021-06-10', procedure: 'Surface Restoration' },
-                { id: 'h-imp-fill-2', tooth: 36, type: 'restoration', subtype: 'filling', material: Material.CERAMIC, zones: [ToothZone.MESIAL, ToothZone.OCCLUSAL, ToothZone.DISTAL, 'Buccal Cusp', 'Lingual Cusp', 'Buccal Surf', 'Lingual Surf', ToothZone.BUCCAL, ToothZone.LINGUAL], status: 'completed', date: '2021-06-10', procedure: 'Surface Restoration' },
-                { id: 'h-imp-fill-3', tooth: 16, type: 'restoration', subtype: 'filling', material: Material.CERAMIC, zones: [ToothZone.MESIAL, ToothZone.DISTAL, ToothZone.MESIO_BUCCAL_CUSP, ToothZone.DISTO_BUCCAL_CUSP, ToothZone.MESIO_PALATAL_CUSP, ToothZone.DISTO_PALATAL_CUSP], status: 'completed', date: '2022-09-05', procedure: 'Surface Restoration' },
                 { id: 'h-miss-1', tooth: 38, type: 'missing', status: 'completed', date: '2019-11-20', procedure: 'Missing Tooth' },
                 { id: 'h-pon-1', tooth: 46, type: 'restoration', subtype: 'crown', crownType: 'Pontic', material: Material.CERAMIC, status: 'completed', date: '2024-01-15', procedure: 'Ceramic Pontic' },
                 { id: 'h-pon-2', tooth: 45, type: 'restoration', subtype: 'crown', crownType: 'Pontic', material: Material.COMPOSITE, status: 'completed', date: '2024-01-15', procedure: 'Composite Pontic' },
-                { id: 'h-pon-fill-2', tooth: 45, type: 'restoration', subtype: 'filling', material: Material.COMPOSITE, zones: [ToothZone.DISTAL, ToothZone.MESIAL], status: 'completed', date: '2024-01-15', procedure: 'Pontic Filling' },
-                { id: 'h-fill-47', tooth: 47, type: 'restoration', subtype: 'filling', material: Material.GOLD, zones: [ToothZone.OCCLUSAL, ToothZone.LINGUAL], status: 'completed', date: '2023-03-30', procedure: 'Gold Filling' },
-                // Periodontal probing data
+                // Preserve historical periodontal data
                 {
                     id: 'perio-11', tooth: 11, type: 'periodontal', status: 'completed', date: '2024-10-01',
                     probingDepth: { distoPalatal: 3, palatal: 2, mesioPalatal: 3, distoBuccal: 2, buccal: 1, mesioBuccal: 2 },
@@ -101,7 +105,7 @@ const MOCK_PATIENTS_TEMPLATES = [
                 }
             ]
         }
-    }
+    },
 ];
 
 module.exports = {

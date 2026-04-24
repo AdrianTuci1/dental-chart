@@ -29,7 +29,8 @@ export class PatientAdapter {
             .withChartContext(ChartAdapter.toDomain(apiResponse.dental_chart || apiResponse.chart))
             .withOralHealth(apiResponse.oralHealth || apiResponse.oral_health)
             .withBPE(apiResponse.bpe)
-            .withMedicalIssues(apiResponse.medicalIssues || apiResponse.medical_issues);
+            .withMedicalIssues(apiResponse.medicalIssues || apiResponse.medical_issues)
+            .withSoftTissue(apiResponse.softTissue || apiResponse.soft_tissue);
 
         return builder.build();
     }
@@ -57,7 +58,8 @@ export class PatientAdapter {
             dental_chart: ChartAdapter.toApi(domainObject.chart),
             oralHealth: domainObject.oralHealth,
             bpe: domainObject.bpe,
-            medicalIssues: domainObject.medicalIssues
+            medicalIssues: domainObject.medicalIssues,
+            softTissue: domainObject.softTissue
         };
     }
 }

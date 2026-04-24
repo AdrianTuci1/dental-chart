@@ -4,6 +4,7 @@ import { AppFacade } from '../../../core/AppFacade';
 import styles from './RestorationDrawer.module.css';
 import { getRestorationPresetZones } from '../../../utils/restorationZonePresets';
 import { getFullCoverageZones } from '../../../utils/toothUtils';
+import { buildRestorationPreview } from '../../../utils/toothPreviewBuilders';
 
 // Subcomponents
 import DrawerHeader from './components/DrawerHeader';

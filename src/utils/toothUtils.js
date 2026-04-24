@@ -370,8 +370,8 @@ export const mapToothDataToConditions = (tooth, historicalDate = null, treatment
 
     const pushZoneConditions = (items = []) => {
         items.filter(entry => isBeforeOrAtHistoricalDate(entry)).forEach(entry => {
-            // IF it's an implant or pontic, use full coverage zones regardless of entry.zones
-            const isFullCoverage = entry.base === 'Implant' || entry.type === 'Pontic' || entry.crownType === 'Pontic';
+            // IF it's a crown (Single, Implant, or Pontic), use full coverage zones
+            const isFullCoverage = entry.subtype === 'crown' || entry.base === 'Implant' || entry.type === 'Pontic' || entry.crownType === 'Pontic';
             const zonesToMap = isFullCoverage ? getFullCoverageZones(toothNum) : (entry.zones || []);
 
             if (!zonesToMap || !Array.isArray(zonesToMap)) {
