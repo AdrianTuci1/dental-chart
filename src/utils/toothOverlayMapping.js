@@ -83,6 +83,24 @@ export const getOverlayPath = (toothNumber, zoneId, view = 'frontal') => {
         return getOverlayAsset(`fractures/root-${dir}.svg`);
     }
 
+    // Handle Abrasion Zones — reuse existing cervical overlays (colour applied by renderer)
+    if (zoneId === 'Abrasion Buccal') {
+        return getOverlayAsset('incisors/cervical-buccal.svg');
+    }
+    if (zoneId === 'Abrasion Lingual' || zoneId === 'Abrasion Palatal') {
+        return getOverlayAsset('incisors/cervical-palatal.svg');
+    }
+
+    // Handle Erosion Zones — hatched surface overlays
+    if (zoneId === 'Erosion Buccal') {
+        if (index >= 1 && index <= 3) return getOverlayAsset('incisors/erosion-buccal-surface.svg');
+        return getOverlayAsset('pre-molars/erosion-buccal-surface.svg');
+    }
+    if (zoneId === 'Erosion Lingual' || zoneId === 'Erosion Palatal') {
+        if (index >= 1 && index <= 3) return getOverlayAsset('incisors/erosion-palatal-surface.svg');
+        return getOverlayAsset('pre-molars/erosion-palatal-surface.svg');
+    }
+
     // Incisors (1, 2, 3)
     if (index >= 1 && index <= 3) {
         const file = INCISOR_MAP[zoneId];
@@ -138,6 +156,19 @@ export const getOverlaySlice = (view, zoneId) => {
     const H_TOP = 94;
     const H_LINGUAL = 172;
     const GAP = 22;
+
+    // Special cases: Abrasion/Erosion — single-view zones (frontal or lingual)
+    if (zoneId === 'Abrasion Buccal' || zoneId === 'Erosion Buccal') {
+        if (view === 'topview') return { y: 0, h: 0 };
+        if (view === 'frontal') return { y: 0, h: H_FRONTAL };
+        return { y: 0, h: 0 }; // not shown in lingual view
+    }
+    if (zoneId === 'Abrasion Lingual' || zoneId === 'Abrasion Palatal' ||
+        zoneId === 'Erosion Lingual' || zoneId === 'Erosion Palatal') {
+        if (view === 'topview') return { y: 0, h: 0 };
+        if (view === 'lingual') return { y: H_FRONTAL + GAP + H_TOP + GAP, h: H_LINGUAL };
+        return { y: 0, h: 0 }; // not shown in frontal view
+    }
 
     if (view === 'frontal') { // Outside
         return { y: 0, h: H_FRONTAL };

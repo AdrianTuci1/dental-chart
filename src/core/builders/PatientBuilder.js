@@ -20,7 +20,8 @@ export class PatientBuilder {
             chart: { teeth: {} },
             oralHealth: {},
             bpe: {},
-            medicalIssues: {}
+            medicalIssues: {},
+            softTissue: {}
         };
     }
 
@@ -91,6 +92,11 @@ export class PatientBuilder {
 
     withMedicalIssues(data) {
         this.patientData.medicalIssues = data || {};
+        return this;
+    }
+
+    withSoftTissue(data) {
+        this.patientData.softTissue = data || {};
         return this;
     }
 

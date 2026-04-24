@@ -7,6 +7,7 @@ const medicController = require('../controllers/medicController');
 const patientController = require('../controllers/patientController');
 const historyController = require('../controllers/historyController');
 const treatmentPlanController = require('../controllers/treatmentPlanController');
+const aiController = require('../controllers/aiController');
 
 // Auth Routes
 router.post('/auth/register', authController.register);
@@ -35,6 +36,10 @@ router.get('/patients/:patientId/history', historyController.getPatientHistory);
 // Treatment Plan Routes
 router.post('/patients/:patientId/treatment-plans', treatmentPlanController.addTreatmentPlanItem);
 router.get('/patients/:patientId/treatment-plans', treatmentPlanController.getPatientTreatmentPlans);
+
+// AI Routes - Folosim express.raw pentru a primi imaginea ca bytes
+const expressRaw = express.raw({ type: 'application/octet-stream', limit: '10mb' });
+router.post('/ai/analyze', expressRaw, aiController.analyzeXray);
 
 module.exports = router;
 

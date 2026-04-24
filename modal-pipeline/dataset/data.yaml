@@ -1,0 +1,13 @@
+train: /data/dataset/train/images
+val: /data/dataset/valid/images
+test: /data/dataset/test/images
+
+nc: 4
+names: ['Cavity', 'Fillings', 'Impacted Tooth', 'Implant']
+
+roboflow:
+  workspace: yolo-cthel
+  project: disease-xaijn
+  version: 5
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/yolo-cthel/disease-xaijn/dataset/5

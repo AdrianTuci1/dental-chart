@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useAppStore } from '../../../core/store/appStore';
 import { AppFacade } from '../../../core/AppFacade';
 import styles from './RestorationDrawer.module.css';
-import { buildRestorationPreview } from '../../../utils/toothPreviewBuilders';
 import { getRestorationPresetZones } from '../../../utils/restorationZonePresets';
+import { getFullCoverageZones } from '../../../utils/toothUtils';
+import { buildRestorationPreview } from '../../../utils/toothPreviewBuilders';
 
 // Subcomponents
 import DrawerHeader from './components/DrawerHeader';
@@ -35,6 +36,17 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
             updateForm({ selectedZones: presetZones });
         }
     }, [selectedRestorationType, toothNumber, updateForm]);
+
+    // Automatically select all zones for Implants or Pontics
+    useEffect(() => {
+        if (selectedRestorationType === 'crown') {
+            const isFullCoverage = formState.crownBase === 'Implant' || formState.crownType === 'Pontic';
+            if (isFullCoverage) {
+                const zones = getFullCoverageZones(toothNumber);
+                updateForm({ selectedZones: zones });
+            }
+        }
+    }, [selectedRestorationType, formState.crownBase, formState.crownType, toothNumber, updateForm]);
 
     useEffect(() => {
         if (!onPreviewChange) return undefined;

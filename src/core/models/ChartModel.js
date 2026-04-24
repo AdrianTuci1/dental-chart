@@ -140,17 +140,20 @@ export class ChartModel {
                     if (subtype === 'filling') {
                         tooth.restoration.fillings = upsertArrayItem(tooth.restoration.fillings, {
                             ...data,
+                            subtype,
                             id: item.id,
                         });
                     } else if (subtype === 'crown') {
                         tooth.restoration.crowns = upsertArrayItem(tooth.restoration.crowns, {
                             ...data,
+                            subtype,
                             id: item.id,
                             type: data.type || data.crownType || 'Single Crown',
                         });
                     } else if (subtype === 'veneer') {
                         tooth.restoration.veneers = upsertArrayItem(tooth.restoration.veneers, {
                             ...data,
+                            subtype,
                             id: item.id,
                         });
                     } else if (subtype) {

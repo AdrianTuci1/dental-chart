@@ -1,0 +1,23 @@
+<svg width="54" height="482" viewBox="0 0 54 482" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <pattern id="hatch-ob" patternUnits="userSpaceOnUse" width="8" height="8" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="8" stroke="#888888" stroke-width="2.5"/>
+    </pattern>
+    <clipPath id="clip-ebi-front">
+      <rect width="54" height="172"/>
+    </clipPath>
+    <clipPath id="clip-ebi-top">
+      <rect width="54" height="94" transform="translate(0 194)"/>
+    </clipPath>
+  </defs>
+  <!-- Frontal view: white base + diagonal hatch -->
+  <g clip-path="url(#clip-ebi-front)">
+    <ellipse cx="26.5" cy="150" rx="33.5" ry="51" fill="white"/>
+    <ellipse cx="26.5" cy="150" rx="33.5" ry="51" fill="url(#hatch-ob)"/>
+  </g>
+  <!-- Top view: white base + diagonal hatch -->
+  <g clip-path="url(#clip-ebi-top)">
+    <path d="M30 185C58.7188 185 82 201.682 82 222.26C81.9999 230.581 78.1924 238.263 71.7588 244.465C62.4338 236.107 46.5374 230.602 28.4932 230.602C11.4671 230.602 -3.64825 235.502 -13.1338 243.076C-18.7317 237.133 -21.9999 229.97 -22 222.26C-22 201.682 1.28119 185 30 185Z" fill="white"/>
+    <path d="M30 185C58.7188 185 82 201.682 82 222.26C81.9999 230.581 78.1924 238.263 71.7588 244.465C62.4338 236.107 46.5374 230.602 28.4932 230.602C11.4671 230.602 -3.64825 235.502 -13.1338 243.076C-18.7317 237.133 -21.9999 229.97 -22 222.26C-22 201.682 1.28119 185 30 185Z" fill="url(#hatch-ob)"/>
+  </g>
+</svg>

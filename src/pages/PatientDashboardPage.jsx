@@ -10,6 +10,7 @@ import MedicalIssuesPanel from '../components/Dashboard/MedicalIssuesPanel';
 import EditOralHealthDialog from '../components/Dashboard/EditOralHealthDialog';
 import EditBPEDialog from '../components/Dashboard/EditBPEDialog';
 import EditMedicalIssuesDialog from '../components/Dashboard/EditMedicalIssuesDialog';
+import SoftTissuePanel from '../components/Dashboard/SoftTissuePanel';
 import { Activity } from 'lucide-react';
 
 import './PatientDashboardPage.css';
@@ -103,6 +104,17 @@ const PatientDashboardPage = () => {
         }
     };
 
+    const handleSaveSoftTissue = async (data) => {
+        try {
+            await AppFacade.patient.update(selectedPatient.id, {
+                ...selectedPatient,
+                softTissue: { ...selectedPatient.softTissue, ...data }
+            });
+        } catch (error) {
+            console.error("Failed to update soft tissue", error);
+        }
+    };
+
     return (
         <div className="dashboard-container">
             {/* Left Column: Header, Tabs, and Tab Content */}
@@ -152,9 +164,10 @@ const PatientDashboardPage = () => {
                         <History history={selectedPatient.history} />
                     )}
                     {activeTab === 'softTissue' && (
-                        <div className="empty-state">
-                            <p>Currently there are no treatments pending</p>
-                        </div>
+                        <SoftTissuePanel 
+                            data={selectedPatient.softTissue} 
+                            onSave={handleSaveSoftTissue} 
+                        />
                     )}
                 </div>
             </div>
