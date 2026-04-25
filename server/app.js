@@ -3,16 +3,24 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 
+const helmet = require('helmet');
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 const path = require('path');
 
 // Middleware
-app.use(cors());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+app.use(cors({
+    origin: 'https://app.pixtooth.com', // În producție, înlocuiește cu URL-ul frontend-ului
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Routes
 const apiRoutes = require('./src/routes/api');
