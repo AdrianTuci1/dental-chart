@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createPatientSlice } from './slices/patientSlice';
 import { createChartSlice } from './slices/chartSlice';
 import { createMedicSlice } from './slices/medicSlice';
+import { createScanSlice } from './slices/scanSlice';
 
 /**
  * Root Application Store combining all domain slices.
@@ -14,4 +15,5 @@ export const useAppStore = create((set, get) => ({
     ...createPatientSlice(set, get),
     ...createChartSlice(set, get),
     ...createMedicSlice(set, get),
+    ...createScanSlice(set, get),
 }));

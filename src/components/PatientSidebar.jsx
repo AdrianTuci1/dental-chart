@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink, useParams, useNavigate, useLocation } from 'react-router-dom';
 import { LayoutDashboard, FileText, Activity, ArrowLeft, Scan, Eye, EyeOff, Home } from 'lucide-react';
 import { useAppStore } from '../core/store/appStore';
+import AnalysisControls from './UI/AnalysisControls';
 import './PatientSidebar.css';
 import { RiToothLine } from 'react-icons/ri';
 import { GrDocumentPdf } from 'react-icons/gr';
@@ -12,8 +13,9 @@ const PatientSidebar = () => {
     const location = useLocation();
     const { showEndo, showPerio, showDental, toggleLayer } = useAppStore();
 
-    // Check if we're on a chart route
+    // Check routes
     const isChartRoute = location.pathname.includes('/chart');
+    const isScanRoute = location.pathname.includes('/scan');
 
     return (
         <div className="patient-sidebar">
@@ -104,6 +106,12 @@ const PatientSidebar = () => {
                             ENDO
                         </button>
                     </div>
+                </div>
+            )}
+            {/* Analysis Controls - Only visible on scan routes */}
+            {isScanRoute && (
+                <div className="sidebar-footer">
+                    <AnalysisControls />
                 </div>
             )}
         </div>

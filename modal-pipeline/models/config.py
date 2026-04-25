@@ -16,7 +16,8 @@ dental_image = (
         "opencv-python",    # Procesare imagine
         "matplotlib",       # Vizualizare rezultate
         "pillow",
-        "pyyaml"
+        "pyyaml",
+        "fastapi"
     )
     # Includem automat toate fișierele de cod din acest folder în imaginea containerului.
     # Această metodă este preferată față de Mount-uri explicite.

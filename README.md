@@ -2,7 +2,7 @@
 
 A modern web application for managing dental charts, treatment planning, and oral health monitoring.
 
-![Chart Overview](./public/overview/chart-overview.png)
+![Chart Overview](./public/app-chart.png)
 
 ## 📋 About
 
@@ -125,6 +125,25 @@ Frontend Store       →    PatientAdapter.toApi()       →    Backend DB
 | `GET` | `/api/patients/:patientId/history` | Get patient history |
 | `POST` | `/api/patients/:patientId/treatment-plans` | Add treatment plan item |
 | `GET` | `/api/patients/:patientId/treatment-plans` | Get treatment plans |
+| `POST` | `/api/ai/analyze` | Analyze X-ray via Modal (with local fallback) |
+| `GET` | `/public/detections.json` | Static fallback for AI detections |
+
+---
+
+## 🔬 AI Analysis Pipeline
+
+The application includes an automated dental X-ray analysis pipeline hosted on **Modal**.
+
+### Architecture
+- **Inference**: YOLOv8 (Detection) + FastSAM (Segmentation)
+- **Model**: Custom trained for 31 dental categories (Caries, Filling, Crown, Implant, etc.)
+- **Preprocessing**: Automatic 640x640 squashing for model compatibility.
+- **📈 Training Report**: Detailed metrics, methodology, and hyperparameters can be found in [**modal-pipeline/TRAINING_REPORT.md**](./modal-pipeline/TRAINING_REPORT.md).
+
+### Local Fallback (Mock Mode)
+When the cloud AI service is inactive or `AI_ANALYSIS_ENABLED=false` in `.env`, the backend automatically serves:
+- **Image**: `/public/chart2.png` (Panoramic sample)
+- **Detections**: `/public/detections.json` (Pre-calculated high-accuracy results)
 
 ---
 

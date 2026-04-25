@@ -2,18 +2,12 @@ import React, { useState } from 'react';
 import { AlertCircle, ChevronDown, Check, Info, X } from 'lucide-react';
 import './DetectionsPanel.css';
 
+
 const DetectionsPanel = ({ detections = [], onDelete }) => {
-    const [isLegendOpen, setIsLegendOpen] = useState(false);
-    // Component now uses props for data and actions
+    const [isLegendOpen, setIsLegendOpen] = useState(true);
 
     return (
         <div className="detections-panel">
-
-            {/* Tabs */}
-            <div className="detections-tabs">
-                <div className="detections-tab active">Detections</div>
-                <div className="detections-tab">Notes</div>
-            </div>
 
             {/* List */}
             <div className="detections-list">
