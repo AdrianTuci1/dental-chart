@@ -10,6 +10,31 @@ import numpy as np
 # 3. Contrast local (CLAHE)
 # 4. Normalizare
 
+def preprocess_for_inference(image, target_size=(640, 640)):
+    """
+    Redimensionează imaginea la target_size (strivire la pătrat) 
+    și aplică îmbunătățirile de contrast.
+    """
+    # 1. Resize (squash)
+    img_640 = cv2.resize(image, target_size, interpolation=cv2.INTER_AREA)
+    
+    # 2. Convertim în grayscale pentru enhancement
+    if len(img_640.shape) == 3:
+        gray = cv2.cvtColor(img_640, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = img_640
+
+    # 3. Aplicăm transformările (Brightness, Median Blur, CLAHE)
+    brightened = cv2.convertScaleAbs(gray, alpha=1.5, beta=15)
+    denoised = cv2.medianBlur(brightened, 3)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(3, 3))
+    enhanced = clahe.apply(denoised)
+
+    # Reconvertim în 3 canale pentru YOLO
+    result = cv2.cvtColor(enhanced, cv2.COLOR_GRAY2BGR)
+    
+    return result
+
 def apply_dental_enhancement(image):
     """
     Aplică transformările STRICTE din lucrarea de cercetare (Tabelul I):
@@ -24,18 +49,16 @@ def apply_dental_enhancement(image):
         gray = image
 
     # 1. Ajustare Luminozitate (alpha=1.5, beta=15)
-    # Folosim convertScaleAbs pentru a evita overflow-ul la 255
     brightened = cv2.convertScaleAbs(gray, alpha=1.5, beta=15)
 
     # 2. Eliminare zgomot (Median Blur k=3)
     denoised = cv2.medianBlur(brightened, 3)
 
-    # 3. CLAHE (Contrast Limited Adaptive Histogram Equalization)
-    # Lucrarea folosește un grid foarte mic (3x3) pentru detalii fine
+    # 3. CLAHE
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(3, 3))
     enhanced = clahe.apply(denoised)
 
-    # Reconvertim în 3 canale pentru YOLO (BGR)
+    # Reconvertim în 3 canale pentru YOLO
     result = cv2.cvtColor(enhanced, cv2.COLOR_GRAY2BGR)
     
     return result

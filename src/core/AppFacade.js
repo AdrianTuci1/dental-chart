@@ -1,8 +1,9 @@
 import { useAppStore } from './store/appStore';
 import { PatientAdapter } from './adapters/PatientAdapter';
-import { patientService } from '../api';
+import { patientService, aiService } from '../api';
 import { ActionProxy } from './proxies/ActionProxy';
 import { ChartModel } from './models/ChartModel';
+import { AIAdapter } from './adapters/AIAdapter';
 
 const getStoreState = () => useAppStore.getState();
 
@@ -274,6 +275,45 @@ export const AppFacade = {
 
             if (state.selectedPatient?.id) {
                 AppFacade.patient.syncPatient(state.selectedPatient.id);
+            }
+        },
+    },
+
+    scan: {
+        setOpacity: (opacity) => useAppStore.getState().setOverlayOpacity(opacity),
+        setIsEditMode: (isEditMode) => useAppStore.getState().setIsEditMode(isEditMode),
+        rotate: (direction) => useAppStore.getState().rotateImage(direction),
+        reset: () => useAppStore.getState().resetTransform(),
+        zoom: (deltaY) => useAppStore.getState().zoomImage(deltaY),
+        
+        startDragging: (x, y) => useAppStore.getState().startDragging(x, y),
+        updateDragging: (x, y) => useAppStore.getState().updateDragging(x, y),
+        stopDragging: () => useAppStore.getState().stopDragging(),
+
+        startTouch: (touches) => useAppStore.getState().startTouch(touches),
+        updateTouch: (touches) => useAppStore.getState().updateTouch(touches),
+        
+        setScanImage: (image) => {
+            const state = useAppStore.getState();
+            state.setScanImage(image);
+            if (!image) {
+                state.setDetections([]);
+            }
+        },
+        deleteDetection: (id) => useAppStore.getState().deleteDetection(id),
+        
+        startProcessing: () => useAppStore.getState().startProcessing(),
+        updateProgress: (progress) => useAppStore.getState().updateProgress(progress),
+        stopProcessing: () => useAppStore.getState().stopProcessing(),
+
+        loadDetections: async () => {
+            try {
+                const raw = await aiService.getDetections();
+                const detections = AIAdapter.toDomain(raw.detections);
+                useAppStore.getState().setDetections(detections);
+                return detections;
+            } catch (error) {
+                console.error('[AppFacade] Failed to load detections via AI service', error);
             }
         },
     },
