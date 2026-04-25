@@ -37,9 +37,10 @@ router.get('/patients/:patientId/history', historyController.getPatientHistory);
 router.post('/patients/:patientId/treatment-plans', treatmentPlanController.addTreatmentPlanItem);
 router.get('/patients/:patientId/treatment-plans', treatmentPlanController.getPatientTreatmentPlans);
 
-// AI Routes - Folosim express.raw pentru a primi imaginea ca bytes
+// AI Routes
 const expressRaw = express.raw({ type: 'application/octet-stream', limit: '10mb' });
 router.post('/ai/analyze', expressRaw, aiController.analyzeXray);
+router.get('/ai/assets/*', aiController.serveAsset);
 
 module.exports = router;
 

@@ -74,34 +74,70 @@ const MOCK_PATIENTS_TEMPLATES = [
                 { id: 'h-pon-2', tooth: 45, type: 'restoration', subtype: 'crown', crownType: 'Pontic', material: Material.COMPOSITE, status: 'completed', date: '2024-01-15', procedure: 'Composite Pontic' },
                 // Preserve historical periodontal data
                 {
-                    id: 'perio-11', tooth: 11, type: 'periodontal', status: 'completed', date: '2024-10-01',
-                    probingDepth: { distoPalatal: 3, palatal: 2, mesioPalatal: 3, distoBuccal: 2, buccal: 1, mesioBuccal: 2 },
-                    gingivalMargin: { distoPalatal: -1, palatal: 0, mesioPalatal: -1, distoBuccal: 0, buccal: 0, mesioBuccal: -1 },
-                    bleedingSites: ['distoPalatal', 'mesioPalatal']
+                    id: 'perio-17', tooth: 17, type: 'periodontal', status: 'completed', date: '2024-10-01',
+                    probingDepth: { distoLingual: 4, lingual: 3, mesioLingual: 4, distoBuccal: 3, buccal: 2, mesioBuccal: 3 },
+                    gingivalMargin: { distoLingual: -1, lingual: 0, mesioLingual: -1, distoBuccal: 0, buccal: 0, mesioBuccal: 0 },
+                    bleedingSites: ['distoLingual', 'mesioLingual'],
+                    plaqueSites: ['distoLingual', 'lingual', 'mesioLingual'],
+                    furcation: 1
                 },
                 {
                     id: 'perio-16', tooth: 16, type: 'periodontal', status: 'completed', date: '2024-10-01',
-                    probingDepth: { distoPalatal: 5, palatal: 4, mesioPalatal: 4, distoBuccal: 3, buccal: 2, mesioBuccal: 3 },
-                    gingivalMargin: { distoPalatal: -2, palatal: -1, mesioPalatal: -2, distoBuccal: -1, buccal: 0, mesioBuccal: -1 },
-                    bleedingSites: ['distoPalatal', 'palatal', 'mesioPalatal']
+                    probingDepth: { distoLingual: 5, lingual: 4, mesioLingual: 4, distoBuccal: 3, buccal: 2, mesioBuccal: 3 },
+                    gingivalMargin: { distoLingual: -2, lingual: -1, mesioLingual: -2, distoBuccal: -1, buccal: 0, mesioBuccal: -1 },
+                    bleedingSites: ['distoLingual', 'lingual', 'mesioLingual'],
+                    plaqueSites: ['distoLingual', 'mesioLingual', 'mesioBuccal'],
+                    furcation: 2,
+                    mobility: 1
                 },
                 {
-                    id: 'perio-26', tooth: 26, type: 'periodontal', status: 'completed', date: '2024-10-01',
-                    probingDepth: { distoPalatal: 4, palatal: 3, mesioPalatal: 5, distoBuccal: 3, buccal: 2, mesioBuccal: 4 },
-                    gingivalMargin: { distoPalatal: -1, palatal: -1, mesioPalatal: -2, distoBuccal: 0, buccal: 0, mesioBuccal: -1 },
-                    bleedingSites: ['mesioPalatal', 'mesioBuccal']
+                    id: 'perio-11', tooth: 11, type: 'periodontal', status: 'completed', date: '2024-10-01',
+                    probingDepth: { distoLingual: 3, lingual: 2, mesioLingual: 3, distoBuccal: 2, buccal: 1, mesioBuccal: 2 },
+                    gingivalMargin: { distoLingual: -1, lingual: 0, mesioLingual: -1, distoBuccal: 0, buccal: 0, mesioBuccal: -1 },
+                    bleedingSites: ['distoLingual', 'mesioLingual']
                 },
                 {
-                    id: 'perio-36', tooth: 36, type: 'periodontal', status: 'completed', date: '2024-10-01',
-                    probingDepth: { distoPalatal: 3, palatal: 2, mesioPalatal: 3, distoBuccal: 2, buccal: 2, mesioBuccal: 2 },
-                    gingivalMargin: { distoPalatal: -1, palatal: 0, mesioPalatal: -1, distoBuccal: 0, buccal: 0, mesioBuccal: 0 },
+                    id: 'perio-21', tooth: 21, type: 'periodontal', status: 'completed', date: '2024-10-01',
+                    probingDepth: { distoLingual: 2, lingual: 2, mesioLingual: 2, distoBuccal: 2, buccal: 1, mesioBuccal: 2 },
+                    gingivalMargin: { distoLingual: 0, lingual: 0, mesioLingual: 0, distoBuccal: 0, buccal: 0, mesioBuccal: 0 },
                     bleedingSites: []
                 },
                 {
+                    id: 'perio-26', tooth: 26, type: 'periodontal', status: 'completed', date: '2024-10-01',
+                    probingDepth: { distoLingual: 4, lingual: 3, mesioLingual: 5, distoBuccal: 3, buccal: 2, mesioBuccal: 4 },
+                    gingivalMargin: { distoLingual: -1, lingual: -1, mesioLingual: -2, distoBuccal: 0, buccal: 0, mesioBuccal: -1 },
+                    bleedingSites: ['mesioLingual', 'mesioBuccal'],
+                    plaqueSites: ['distoLingual', 'mesioLingual']
+                },
+                {
+                    id: 'perio-36', tooth: 36, type: 'periodontal', status: 'completed', date: '2024-10-01',
+                    probingDepth: { distoLingual: 3, lingual: 2, mesioLingual: 3, distoBuccal: 2, buccal: 2, mesioBuccal: 2 },
+                    gingivalMargin: { distoLingual: -1, lingual: 0, mesioLingual: -1, distoBuccal: 0, buccal: 0, mesioBuccal: 0 },
+                    bleedingSites: ['distoLingual']
+                },
+                {
+                    id: 'perio-31', tooth: 31, type: 'periodontal', status: 'completed', date: '2024-10-01',
+                    probingDepth: { distoLingual: 2, lingual: 2, mesioLingual: 2, distoBuccal: 2, buccal: 3, mesioBuccal: 2 },
+                    gingivalMargin: { distoLingual: 0, lingual: 0, mesioLingual: 0, distoBuccal: -1, buccal: -2, mesioBuccal: -1 },
+                    bleedingSites: ['buccal'],
+                    plaqueSites: ['lingual', 'buccal'],
+                    tartarSites: ['lingual']
+                },
+                {
+                    id: 'perio-41', tooth: 41, type: 'periodontal', status: 'completed', date: '2024-10-01',
+                    probingDepth: { distoLingual: 2, lingual: 2, mesioLingual: 2, distoBuccal: 2, buccal: 2, mesioBuccal: 2 },
+                    gingivalMargin: { distoLingual: 0, lingual: 0, mesioLingual: 0, distoBuccal: 0, buccal: -1, mesioBuccal: 0 },
+                    bleedingSites: [],
+                    plaqueSites: ['lingual']
+                },
+                {
                     id: 'perio-47', tooth: 47, type: 'periodontal', status: 'completed', date: '2024-10-01',
-                    probingDepth: { distoPalatal: 6, palatal: 5, mesioPalatal: 5, distoBuccal: 4, buccal: 3, mesioBuccal: 4 },
-                    gingivalMargin: { distoPalatal: -3, palatal: -2, mesioPalatal: -2, distoBuccal: -1, buccal: -1, mesioBuccal: -2 },
-                    bleedingSites: ['distoPalatal', 'palatal', 'mesioPalatal', 'distoBuccal']
+                    probingDepth: { distoLingual: 6, lingual: 5, mesioLingual: 5, distoBuccal: 4, buccal: 3, mesioBuccal: 4 },
+                    gingivalMargin: { distoLingual: -3, lingual: -2, mesioLingual: -2, distoBuccal: -1, buccal: -1, mesioBuccal: -2 },
+                    bleedingSites: ['distoLingual', 'lingual', 'mesioLingual', 'distoBuccal'],
+                    plaqueSites: ['distoLingual', 'lingual', 'distoBuccal', 'mesioBuccal'],
+                    mobility: 2,
+                    furcation: 1
                 }
             ]
         }
