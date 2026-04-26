@@ -75,9 +75,10 @@
 }
 
 .sidebar-profile-info span {
+    display: block;
+    margin-top: 2px;
     font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.4);
-    display: block;
 }
 
 .sidebar-scroll-area {
@@ -427,6 +428,23 @@
     padding-left: 2px;
 }
 
+.settings-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-4);
+    margin-bottom: 16px;
+}
+
+.settings-header-actions {
+    display: flex;
+    gap: var(--spacing-3);
+}
+
+.settings-text-input {
+    margin-top: 8px;
+}
+
 .settings-inline-badge {
     display: inline-flex;
     align-items: center;
@@ -442,9 +460,52 @@
     letter-spacing: 0.06em;
 }
 
+.settings-inline-link {
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+}
+
+.settings-clinic-list-item {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-4);
+    padding: var(--spacing-5) var(--spacing-6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    color: #fff;
+    cursor: pointer;
+    text-align: left;
+}
+
+.settings-clinic-list-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 16px;
+}
+
+.settings-clinic-list-copy strong {
+    font-size: 0.95rem;
+}
+
+.settings-clinic-list-copy span {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.45);
+}
+
 .settings-inline-error {
     margin: 0;
     color: #fca5a5;
+    font-size: 0.75rem;
+}
+
+.settings-inline-success {
+    margin: 0;
+    color: #86efac;
     font-size: 0.75rem;
 }
 
@@ -455,6 +516,45 @@
     align-items: flex-end;
     font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.65);
+}
+
+.organization-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-4);
+}
+
+.settings-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.72);
+    padding: 0;
+    cursor: pointer;
+}
+
+.organization-action-block {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.organization-action-block label {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.settings-invite-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 140px 110px;
+    gap: var(--spacing-3);
 }
 
 .settings-card-topline {
@@ -520,5 +620,9 @@
 
     .pro-settings-meta {
         align-items: flex-start;
+    }
+
+    .settings-invite-grid {
+        grid-template-columns: 1fr;
     }
 }

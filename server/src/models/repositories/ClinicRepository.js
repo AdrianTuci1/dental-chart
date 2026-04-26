@@ -206,6 +206,24 @@ class ClinicRepository extends BaseRepository {
         return response.Items || [];
     }
 
+    async listPendingInvitationsByEmail(email) {
+        const command = new ScanCommand({
+            TableName: this.tableName,
+            FilterExpression: 'invitedEmail = :email AND #status = :status AND begins_with(SK, :invitePrefix)',
+            ExpressionAttributeNames: {
+                '#status': 'status',
+            },
+            ExpressionAttributeValues: {
+                ':email': email,
+                ':status': 'pending',
+                ':invitePrefix': 'INVITE#',
+            },
+        });
+
+        const response = await this.send(command);
+        return response.Items || [];
+    }
+
     async listClinicRecords(clinicId) {
         const command = new QueryCommand({
             TableName: this.tableName,

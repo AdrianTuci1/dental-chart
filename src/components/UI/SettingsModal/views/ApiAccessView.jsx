@@ -8,6 +8,10 @@ const ApiAccessView = ({ userProfile }) => {
     const [newApiKey, setNewApiKey] = useState('');
     const apiKey = newApiKey || userProfile?.apiKey || userProfile?.apiKeyMasked || '';
     const hasApiKey = Boolean(apiKey);
+    const docsUrl = useMemo(() => {
+        const apiBaseUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3001').replace(/\/+$/, '');
+        return `${apiBaseUrl}/docs`;
+    }, []);
     const helperText = useMemo(() => {
         if (newApiKey) {
             return 'This is the new API key. It is only shown once after rotation, so save it in your integration now.';
@@ -82,9 +86,16 @@ const ApiAccessView = ({ userProfile }) => {
                     <div className="pro-settings-item">
                         <div className="pro-settings-text">
                             <label>OpenAPI Docs</label>
-                            <p>The backend now exposes the contract spec at <code>/docs</code>.</p>
+                            <p>The backend exposes the live contract documentation for this environment.</p>
                         </div>
-                        <span className="settings-inline-badge">/docs</span>
+                        <a
+                            className="settings-inline-badge settings-inline-link"
+                            href={docsUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                        >
+                            Open Docs
+                        </a>
                     </div>
                     <div className="pro-settings-item">
                         <div className="pro-settings-text">

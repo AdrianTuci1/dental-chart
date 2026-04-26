@@ -1,6 +1,7 @@
 const ClinicRepository = require('../models/repositories/ClinicRepository');
 const MedicRepository = require('../models/repositories/MedicRepository');
 const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 const { createHttpError } = require('../utils/httpError');
 
 class ClinicService {
@@ -26,6 +27,7 @@ class ClinicService {
         const id = clinicData.id || uuidv4();
         const dataToSave = {
             id,
+            displayId: clinicData.displayId || this.buildClinicDisplayId(clinicData.name),
             type: clinicData.type || 'organization',
             ...clinicData,
         };
@@ -40,13 +42,20 @@ class ClinicService {
             joinedAt: new Date().toISOString(),
         });
 
-        return this.getClinic(id);
+        return this.getClinic(id, owner.id);
     }
 
-    async getClinic(id) {
+    async getClinic(id, requesterMedicId = null) {
         const clinic = await this.clinicRepository.getClinicById(id);
         if (!clinic) {
             return null;
+        }
+
+        if (requesterMedicId) {
+            const membership = await this.clinicRepository.getClinicMember(id, requesterMedicId);
+            if (!membership || membership.status !== 'active') {
+                throw createHttpError('Medic does not have access to this clinic', 403);
+            }
         }
 
         const [members, invitations] = await Promise.all([
@@ -54,14 +63,28 @@ class ClinicService {
             this.clinicRepository.listClinicInvitations(id),
         ]);
 
+        const owner = clinic.ownerMedicId
+            ? await this.medicRepository.getMedicById(clinic.ownerMedicId)
+            : null;
+
         return {
             ...clinic,
+            displayId: clinic.displayId || this.buildFallbackClinicDisplayId(clinic.id),
+            ownerName: owner?.name || null,
+            ownerEmail: owner?.email || null,
             members,
             invitations,
         };
     }
 
-    async getClinicMembers(clinicId) {
+    async getClinicMembers(clinicId, requesterMedicId = null) {
+        if (requesterMedicId) {
+            const membership = await this.clinicRepository.getClinicMember(clinicId, requesterMedicId);
+            if (!membership || membership.status !== 'active') {
+                throw createHttpError('Medic does not have access to this clinic', 403);
+            }
+        }
+
         return this.clinicRepository.listClinicMembers(clinicId);
     }
 
@@ -78,8 +101,19 @@ class ClinicService {
                     return null;
                 }
 
+                const [members, invitations, owner] = await Promise.all([
+                    this.clinicRepository.listClinicMembers(membership.clinicId),
+                    this.clinicRepository.listClinicInvitations(membership.clinicId),
+                    clinic.ownerMedicId ? this.medicRepository.getMedicById(clinic.ownerMedicId) : Promise.resolve(null),
+                ]);
+
                 return {
                     ...clinic,
+                    displayId: clinic.displayId || this.buildFallbackClinicDisplayId(clinic.id),
+                    ownerName: owner?.name || null,
+                    ownerEmail: owner?.email || null,
+                    members,
+                    invitations,
                     membership: {
                         role: membership.role,
                         status: membership.status,
@@ -94,6 +128,32 @@ class ClinicService {
 
     async listOwnedClinics(medicId) {
         return this.clinicRepository.listOwnedClinicsByMedicId(medicId);
+    }
+
+    async listPendingInvitationsForMedic(medicId) {
+        const medic = await this.medicRepository.getMedicById(medicId);
+        if (!medic?.email) {
+            return [];
+        }
+
+        const invitations = await this.clinicRepository.listPendingInvitationsByEmail(medic.email);
+        const pendingInvitations = await Promise.all(
+            invitations.map(async (invitation) => {
+                const clinic = await this.clinicRepository.getClinicById(invitation.clinicId);
+                if (!clinic) {
+                    return null;
+                }
+
+                return {
+                    ...invitation,
+                    clinicName: clinic.name,
+                    clinicDisplayId: clinic.displayId || this.buildFallbackClinicDisplayId(clinic.id),
+                    clinicType: clinic.type,
+                };
+            })
+        );
+
+        return pendingInvitations.filter(Boolean);
     }
 
     async resolveClinicForMedic(medicId, preferredClinicId = null) {
@@ -122,7 +182,43 @@ class ClinicService {
         return clinics[0];
     }
 
-    async inviteMedic(clinicId, inviteData) {
+    async updateClinic(clinicId, updateData, requesterMedicId) {
+        if (!requesterMedicId) {
+            throw createHttpError('requesterMedicId is required', 401);
+        }
+
+        const [clinic, membership] = await Promise.all([
+            this.clinicRepository.getClinicById(clinicId),
+            this.clinicRepository.getClinicMember(clinicId, requesterMedicId),
+        ]);
+
+        if (!clinic) {
+            throw createHttpError('Clinic not found', 404);
+        }
+
+        if (!membership || membership.status !== 'active') {
+            throw createHttpError('Medic does not have access to this clinic', 403);
+        }
+
+        if (!['owner', 'admin'].includes(membership.role)) {
+            throw createHttpError('Only owners or admins can update clinic details', 403);
+        }
+
+        const nextName = updateData?.name?.trim();
+        if (!nextName) {
+            throw createHttpError('Clinic name is required', 400);
+        }
+
+        await this.clinicRepository.updateClinic(clinicId, {
+            ...clinic,
+            name: nextName,
+            displayId: clinic.displayId || this.buildFallbackClinicDisplayId(clinicId),
+        });
+
+        return this.getClinic(clinicId, requesterMedicId);
+    }
+
+    async inviteMedic(clinicId, inviteData, requesterMedicId = null) {
         if (!inviteData.invitedEmail) {
             throw createHttpError('invitedEmail is required', 400);
         }
@@ -132,12 +228,31 @@ class ClinicService {
             throw createHttpError('Clinic not found', 404);
         }
 
+        if (requesterMedicId) {
+            const membership = await this.clinicRepository.getClinicMember(clinicId, requesterMedicId);
+            if (!membership || membership.status !== 'active') {
+                throw createHttpError('Medic does not have access to this clinic', 403);
+            }
+
+            if (!['owner', 'admin'].includes(membership.role)) {
+                throw createHttpError('Only owners or admins can invite clinic members', 403);
+            }
+        }
+
         const existingMedic = await this.medicRepository.getMedicByEmail(inviteData.invitedEmail);
         if (existingMedic) {
             const membership = await this.clinicRepository.getClinicMember(clinicId, existingMedic.id);
             if (membership?.status === 'active') {
                 throw createHttpError('Medic is already a member of this clinic', 409);
             }
+        }
+
+        const existingInvitations = await this.clinicRepository.listClinicInvitations(clinicId);
+        const hasPendingInvitation = existingInvitations.some(
+            (invitation) => invitation.invitedEmail === inviteData.invitedEmail && invitation.status === 'pending'
+        );
+        if (hasPendingInvitation) {
+            throw createHttpError('There is already a pending invitation for this email', 409);
         }
 
         const invitation = {
@@ -192,10 +307,48 @@ class ClinicService {
             acceptedAt: new Date().toISOString(),
         });
 
-        return this.getClinic(clinicId);
+        return this.getClinic(clinicId, medicId);
     }
 
-    async transferOwnership(clinicId, newOwnerMedicId) {
+    async removeMember(clinicId, targetMedicId, requesterMedicId) {
+        if (!requesterMedicId) {
+            throw createHttpError('requesterMedicId is required', 401);
+        }
+
+        const clinic = await this.clinicRepository.getClinicById(clinicId);
+        if (!clinic) {
+            throw createHttpError('Clinic not found', 404);
+        }
+
+        const [requesterMembership, targetMembership] = await Promise.all([
+            this.clinicRepository.getClinicMember(clinicId, requesterMedicId),
+            this.clinicRepository.getClinicMember(clinicId, targetMedicId),
+        ]);
+
+        if (!requesterMembership || requesterMembership.status !== 'active') {
+            throw createHttpError('Medic does not have access to this clinic', 403);
+        }
+
+        if (!targetMembership) {
+            throw createHttpError('Clinic member not found', 404);
+        }
+
+        const canManageMembers = ['owner', 'admin'].includes(requesterMembership.role);
+        const isSelfRemoval = String(requesterMedicId) === String(targetMedicId);
+
+        if (!canManageMembers && !isSelfRemoval) {
+            throw createHttpError('Only owners or admins can remove clinic members', 403);
+        }
+
+        if (targetMembership.role === 'owner') {
+            throw createHttpError('Transfer ownership before removing the clinic owner', 409);
+        }
+
+        await this.clinicRepository.deleteClinicMember(clinicId, targetMedicId);
+        return this.getClinic(clinicId, requesterMedicId);
+    }
+
+    async transferOwnership(clinicId, newOwnerMedicId, requesterMedicId = null) {
         if (!newOwnerMedicId) {
             throw createHttpError('newOwnerMedicId is required', 400);
         }
@@ -203,6 +356,10 @@ class ClinicService {
         const clinic = await this.clinicRepository.getClinicById(clinicId);
         if (!clinic) {
             throw createHttpError('Clinic not found', 404);
+        }
+
+        if (requesterMedicId && String(clinic.ownerMedicId) !== String(requesterMedicId)) {
+            throw createHttpError('Only the clinic owner can transfer ownership', 403);
         }
 
         const [currentOwner, nextOwnerMembership, nextOwnerMedic] = await Promise.all([
@@ -242,7 +399,7 @@ class ClinicService {
             status: 'active',
         });
 
-        return this.getClinic(clinicId);
+        return this.getClinic(clinicId, newOwnerMedicId);
     }
 
     async removeMedicFromClinic(clinicId, medicId) {
@@ -257,6 +414,54 @@ class ClinicService {
         if (!remainingMembers.length) {
             await this.clinicRepository.deleteClinic(clinicId);
         }
+    }
+
+    async deleteClinic(clinicId, requesterMedicId) {
+        if (!requesterMedicId) {
+            throw createHttpError('requesterMedicId is required', 401);
+        }
+
+        const [clinic, membership] = await Promise.all([
+            this.clinicRepository.getClinicById(clinicId),
+            this.clinicRepository.getClinicMember(clinicId, requesterMedicId),
+        ]);
+
+        if (!clinic) {
+            throw createHttpError('Clinic not found', 404);
+        }
+
+        if (!membership || membership.status !== 'active') {
+            throw createHttpError('Medic does not have access to this clinic', 403);
+        }
+
+        if (!['owner', 'admin'].includes(membership.role)) {
+            throw createHttpError('Only owners or admins can delete a clinic', 403);
+        }
+
+        const PatientService = require('./PatientService');
+        const patientService = new PatientService();
+        await patientService.deletePatientsByClinicId(clinicId);
+        await this.clinicRepository.deleteClinic(clinicId);
+
+        return {
+            deleted: true,
+            clinicId,
+        };
+    }
+
+    buildClinicDisplayId(name) {
+        const prefix = String(name || 'ORG')
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, '')
+            .slice(0, 3)
+            .padEnd(3, 'X');
+        const suffix = crypto.randomBytes(3).toString('hex').slice(0, 6).toUpperCase();
+        return `${prefix}-${suffix}`;
+    }
+
+    buildFallbackClinicDisplayId(id) {
+        const suffix = String(id || '').replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase() || 'XXXXXX';
+        return `ORG-${suffix}`;
     }
 }
 

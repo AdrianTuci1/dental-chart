@@ -27,6 +27,12 @@ const PatientsListPage = () => {
         }
     };
 
+    const refreshMedicProfile = async () => {
+        const currentProfile = await authService.getCurrentUser();
+        setMedicProfile(currentProfile);
+        return currentProfile;
+    };
+
     useEffect(() => {
         const initDashboard = async () => {
             setIsLoading(true);
@@ -34,8 +40,7 @@ const PatientsListPage = () => {
                 // 1. Fetch Medic Profile
                 let currentProfile = medicProfile;
                 if (!currentProfile) {
-                    currentProfile = await authService.getCurrentUser();
-                    setMedicProfile(currentProfile);
+                    currentProfile = await refreshMedicProfile();
                 }
 
                 if (currentProfile && currentProfile.id) {
@@ -244,6 +249,7 @@ const PatientsListPage = () => {
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
                 userProfile={medicProfile}
+                onProfileRefresh={refreshMedicProfile}
             />
 
             <PatientModal

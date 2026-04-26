@@ -25,6 +25,13 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
             const medicId = parts[2];
             if (parts.length === 3) {
                 // GET /medics/:id
+                if (customConfig.method === 'PUT') {
+                    return {
+                        ...user0profile,
+                        id: medicId,
+                        ...body,
+                    };
+                }
                 return user0profile; // For now return default profile
             }
             if (parts[3] === 'patients') {
@@ -42,6 +49,34 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
                     apiKeyLastUsedAt: null,
                 };
             }
+        }
+        if (endpoint.startsWith('/clinics/') && customConfig.method === 'PUT') {
+            const parts = endpoint.split('/');
+            const clinicId = parts[2];
+            return {
+                id: clinicId,
+                displayId: `CLN-${clinicId.slice(-4).toUpperCase()}`,
+                ...body,
+            };
+        }
+        if (endpoint === '/clinics/invitations/pending') {
+            return [];
+        }
+        if (endpoint.startsWith('/clinics/') && endpoint.includes('/invitations') && customConfig.method === 'POST') {
+            return {
+                id: Date.now().toString(),
+                status: 'pending',
+                ...body,
+            };
+        }
+        if (endpoint.startsWith('/clinics/') && endpoint.includes('/members/') && customConfig.method === 'DELETE') {
+            return { success: true };
+        }
+        if (endpoint.startsWith('/clinics/') && endpoint.endsWith('/ownership-transfer') && customConfig.method === 'POST') {
+            return { success: true };
+        }
+        if (endpoint.startsWith('/clinics/') && customConfig.method === 'DELETE') {
+            return { deleted: true };
         }
         if (endpoint.startsWith('/patients/')) {
             const parts = endpoint.split('/');
