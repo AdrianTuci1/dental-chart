@@ -343,6 +343,12 @@
     cursor: pointer;
 }
 
+.pro-btn-secondary:disabled,
+.pro-btn-danger:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 .pro-btn-danger {
     background: transparent;
     color: #ff4d4d;
@@ -436,6 +442,21 @@
     letter-spacing: 0.06em;
 }
 
+.settings-inline-error {
+    margin: 0;
+    color: #fca5a5;
+    font-size: 0.75rem;
+}
+
+.pro-settings-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-end;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.65);
+}
+
 .settings-card-topline {
     width: 100%;
     display: flex;
@@ -495,5 +516,9 @@
 
     .settings-meta-grid {
         grid-template-columns: 1fr;
+    }
+
+    .pro-settings-meta {
+        align-items: flex-start;
     }
 }

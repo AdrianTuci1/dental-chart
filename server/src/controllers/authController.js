@@ -1,7 +1,7 @@
 const MedicService = require('../services/MedicService');
 const TelemetryService = require('../services/TelemetryService');
 const bcrypt = require('bcryptjs');
-const { signAuthToken, verifyAuthToken, extractMedicIdFromAuthHeader } = require('../utils/auth');
+const { signAuthToken, extractMedicIdFromRequest } = require('../utils/auth');
 const medicService = new MedicService();
 const telemetryService = new TelemetryService();
 
@@ -109,12 +109,7 @@ exports.login = async (req, res) => {
 
 exports.getMe = async (req, res) => {
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ error: 'Unauthorized: No token provided' });
-        }
-
-        const medicId = extractMedicIdFromAuthHeader(authHeader);
+        const medicId = extractMedicIdFromRequest(req);
         if (!medicId) {
             return res.status(401).json({ error: 'Invalid or expired token' });
         }
@@ -154,16 +149,8 @@ exports.resetPassword = async (req, res) => {
 
 exports.changePassword = async (req, res) => {
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ error: 'Unauthorized: No token provided' });
-        }
-
-        let medicId = null;
-        try {
-            const payload = verifyAuthToken(authHeader.split(' ')[1]);
-            medicId = payload.sub;
-        } catch {
+        const medicId = extractMedicIdFromRequest(req);
+        if (!medicId) {
             return res.status(401).json({ error: 'Invalid or expired token' });
         }
 

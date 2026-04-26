@@ -10,7 +10,7 @@ import TypeSelector from './components/TypeSelector';
 import PathologyWizard from './components/PathologyWizard';
 import { usePathologyForm } from './hooks/usePathologyForm';
 
-const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious, onPreviewChange }) => {
+const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious }) => {
     const { teeth, selectedPatient } = useAppStore();
     const updateTooth = useAppStore((state) => state.updateTooth);
     const tooth = teeth[toothNumber];
@@ -28,16 +28,16 @@ const PathologyDrawer = ({ toothNumber, position = 'right', onClose, onNext, onP
         resetForm();
     }, [toothNumber, resetForm]);
 
-    useEffect(() => {
-        if (!onPreviewChange) return undefined;
+    const setPreviewTooth = useAppStore((state) => state.setPreviewTooth);
 
+    useEffect(() => {
         const previewTooth = buildPathologyPreview(tooth, selectedPathologyType, formState);
-        onPreviewChange(toothNumber, previewTooth);
+        setPreviewTooth(toothNumber, previewTooth);
 
         return () => {
-            onPreviewChange(toothNumber, null);
+            setPreviewTooth(toothNumber, null);
         };
-    }, [tooth, toothNumber, selectedPathologyType, formState, onPreviewChange]);
+    }, [tooth, toothNumber, selectedPathologyType, formState, setPreviewTooth]);
 
     const pathologyTypes = [
         { id: 'decay', label: 'Decay', route: 'decay' },

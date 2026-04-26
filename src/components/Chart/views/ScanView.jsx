@@ -26,7 +26,15 @@ const ScanView = ({ resolvedTeeth, onToothClick, selectedTeeth, activeTooth }) =
     const [chartScale, setChartScale] = React.useState(1);
     const [selectedScanId, setSelectedScanId] = React.useState(1);
     const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
-    const [showUnlockOverlay, setShowUnlockOverlay] = React.useState(true);
+    const [showUnlockOverlay, setShowUnlockOverlay] = React.useState(() => {
+        return localStorage.getItem('unlock_overlay_shown') !== 'true';
+    });
+
+    const handleCloseOverlay = () => {
+        setShowUnlockOverlay(false);
+        localStorage.setItem('unlock_overlay_shown', 'true');
+    };
+    const [showDetections, setShowDetections] = React.useState(true);
     const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
     const [imageSize, setImageSize] = React.useState({ width: 0, height: 0 });
     const imgRef = useRef(null);
@@ -193,18 +201,18 @@ const ScanView = ({ resolvedTeeth, onToothClick, selectedTeeth, activeTooth }) =
 
             <div className="scan-view-main-wrapper">
                 <div className="scan-view-workspace">
-                    <div className="scan-view-toolbar">
-                        <button type="button" className="scan-upload-trigger" onClick={() => fileInputRef.current?.click()}>
-                            <Upload size={16} />
-                            <span>{scanImage ? 'Replace scan' : 'Upload scan'}</span>
-                        </button>
-                        {scanImage && (
+                    {scanImage && (
+                        <div className="scan-view-toolbar">
+                            <button type="button" className="scan-upload-trigger" onClick={() => fileInputRef.current?.click()}>
+                                <Upload size={16} />
+                                <span>Replace scan</span>
+                            </button>
                             <button type="button" className="scan-remove-trigger" onClick={() => AppFacade.scan.setScanImage(null)}>
                                 <X size={16} />
                                 <span>Remove</span>
                             </button>
-                        )}
-                    </div>
+                        </div>
+                    )}
 
                     <div className="scan-view-main-layout">
                         {scanImage && (
@@ -263,7 +271,7 @@ const ScanView = ({ resolvedTeeth, onToothClick, selectedTeeth, activeTooth }) =
                                                 onLoad={onImageLoad}
                                             />
 
-                                            {imageSize.width > 0 && detections && detections.length > 0 && (
+                                            {showDetections && imageSize.width > 0 && detections && detections.length > 0 && (
                                                 <svg
                                                     className="scan-detections-overlay"
                                                     viewBox={`0 0 ${imageSize.width} ${imageSize.height}`}
@@ -363,7 +371,11 @@ const ScanView = ({ resolvedTeeth, onToothClick, selectedTeeth, activeTooth }) =
 
             {scanImage && (
                 <div className="scan-view-footer">
-                    <div className="footer-left"><button className="btn-secondary">Hide detections</button></div>
+                    <div className="footer-left">
+                        <button className="btn-secondary" onClick={() => setShowDetections(!showDetections)}>
+                            {showDetections ? 'Hide detections' : 'Show detections'}
+                        </button>
+                    </div>
                     <div className="footer-center">
                         <label className="filter-checkbox"><input type="checkbox" defaultChecked /><span>Caries</span></label>
                         <label className="filter-checkbox"><input type="checkbox" defaultChecked /><span>Restorations (Crown/Filling)</span></label>
@@ -374,7 +386,7 @@ const ScanView = ({ resolvedTeeth, onToothClick, selectedTeeth, activeTooth }) =
                     <div className="footer-right"><button className="btn-primary">Confirm</button></div>
                 </div>
             )}
-            {showUnlockOverlay && <UnlockOverlay onClose={() => setShowUnlockOverlay(false)} />}
+            {showUnlockOverlay && <UnlockOverlay onClose={handleCloseOverlay} />}
         </div>
     );
 };

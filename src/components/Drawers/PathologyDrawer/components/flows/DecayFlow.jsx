@@ -1,34 +1,11 @@
 import React from 'react';
-import ToothZones from '../../../../Tooth/ToothZones';
+
 import styles from '../PathologyWizard.module.css';
 
 const DecayFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumber }) => {
     const { selectedZones, decayMaterial, cavitation, cavitationLevel } = formState;
 
     if (currentStep === 1) {
-        return (
-            <div className={styles.stepContainer}>
-                <div className={styles.stepLabel}>SURFACES:</div>
-                <div className={styles.drawerZones}>
-                    <ToothZones
-                        toothNumber={toothNumber}
-                        selectedZones={selectedZones}
-                        onChange={(zones) => updateForm({ selectedZones: zones })}
-                        className={styles.fullWidthZones}
-                        restorationType="decay"
-                    />
-                </div>
-                <button
-                    className={styles.continueBtn}
-                    onClick={() => onNextStep(2)}
-                    disabled={selectedZones.length === 0}
-                >
-                    ADD DETAILS
-                </button>
-            </div>
-        );
-    }
-    if (currentStep === 2) {
         return (
             <div className={styles.stepContainer}>
                 <div className={styles.stepLabel}>MATERIAL:</div>
@@ -40,7 +17,7 @@ const DecayFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumber
                                     updateForm({ decayMaterial: null, cavitation: null, cavitationLevel: null });
                                 } else {
                                     updateForm({ decayMaterial: m });
-                                    onNextStep(3);
+                                    onNextStep(2);
                                 }
                             }}>
                             {m.charAt(0).toUpperCase() + m.slice(1)}
@@ -50,7 +27,7 @@ const DecayFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumber
             </div>
         );
     }
-    if (currentStep === 3) {
+    if (currentStep === 2) {
         return (
             <div className={styles.stepContainer}>
                 <div className={styles.stepLabel}>CAVITATION:</div>
@@ -62,7 +39,7 @@ const DecayFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumber
                                     updateForm({ cavitation: null, cavitationLevel: null });
                                 } else {
                                     updateForm({ cavitation: c });
-                                    onNextStep(4);
+                                    onNextStep(3);
                                 }
                             }}>
                             {c === 'no-cavitation' ? 'No Cavitation' : 'Cavitation'}
@@ -72,7 +49,7 @@ const DecayFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumber
             </div>
         );
     }
-    if (currentStep === 4) {
+    if (currentStep === 3) {
         return (
             <div className={styles.stepContainer}>
                 <div className={styles.stepLabel}>LEVEL:</div>

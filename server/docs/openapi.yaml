@@ -104,6 +104,7 @@ components:
         ownerMedicId:
           type: string
 
+
 paths:
   /health:
     get:

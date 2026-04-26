@@ -1,13 +1,13 @@
 const TelemetryService = require('../services/TelemetryService');
 const ClinicService = require('../services/ClinicService');
-const { extractMedicIdFromAuthHeader } = require('../utils/auth');
+const { extractMedicIdFromRequest } = require('../utils/auth');
 
 const telemetryService = new TelemetryService();
 const clinicService = new ClinicService();
 
 exports.ingestEvent = async (req, res) => {
     try {
-        const userId = extractMedicIdFromAuthHeader(req.headers.authorization) || req.body.userId || null;
+        const userId = extractMedicIdFromRequest(req) || req.body.userId || null;
         let clinicId = req.body.clinicId || null;
 
         if (!clinicId && userId) {
@@ -27,15 +27,6 @@ exports.ingestEvent = async (req, res) => {
         });
 
         res.status(201).json(event);
-    } catch (err) {
-        res.status(err.statusCode || 500).json({ error: err.message });
-    }
-};
-
-exports.listEvents = async (req, res) => {
-    try {
-        const events = await telemetryService.listEvents(req.query);
-        res.json(events);
     } catch (err) {
         res.status(err.statusCode || 500).json({ error: err.message });
     }

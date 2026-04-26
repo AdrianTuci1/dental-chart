@@ -56,37 +56,4 @@ export const AnalyticsFacade = {
         entityId: patientId,
         metadata: { menuName },
     }),
-
-    trackPatientCreated: (patient) => analyticsProxy.track('patient_created', {
-        category: 'patient',
-        clinicId: patient?.clinicId || null,
-        entityType: 'patient',
-        entityId: patient?.id || null,
-    }),
-
-    trackPatientDeleted: (patientId) => analyticsProxy.track('patient_deleted', {
-        category: 'patient',
-        entityType: 'patient',
-        entityId: patientId,
-    }),
-
-    trackHistoryRecordAdded: ({ patientId, item }) => analyticsProxy.track('history_record_added', {
-        category: 'treatment',
-        entityType: 'patient',
-        entityId: patientId,
-        metadata: {
-            treatmentType: item?.type || null,
-            procedure: item?.procedure || null,
-        },
-    }),
-
-    trackTreatmentPlanItemAdded: ({ patientId, item }) => analyticsProxy.track('treatment_plan_item_added', {
-        category: 'treatment',
-        entityType: 'patient',
-        entityId: patientId,
-        metadata: {
-            treatmentType: item?.type || null,
-            procedure: item?.procedure || null,
-        },
-    }),
 };

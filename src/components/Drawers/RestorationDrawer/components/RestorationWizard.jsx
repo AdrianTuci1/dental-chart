@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './RestorationWizard.module.css';
+import ToothZones from '../../../Tooth/ToothZones';
 
 // Import Flow Components
 import FillingFlow from './flows/FillingFlow';
@@ -45,13 +46,13 @@ const RestorationWizard = ({
 
         if (selectedRestorationType === 'filling') {
             if (selectedZones.length > 0) summaryItems.push({ label: 'SURFACES', value: selectedZones.join(', '), step: 1 });
-            if (fillingMaterial) summaryItems.push({ label: 'MATERIAL', value: fillingMaterial, step: 2 });
-            if (fillingQuality) summaryItems.push({ label: 'QUALITY', value: fillingQuality, step: 3 });
+            if (fillingMaterial) summaryItems.push({ label: 'MATERIAL', value: fillingMaterial, step: 1 });
+            if (fillingQuality) summaryItems.push({ label: 'QUALITY', value: fillingQuality, step: 2 });
         } else if (selectedRestorationType === 'veneer') {
             if (selectedZones.length > 0) summaryItems.push({ label: 'SURFACES', value: selectedZones.join(', '), step: 1 });
-            if (veneerMaterial) summaryItems.push({ label: 'MATERIAL', value: veneerMaterial, step: 2 });
-            if (veneerQuality) summaryItems.push({ label: 'QUALITY', value: veneerQuality, step: 3 });
-            if (veneerDetail) summaryItems.push({ label: 'DETAIL', value: veneerDetail, step: 4 });
+            if (veneerMaterial) summaryItems.push({ label: 'MATERIAL', value: veneerMaterial, step: 1 });
+            if (veneerQuality) summaryItems.push({ label: 'QUALITY', value: veneerQuality, step: 2 });
+            if (veneerDetail) summaryItems.push({ label: 'DETAIL', value: veneerDetail, step: 3 });
         } else if (selectedRestorationType === 'crown') {
             if (crownMaterial) summaryItems.push({ label: 'MATERIAL', value: crownMaterial, step: 1 });
             if (crownType) summaryItems.push({ label: 'TYPE', value: crownType, step: 2 });
@@ -89,6 +90,28 @@ const RestorationWizard = ({
         <>
             <div className={`${styles.scrollableContent} ${styles.configurationView}`}>
                 {renderSummary()}
+                {selectedRestorationType && selectedRestorationType !== 'crown' && (
+                    <div className={styles.drawerZones}>
+                        <ToothZones
+                            toothNumber={toothNumber}
+                            selectedZones={selectedZones}
+                            onChange={(zones) => updateForm({ selectedZones: zones })}
+                            className={styles.fullWidthZones}
+                            restorationType={selectedRestorationType}
+                            zoneColor={(() => {
+                                const material = fillingMaterial || veneerMaterial || crownMaterial;
+                                switch (material) {
+                                    case 'Gold': return '#FFD700'; // Gold
+                                    case 'Amalgam': return '#9CA3AF'; // Gray-400
+                                    case 'Non-Precious Metal': return '#9CA3AF'; // Gray-400
+                                    case 'Ceramic': return '#A5F3FC'; // Cyan-200
+                                    case 'Composite': return '#3B82F6'; // Blue-500
+                                    default: return '#3B82F6'; // Default Blue
+                                }
+                            })()}
+                        />
+                    </div>
+                )}
                 {FlowComponent && (
                     <FlowComponent
                         formState={formState}

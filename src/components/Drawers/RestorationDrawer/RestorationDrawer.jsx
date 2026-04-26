@@ -12,7 +12,7 @@ import TypeSelector from './components/TypeSelector';
 import RestorationWizard from './components/RestorationWizard';
 import { useRestorationForm } from './hooks/useRestorationForm';
 
-const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious, initialType = null, onPreviewChange }) => {
+const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious, initialType = null }) => {
     const { teeth, selectedPatient } = useAppStore(); // Removed updateTooth and addTreatmentPlanItem
     const updateTooth = useAppStore(state => state.updateTooth); // Added specific updateTooth selector
     const tooth = teeth[toothNumber];
@@ -48,16 +48,16 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
         }
     }, [selectedRestorationType, formState.crownBase, formState.crownType, toothNumber, updateForm]);
 
-    useEffect(() => {
-        if (!onPreviewChange) return undefined;
+    const setPreviewTooth = useAppStore((state) => state.setPreviewTooth);
 
+    useEffect(() => {
         const previewTooth = buildRestorationPreview(tooth, selectedRestorationType, formState);
-        onPreviewChange(toothNumber, previewTooth);
+        setPreviewTooth(toothNumber, previewTooth);
 
         return () => {
-            onPreviewChange(toothNumber, null);
+            setPreviewTooth(toothNumber, null);
         };
-    }, [tooth, toothNumber, selectedRestorationType, formState, onPreviewChange]);
+    }, [tooth, toothNumber, selectedRestorationType, formState, setPreviewTooth]);
 
     const restorationTypes = [
         { id: 'filling', label: 'Filling', route: 'filling' },

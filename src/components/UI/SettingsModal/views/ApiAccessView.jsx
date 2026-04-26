@@ -1,16 +1,56 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { AppFacade } from '../../../../core/AppFacade';
 
 const ApiAccessView = ({ userProfile }) => {
     const [copied, setCopied] = useState(false);
-    const apiKey = userProfile?.apiKey || userProfile?.apiKeyMasked || 'No API key available yet';
+    const [isRotating, setIsRotating] = useState(false);
+    const [rotationError, setRotationError] = useState('');
+    const [newApiKey, setNewApiKey] = useState('');
+    const apiKey = newApiKey || userProfile?.apiKey || userProfile?.apiKeyMasked || '';
+    const hasApiKey = Boolean(apiKey);
+    const helperText = useMemo(() => {
+        if (newApiKey) {
+            return 'This is the new API key. It is only shown once after rotation, so save it in your integration now.';
+        }
+
+        return 'Use this key for the external patient contract API. Supported patient fields: id, name, dateOfBirth, gender, phone, email.';
+    }, [newApiKey]);
+
+    const formatDate = (value) => {
+        if (!value) return 'Never';
+        return new Date(value).toLocaleString();
+    };
 
     const handleCopy = async () => {
+        if (!hasApiKey) {
+            return;
+        }
+
         try {
             await navigator.clipboard.writeText(apiKey);
             setCopied(true);
             window.setTimeout(() => setCopied(false), 1500);
         } catch (error) {
             console.error('Failed to copy API key', error);
+        }
+    };
+
+    const handleRotate = async () => {
+        if (!userProfile?.id || isRotating) {
+            return;
+        }
+
+        setRotationError('');
+        setCopied(false);
+        setIsRotating(true);
+
+        try {
+            const rotatedProfile = await AppFacade.medic.rotateApiKey(userProfile.id);
+            setNewApiKey(rotatedProfile?.apiKey || '');
+        } catch (error) {
+            setRotationError(error?.message || 'Failed to rotate API key.');
+        } finally {
+            setIsRotating(false);
         }
     };
 
@@ -22,19 +62,22 @@ const ApiAccessView = ({ userProfile }) => {
                     <div className="pro-settings-item vertical">
                         <div className="pro-settings-text">
                             <label>Secret API Key</label>
-                            <p>Use this key for the external patient contract API. Supported patient fields: id, name, dateOfBirth, gender, phone, email.</p>
+                            <p>{helperText}</p>
                         </div>
                         <div className="api-key-box">
                             <input
-                                type="password"
+                                type={newApiKey ? 'text' : 'password'}
                                 className="api-key-input"
-                                value={apiKey}
+                                value={apiKey || 'No API key available yet'}
                                 readOnly
                             />
-                            <button className="pro-btn-secondary" type="button" onClick={handleCopy}>
+                            <button className="pro-btn-secondary" type="button" onClick={handleCopy} disabled={!hasApiKey}>
                                 {copied ? 'Copied' : 'Copy Key'}
                             </button>
                         </div>
+                        {rotationError ? (
+                            <p className="settings-inline-error" role="alert">{rotationError}</p>
+                        ) : null}
                     </div>
                     <div className="pro-settings-item">
                         <div className="pro-settings-text">
@@ -45,10 +88,22 @@ const ApiAccessView = ({ userProfile }) => {
                     </div>
                     <div className="pro-settings-item">
                         <div className="pro-settings-text">
-                            <label>Key Rotation</label>
-                            <p>Rotate the API key from the backend route when you want to invalidate older integrations.</p>
+                            <label>Usage Metadata</label>
+                            <p>Track when the key was last rotated and when it was last used by an external integration.</p>
                         </div>
-                        <button className="pro-btn-danger" type="button">Rotate on Server</button>
+                        <div className="pro-settings-meta">
+                            <span>Rotated: {formatDate(userProfile?.apiKeyLastRotatedAt)}</span>
+                            <span>Last used: {formatDate(userProfile?.apiKeyLastUsedAt)}</span>
+                        </div>
+                    </div>
+                    <div className="pro-settings-item">
+                        <div className="pro-settings-text">
+                            <label>Key Rotation</label>
+                            <p>Rotate the API key when you want to invalidate older integrations. Existing API clients will stop working immediately.</p>
+                        </div>
+                        <button className="pro-btn-danger" type="button" onClick={handleRotate} disabled={isRotating || !userProfile?.id}>
+                            {isRotating ? 'Rotating...' : 'Rotate Key'}
+                        </button>
                     </div>
                 </div>
             </div>

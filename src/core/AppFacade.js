@@ -1,6 +1,6 @@
 import { useAppStore } from './store/appStore';
 import { PatientAdapter } from './adapters/PatientAdapter';
-import { patientService, aiService } from '../api';
+import { patientService, medicService, aiService } from '../api';
 import { ActionProxy } from './proxies/ActionProxy';
 import { ChartModel } from './models/ChartModel';
 import { AIAdapter } from './adapters/AIAdapter';
@@ -100,10 +100,20 @@ export const AppFacade = {
         onboardingCompleted: ({ id, subscriptionPlan }) => AnalyticsFacade.trackOnboardingCompleted({ id, subscriptionPlan }),
         settingsOpened: (medicId) => AnalyticsFacade.trackSettingsOpened(medicId),
         menuClicked: ({ patientId, menuName }) => AnalyticsFacade.trackMenuClicked({ patientId, menuName }),
-        patientCreated: (patient) => AnalyticsFacade.trackPatientCreated(patient),
-        patientDeleted: (patientId) => AnalyticsFacade.trackPatientDeleted(patientId),
-        historyRecordAdded: ({ patientId, item }) => AnalyticsFacade.trackHistoryRecordAdded({ patientId, item }),
-        treatmentPlanItemAdded: ({ patientId, item }) => AnalyticsFacade.trackTreatmentPlanItemAdded({ patientId, item }),
+    },
+
+    medic: {
+        rotateApiKey: async (medicId) => {
+            try {
+                const response = await medicService.rotateApiKey(medicId);
+                const { apiKey, ...persistedProfile } = response || {};
+                getStoreState().updateMedicProfile(persistedProfile);
+                return response;
+            } catch (error) {
+                console.error('[AppFacade] Failed to rotate API key', error);
+                throw error;
+            }
+        },
     },
 
     patient: {
@@ -181,7 +191,6 @@ export const AppFacade = {
                 const response = await patientService.createPatient(PatientAdapter.toApi(payload));
                 const domainPatient = hydratePatient(PatientAdapter.toDomain(response));
                 getStoreState().addPatient(domainPatient);
-                AppFacade.analytics.patientCreated(domainPatient);
                 return domainPatient;
             } catch (error) {
                 console.error('[AppFacade] Failed to add patient', error);
@@ -214,7 +223,6 @@ export const AppFacade = {
                 await patientService.deletePatient(id);
                 const state = getStoreState();
                 state.deletePatient(id);
-                AppFacade.analytics.patientDeleted(id);
 
                 if (String(state.selectedPatient?.id) === String(id)) {
                     state.setTeeth({});
@@ -238,7 +246,6 @@ export const AppFacade = {
          */
         addToHistory: async (patientId, item) => {
             getStoreState().addToHistory(patientId, item);
-            AppFacade.analytics.historyRecordAdded({ patientId, item });
             return AppFacade.patient.update(patientId);
         },
 
@@ -247,7 +254,6 @@ export const AppFacade = {
          */
         addTreatmentPlanItem: async (patientId, item) => {
             getStoreState().addTreatmentPlanItem(patientId, item);
-            AppFacade.analytics.treatmentPlanItemAdded({ patientId, item });
             return AppFacade.patient.update(patientId);
         },
 

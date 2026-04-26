@@ -109,7 +109,8 @@ describe('Service business rules', () => {
             service.getMedic = jest.fn().mockResolvedValue({
                 id: 'm-1',
                 name: 'Dr. Smith',
-                apiKey: 'dc_old_key',
+                apiKeyHash: 'oldhash',
+                apiKeyPrefix: 'dc_old_key',
             });
             service.medicRepository = {
                 updateMedic: jest.fn().mockImplementation(async (_id, payload) => payload),
@@ -120,6 +121,8 @@ describe('Service business rules', () => {
             expect(result.apiKey).toMatch(/^dc_/);
             expect(result.apiKeyMasked).toBeTruthy();
             expect(service.medicRepository.updateMedic).toHaveBeenCalled();
+            expect(result.apiKeyHash).toBeUndefined();
+            expect(result.apiKeyLastRotatedAt).toBeTruthy();
         });
     });
 });

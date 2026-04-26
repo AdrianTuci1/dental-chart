@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { authService, patientService } from '../index';
+import { authService, medicService, patientService } from '../index';
 import apiClient from '../apiClient';
 
 // Mock apiClient
@@ -44,6 +44,16 @@ describe('Frontend API Services', () => {
             expect(apiClient).toHaveBeenCalledWith('/patients', {
                 method: 'POST',
                 body: patientData,
+            });
+        });
+    });
+
+    describe('medicService', () => {
+        it('rotateApiKey calls POST /medics/:id/api-key/rotate', async () => {
+            apiClient.mockResolvedValueOnce({ id: 'medic-1', apiKey: 'dc_test_key' });
+            await medicService.rotateApiKey('medic-1');
+            expect(apiClient).toHaveBeenCalledWith('/medics/medic-1/api-key/rotate', {
+                method: 'POST',
             });
         });
     });

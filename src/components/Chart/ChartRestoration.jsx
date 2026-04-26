@@ -8,9 +8,8 @@ import LowerJawView from './views/LowerJawView';
 import RestorationDrawer from '../Drawers/RestorationDrawer/RestorationDrawer';
 
 const ChartRestoration = () => {
-    const { teeth, resolvedTeeth, selectTooth, selectedTooth } = useAppStore();
+    const { teeth, resolvedTeeth, selectTooth, selectedTooth, previewTeeth, setPreviewTooth } = useAppStore();
     const { chartView } = useOutletContext();
-    const [previewTeeth, setPreviewTeeth] = useState({});
 
     const renderedResolvedTeeth = useMemo(() => {
         if (!resolvedTeeth) return {};
@@ -27,19 +26,6 @@ const ChartRestoration = () => {
         return next;
     }, [resolvedTeeth, previewTeeth]);
 
-    const handlePreviewChange = (toothNumber, previewTooth) => {
-        setPreviewTeeth((current) => {
-            const next = { ...current };
-
-            if (previewTooth) {
-                next[toothNumber] = previewTooth;
-            } else {
-                delete next[toothNumber];
-            }
-
-            return next;
-        });
-    };
 
     const handleToothClick = (toothNumber) => {
         selectTooth(toothNumber);
@@ -47,7 +33,7 @@ const ChartRestoration = () => {
 
     const handleCloseDrawer = () => {
         if (selectedTooth) {
-            handlePreviewChange(selectedTooth, null);
+            setPreviewTooth(selectedTooth, null);
         }
         selectTooth(null);
     };
@@ -58,7 +44,7 @@ const ChartRestoration = () => {
         const toothNumbers = Object.keys(teeth).map(Number).sort((a, b) => a - b);
         const currentIndex = toothNumbers.indexOf(current);
         if (currentIndex !== -1 && currentIndex < toothNumbers.length - 1) {
-            handlePreviewChange(selectedTooth, null);
+            setPreviewTooth(selectedTooth, null);
             selectTooth(toothNumbers[currentIndex + 1]);
         }
     };
@@ -69,7 +55,7 @@ const ChartRestoration = () => {
         const toothNumbers = Object.keys(teeth).map(Number).sort((a, b) => a - b);
         const currentIndex = toothNumbers.indexOf(current);
         if (currentIndex > 0) {
-            handlePreviewChange(selectedTooth, null);
+            setPreviewTooth(selectedTooth, null);
             selectTooth(toothNumbers[currentIndex - 1]);
         }
     };
@@ -110,7 +96,6 @@ const ChartRestoration = () => {
                     onClose={handleCloseDrawer}
                     onNext={handleNextTooth}
                     onPrevious={handlePreviousTooth}
-                    onPreviewChange={handlePreviewChange}
                 />
             )}
         </div>

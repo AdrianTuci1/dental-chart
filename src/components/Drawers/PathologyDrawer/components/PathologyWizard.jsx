@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './PathologyWizard.module.css';
+import ToothZones from '../../../Tooth/ToothZones';
 
 // Import Flow Components
 import DecayFlow from './flows/DecayFlow';
@@ -53,9 +54,9 @@ const PathologyWizard = ({
 
         if (selectedPathologyType === 'decay') {
             if (selectedZones.length > 0) summaryItems.push({ label: 'SURFACES', value: selectedZones.join(', '), step: 1 });
-            if (decayMaterial) summaryItems.push({ label: 'MATERIAL', value: decayMaterial, step: 2 });
-            if (cavitation) summaryItems.push({ label: 'CAVITATION', value: cavitation, step: 3 });
-            if (cavitationLevel) summaryItems.push({ label: 'LEVEL', value: cavitationLevel, step: 4 });
+            if (decayMaterial) summaryItems.push({ label: 'MATERIAL', value: decayMaterial, step: 1 });
+            if (cavitation) summaryItems.push({ label: 'CAVITATION', value: cavitation, step: 2 });
+            if (cavitationLevel) summaryItems.push({ label: 'LEVEL', value: cavitationLevel, step: 3 });
         } else if (selectedPathologyType === 'fracture') {
             if (fractureLocation) summaryItems.push({ label: 'LOCATION', value: fractureLocation, step: 1 });
             if (fractureDirection) summaryItems.push({ label: 'DIRECTION', value: fractureDirection, step: 2 });
@@ -100,6 +101,17 @@ const PathologyWizard = ({
         <>
             <div className={`${styles.scrollableContent} ${styles.configurationView}`}>
                 {renderSummary()}
+                {selectedPathologyType === 'decay' && (
+                    <div className={styles.drawerZones}>
+                        <ToothZones
+                            toothNumber={toothNumber}
+                            selectedZones={selectedZones}
+                            onChange={(zones) => updateForm({ selectedZones: zones })}
+                            className={styles.fullWidthZones}
+                            restorationType="decay"
+                        />
+                    </div>
+                )}
                 {FlowComponent && (
                     <FlowComponent
                         formState={formState}

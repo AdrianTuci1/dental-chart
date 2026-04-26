@@ -14,7 +14,7 @@ exports.createMedic = async (req, res) => {
 exports.getMedic = async (req, res) => {
     try {
         const { id } = req.params;
-        const medic = await medicService.getMedic(id);
+        const medic = await medicService.getMedicProfile(id);
 
         if (!medic) {
             return res.status(404).json({ error: 'Medic not found' });

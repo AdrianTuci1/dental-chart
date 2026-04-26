@@ -22,7 +22,7 @@ const JawTooth = ({
 }) => {
     // Determine if tooth is in upper or lower jaw
     const isUpperJaw = checkIsUpperJaw(toothNumber);
-    const { selectedPatient, showEndo, showPerio, showDental } = useAppStore();
+    const { teeth, selectedPatient, showEndo, showPerio, showDental } = useAppStore();
     const historicalDate = useAppStore(state => state.historicalDate);
 
     // Determine status class
@@ -56,17 +56,54 @@ const JawTooth = ({
             return { probingDepth: 0, gingivalMargin: 0 };
         };
 
+        const computeSite = (d, index) => {
+            const offset = OFFSETS[index];
+            return {
+                pd: (d.probingDepth || 0) + offset,
+                gm: Math.abs(d.gingivalMargin || 0) + offset
+            };
+        };
+
+        const visualOrder = isUpperJaw 
+            ? [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28] 
+            : [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
+        const tNum = parseInt(toothNumber);
+        const idx = visualOrder.indexOf(tNum);
+        const leftT = idx > 0 ? visualOrder[idx - 1] : null;
+        const rightT = idx < visualOrder.length - 1 ? visualOrder[idx + 1] : null;
+
+        const leftToothData = leftT ? teeth[leftT] : null;
+        const rightToothData = rightT ? teeth[rightT] : null;
+
         const getDataValues = (keys) => {
             const pd = [];
             const gm = [];
             keys.forEach((key, index) => {
                 const d = getSiteData(toothData, key);
-                const offset = OFFSETS[index];
-                pd.push((d.probingDepth || 0) + offset);
-                // Math.abs used in ToothVisualization
-                gm.push(Math.abs(d.gingivalMargin || 0) + offset);
+                const res = computeSite(d, index);
+                pd.push(res.pd);
+                gm.push(res.gm);
             });
-            return { pd, gm };
+
+            // left edge = average of left tooth's disto (index 2) and current tooth's mesio (index 0)
+            const leftAdjacentSite = getSiteData(leftToothData, keys[2]);
+            const leftAdjacentValues = computeSite(leftAdjacentSite, 2);
+            const currentLeftSite = getSiteData(toothData, keys[0]);
+            const currentLeftValues = computeSite(currentLeftSite, 0);
+
+            // right edge = average of current tooth's disto (index 2) and right tooth's mesio (index 0)
+            const rightAdjacentSite = getSiteData(rightToothData, keys[0]);
+            const rightAdjacentValues = computeSite(rightAdjacentSite, 0);
+            const currentRightSite = getSiteData(toothData, keys[2]);
+            const currentRightValues = computeSite(currentRightSite, 2);
+
+            return { 
+                pd, gm, 
+                leftPd: leftToothData ? (leftAdjacentValues.pd + currentLeftValues.pd) / 2 : currentLeftValues.pd, 
+                leftGm: leftToothData ? (leftAdjacentValues.gm + currentLeftValues.gm) / 2 : currentLeftValues.gm,
+                rightPd: rightToothData ? (rightAdjacentValues.pd + currentRightValues.pd) / 2 : currentRightValues.pd, 
+                rightGm: rightToothData ? (rightAdjacentValues.gm + currentRightValues.gm) / 2 : currentRightValues.gm 
+            };
         };
 
         const buccalKeys = ['mesioBuccal', 'buccal', 'distoBuccal'];
@@ -75,7 +112,7 @@ const JawTooth = ({
         models.buccal.setValues(getDataValues(buccalKeys));
         models.lingual.setValues(getDataValues(lingualKeys));
 
-    }, [toothData, models, JSON.stringify(toothData?.periodontal?.sites)]);
+    }, [toothData, teeth, toothNumber, isUpperJaw, models, JSON.stringify(toothData?.periodontal?.sites)]);
 
     // Extract site data for PerioGrid
     const getSite = (key) => {
