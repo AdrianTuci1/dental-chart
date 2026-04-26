@@ -1,6 +1,6 @@
 import { useAppStore } from './store/appStore';
 import { PatientAdapter } from './adapters/PatientAdapter';
-import { patientService, medicService, aiService } from '../api';
+import { patientService, medicService, clinicService, aiService } from '../api';
 import { ActionProxy } from './proxies/ActionProxy';
 import { ChartModel } from './models/ChartModel';
 import { AIAdapter } from './adapters/AIAdapter';
@@ -103,6 +103,17 @@ export const AppFacade = {
     },
 
     medic: {
+        updateProfile: async (medicId, payload) => {
+            try {
+                const response = await medicService.updateMedic(medicId, payload);
+                getStoreState().updateMedicProfile(response);
+                return response;
+            } catch (error) {
+                console.error('[AppFacade] Failed to update medic profile', error);
+                throw error;
+            }
+        },
+
         rotateApiKey: async (medicId) => {
             try {
                 const response = await medicService.rotateApiKey(medicId);
@@ -111,6 +122,71 @@ export const AppFacade = {
                 return response;
             } catch (error) {
                 console.error('[AppFacade] Failed to rotate API key', error);
+                throw error;
+            }
+        },
+    },
+
+    clinic: {
+        getPendingInvitations: async () => {
+            try {
+                return await clinicService.getPendingInvitations();
+            } catch (error) {
+                console.error('[AppFacade] Failed to load pending invitations', error);
+                throw error;
+            }
+        },
+
+        rename: async (clinicId, payload) => {
+            try {
+                return await clinicService.updateClinic(clinicId, payload);
+            } catch (error) {
+                console.error('[AppFacade] Failed to rename clinic', error);
+                throw error;
+            }
+        },
+
+        inviteMember: async (clinicId, payload) => {
+            try {
+                return await clinicService.inviteMedic(clinicId, payload);
+            } catch (error) {
+                console.error('[AppFacade] Failed to invite clinic member', error);
+                throw error;
+            }
+        },
+
+        acceptInvitation: async (clinicId, inviteId) => {
+            try {
+                return await clinicService.acceptInvitation(clinicId, inviteId);
+            } catch (error) {
+                console.error('[AppFacade] Failed to accept clinic invitation', error);
+                throw error;
+            }
+        },
+
+        removeMember: async (clinicId, medicId) => {
+            try {
+                return await clinicService.removeMember(clinicId, medicId);
+            } catch (error) {
+                console.error('[AppFacade] Failed to remove clinic member', error);
+                throw error;
+            }
+        },
+
+        transferOwnership: async (clinicId, newOwnerMedicId) => {
+            try {
+                return await clinicService.transferOwnership(clinicId, newOwnerMedicId);
+            } catch (error) {
+                console.error('[AppFacade] Failed to transfer clinic ownership', error);
+                throw error;
+            }
+        },
+
+        delete: async (clinicId) => {
+            try {
+                return await clinicService.deleteClinic(clinicId);
+            } catch (error) {
+                console.error('[AppFacade] Failed to delete clinic', error);
                 throw error;
             }
         },

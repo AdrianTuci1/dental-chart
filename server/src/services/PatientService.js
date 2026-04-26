@@ -176,6 +176,14 @@ class PatientService {
         await this.patientRepository.deletePatientsByOwnerMedicId(ownerMedicId);
     }
 
+    async deletePatientsByClinicId(clinicId) {
+        if (!clinicId) {
+            throw createHttpError('clinicId is required', 400);
+        }
+
+        await this.patientRepository.deletePatientsByClinicId(clinicId);
+    }
+
     async getPatientsOwnedByMedic(ownerMedicId) {
         return this.patientRepository.getPatientsByOwnerMedicId(ownerMedicId);
     }

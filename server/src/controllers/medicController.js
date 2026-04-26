@@ -35,6 +35,16 @@ exports.getMedicPatients = async (req, res) => {
     }
 };
 
+exports.updateMedic = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const medic = await medicService.updateMedicProfile(id, req.body);
+        res.json(medic);
+    } catch (err) {
+        res.status(err.statusCode || 500).json({ error: err.message });
+    }
+};
+
 exports.seedMedicData = async (req, res) => {
     try {
         const { id } = req.params;

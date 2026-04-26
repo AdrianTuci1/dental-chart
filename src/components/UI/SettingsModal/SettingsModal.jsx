@@ -8,6 +8,7 @@ import BillingView from './views/BillingView';
 import GeneralSettingsView from './views/GeneralSettingsView';
 import ApiAccessView from './views/ApiAccessView';
 import SupportView from './views/SupportView';
+import { getAvatarColor, getDisplayValue, getInitials } from '../profileUtils';
 import './SettingsModal.css';
 
 const VIEW_COMPONENTS = {
@@ -19,7 +20,7 @@ const VIEW_COMPONENTS = {
     support: SupportView,
 };
 
-const SettingsModal = ({ isOpen, onClose, userProfile }) => {
+const SettingsModal = ({ isOpen, onClose, userProfile, onProfileRefresh }) => {
     const [activeView, setActiveView] = useState('profile');
 
     if (!isOpen) return null;
@@ -27,6 +28,9 @@ const SettingsModal = ({ isOpen, onClose, userProfile }) => {
     const ActiveView = VIEW_COMPONENTS[activeView] || ProfileView;
     const header = VIEW_CONFIG[activeView] || VIEW_CONFIG.profile;
     const LogoutIcon = LOGOUT_ACTION.icon;
+    const avatarSeed = userProfile?.name || userProfile?.email || userProfile?.id;
+    const initials = getInitials(userProfile?.name, userProfile?.email);
+    const avatarColor = userProfile?.avatarInfo?.color || getAvatarColor(avatarSeed);
 
     return (
         <div className="modal-overlay" onClick={onClose}>
@@ -34,13 +38,13 @@ const SettingsModal = ({ isOpen, onClose, userProfile }) => {
                 <aside className="modal-sidebar">
                     <div className="sidebar-profile">
                         <div className="sidebar-avatar">
-                            <div className="avatar-circle" style={{ backgroundColor: userProfile?.avatarInfo?.color }}>
-                                {userProfile?.avatarInfo?.initials || '??'}
+                            <div className="avatar-circle" style={{ backgroundColor: avatarColor }}>
+                                {initials}
                             </div>
                         </div>
                         <div className="sidebar-profile-info">
-                            <h4>{userProfile?.name?.split(' ').pop() || 'Doctor'}</h4>
-                            <span>{userProfile?.email}</span>
+                            <h4>{getDisplayValue(userProfile?.name)}</h4>
+                            <span>{getDisplayValue(userProfile?.email)}</span>
                         </div>
                     </div>
 
@@ -76,7 +80,7 @@ const SettingsModal = ({ isOpen, onClose, userProfile }) => {
 
                     <div className="modal-content-area shadow-inner">
                         <div className="modal-content-container luxe-scroll">
-                            <ActiveView userProfile={userProfile} />
+                            <ActiveView userProfile={userProfile} onProfileRefresh={onProfileRefresh} />
                         </div>
                     </div>
                 </main>

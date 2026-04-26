@@ -102,10 +102,14 @@ class MedicService {
             return null;
         }
 
-        const clinics = await this.clinicService.listMedicClinics(id);
+        const [clinics, pendingInvitations] = await Promise.all([
+            this.clinicService.listMedicClinics(id),
+            this.clinicService.listPendingInvitationsForMedic(id),
+        ]);
         return {
             ...this.toPublicMedic(medic),
             clinics,
+            pendingInvitations,
             apiKeyMasked: this.getApiKeyMaskedValue(medic),
         };
     }
@@ -115,6 +119,47 @@ class MedicService {
             throw createHttpError('Email is required', 400);
         }
         return await this.medicRepository.getMedicByEmail(email);
+    }
+
+    async updateMedicProfile(medicId, updates = {}) {
+        if (!medicId) {
+            throw createHttpError('Medic ID is required', 400);
+        }
+
+        const medic = await this.getMedic(medicId);
+        if (!medic) {
+            throw createHttpError('Medic not found', 404);
+        }
+
+        const allowedFields = ['name', 'email', 'phone', 'location', 'license', 'specialization'];
+        const sanitizedUpdates = allowedFields.reduce((acc, field) => {
+            if (updates[field] !== undefined) {
+                acc[field] = typeof updates[field] === 'string' ? updates[field].trim() : updates[field];
+            }
+            return acc;
+        }, {});
+
+        if (sanitizedUpdates.email && sanitizedUpdates.email !== medic.email) {
+            const existingMedic = await this.medicRepository.getMedicByEmail(sanitizedUpdates.email);
+            if (existingMedic && String(existingMedic.id) !== String(medicId)) {
+                throw createHttpError('A medic with this email already exists', 409);
+            }
+        }
+
+        if (sanitizedUpdates.name !== undefined && !sanitizedUpdates.name) {
+            throw createHttpError('Name is required', 400);
+        }
+
+        if (sanitizedUpdates.email !== undefined && !sanitizedUpdates.email) {
+            throw createHttpError('Email is required', 400);
+        }
+
+        await this.medicRepository.updateMedic(medicId, {
+            ...medic,
+            ...sanitizedUpdates,
+        });
+
+        return this.getMedicProfile(medicId);
     }
 
     async getMedicByApiKey(apiKey) {

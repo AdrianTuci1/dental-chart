@@ -9,6 +9,7 @@ router.use(requireAuth);
 
 router.post('/', medicController.createMedic);
 router.get('/:id', requireSameMedicParam('id'), medicController.getMedic);
+router.put('/:id', requireSameMedicParam('id'), medicController.updateMedic);
 router.get('/:id/patients', requireSameMedicParam('id'), medicController.getMedicPatients);
 router.get('/:id/clinics', requireSameMedicParam('id'), clinicController.listMedicClinics);
 router.post('/:id/seed', requireSameMedicParam('id'), medicController.seedMedicData);

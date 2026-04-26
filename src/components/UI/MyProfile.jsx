@@ -1,137 +1,161 @@
-import React, { useState } from 'react';
-import { Mail, Globe, Phone, ShieldCheck, Star, Save, X } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { AppFacade } from '../../core/AppFacade';
+import { getAvatarColor, getDisplayValue, getInitials } from './profileUtils';
 
-const MyProfile = ({ initialProfile }) => {
+const EDITABLE_FIELDS = [
+    { key: 'name', label: 'Full Name', type: 'text', required: true },
+    { key: 'email', label: 'Email Address', type: 'email', required: true },
+    { key: 'phone', label: 'Phone Number', type: 'text' },
+    { key: 'location', label: 'Clinical Office', type: 'text' },
+    { key: 'license', label: 'Medical License', type: 'text' },
+    { key: 'specialization', label: 'Clinical Specialization', type: 'text' },
+];
+
+const MyProfile = ({ initialProfile, onProfileRefresh }) => {
+    const profile = initialProfile || {};
     const [isEditing, setIsEditing] = useState(false);
-    const [profile, setProfile] = useState(initialProfile || {
-        name: 'Adrian Tuci',
-        title: 'Senior Dental Surgeon',
-        bio: 'Dedicated to providing high-quality dental care with over 12 years of experience.',
-        email: 'adrian.tuci@example.com',
-        phone: '+40 722 000 000',
-        location: 'Bucharest Regional Clinic',
-        license: 'DS-99021-XPR',
-        specialization: 'Oral Surgery & Implants',
-        avatarInfo: { initials: 'AT', color: '#4f46e5' }
-    });
+    const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [formData, setFormData] = useState({});
 
-    const [editData, setEditData] = useState({ ...profile });
+    useEffect(() => {
+        setFormData({
+            name: profile.name || '',
+            email: profile.email || '',
+            phone: profile.phone || '',
+            location: profile.location || '',
+            license: profile.license || '',
+            specialization: profile.specialization || '',
+        });
+    }, [profile]);
 
-    const handleSave = () => {
-        setProfile({ ...editData });
-        setIsEditing(false);
+    const avatarSeed = profile?.name || profile?.email || profile?.id;
+    const initials = getInitials(profile?.name, profile?.email);
+    const avatarColor = profile?.avatarInfo?.color || getAvatarColor(avatarSeed);
+
+    const groupedFields = useMemo(() => ({
+        public: EDITABLE_FIELDS.slice(0, 4),
+        credentials: EDITABLE_FIELDS.slice(4),
+    }), []);
+
+    const handleChange = (field, value) => {
+        setFormData((current) => ({
+            ...current,
+            [field]: value,
+        }));
+        setError('');
+        setSuccess('');
     };
 
     const handleCancel = () => {
-        setEditData({ ...profile });
         setIsEditing(false);
+        setError('');
+        setSuccess('');
+        setFormData({
+            name: profile.name || '',
+            email: profile.email || '',
+            phone: profile.phone || '',
+            location: profile.location || '',
+            license: profile.license || '',
+            specialization: profile.specialization || '',
+        });
     };
+
+    const handleSave = async () => {
+        if (!profile?.id) {
+            setError('Profile is not ready yet.');
+            return;
+        }
+
+        if (!formData.name?.trim()) {
+            setError('Full name is required.');
+            return;
+        }
+
+        if (!formData.email?.trim()) {
+            setError('Email address is required.');
+            return;
+        }
+
+        setIsSaving(true);
+        setError('');
+        setSuccess('');
+
+        try {
+            await AppFacade.medic.updateProfile(profile.id, formData);
+            if (typeof onProfileRefresh === 'function') {
+                await onProfileRefresh();
+            }
+            setIsEditing(false);
+            setSuccess('Profile updated.');
+        } catch (saveError) {
+            setError(saveError?.message || 'Failed to update profile.');
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const renderField = (field) => (
+        <div className="pro-settings-item" key={field.key}>
+            <div className="pro-settings-text">
+                <label>{field.label}</label>
+                {isEditing ? (
+                    <input
+                        type={field.type}
+                        className="api-key-input settings-text-input"
+                        value={formData[field.key] || ''}
+                        onChange={(event) => handleChange(field.key, event.target.value)}
+                    />
+                ) : (
+                    <p>{getDisplayValue(profile[field.key])}</p>
+                )}
+            </div>
+        </div>
+    );
 
     return (
         <div className="profile-simple">
             <div className="profile-header-simple">
-                <div className="profile-avatar-simple" style={{ backgroundColor: profile.avatarInfo?.color }}>
-                    {profile.avatarInfo?.initials || '??'}
-                </div>
-                <div className="profile-intro">
-                    <h3>{profile.name}</h3>
-                    <p>{profile.title}</p>
+                <div
+                    className="profile-avatar-simple"
+                    style={{ backgroundColor: avatarColor, width: '40px', height: '40px', justifyContent: 'center', alignItems: 'center', display: 'flex' }}
+                >
+                    {initials}
                 </div>
             </div>
 
             <div className="modal-settings-groups">
                 <div className="modal-settings-group">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <div className="settings-section-header">
                         <h4 style={{ margin: 0 }}>PUBLIC PROFILE</h4>
-                        {!isEditing ? (
-                            <button className="pro-btn-link" onClick={() => setIsEditing(true)}>Edit Profile</button>
-                        ) : (
-                            <div style={{ display: 'flex', gap: '12px' }}>
-                                <button className="pro-btn-link" style={{ color: '#10b981' }} onClick={handleSave}>Save</button>
-                                <button className="pro-btn-link" style={{ color: '#ff4d4d' }} onClick={handleCancel}>Cancel</button>
+                        {isEditing ? (
+                            <div className="settings-header-actions">
+                                <button className="pro-btn-secondary" type="button" onClick={handleCancel} disabled={isSaving}>
+                                    Cancel
+                                </button>
+                                <button className="pro-btn-primary" type="button" onClick={handleSave} disabled={isSaving}>
+                                    {isSaving ? 'Saving...' : 'Save'}
+                                </button>
                             </div>
+                        ) : (
+                            <button className="pro-btn-link" type="button" onClick={() => setIsEditing(true)}>
+                                Edit Profile
+                            </button>
                         )}
                     </div>
 
                     <div className="pro-settings-stack">
-                        <div className="pro-settings-item">
-                            <div className="pro-settings-text">
-                                <label>Full Name</label>
-                                {isEditing ? (
-                                    <input
-                                        className="api-key-input"
-                                        style={{ height: '32px', marginTop: '8px' }}
-                                        value={editData.name}
-                                        onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                                    />
-                                ) : (
-                                    <p>{profile.name}</p>
-                                )}
-                            </div>
-                        </div>
-                        <div className="pro-settings-item">
-                            <div className="pro-settings-text">
-                                <label>Email Address</label>
-                                {isEditing ? (
-                                    <input
-                                        className="api-key-input"
-                                        style={{ height: '32px', marginTop: '8px' }}
-                                        value={editData.email}
-                                        onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                                    />
-                                ) : (
-                                    <p>{profile.email}</p>
-                                )}
-                            </div>
-                        </div>
-                        <div className="pro-settings-item">
-                            <div className="pro-settings-text">
-                                <label>Phone Number</label>
-                                {isEditing ? (
-                                    <input
-                                        className="api-key-input"
-                                        style={{ height: '32px', marginTop: '8px' }}
-                                        value={editData.phone}
-                                        onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
-                                    />
-                                ) : (
-                                    <p>{profile.phone}</p>
-                                )}
-                            </div>
-                        </div>
-                        <div className="pro-settings-item">
-                            <div className="pro-settings-text">
-                                <label>Clinical Office</label>
-                                {isEditing ? (
-                                    <input
-                                        className="api-key-input"
-                                        style={{ height: '32px', marginTop: '8px' }}
-                                        value={editData.location}
-                                        onChange={(e) => setEditData({ ...editData, location: e.target.value })}
-                                    />
-                                ) : (
-                                    <p>{profile.location}</p>
-                                )}
-                            </div>
-                        </div>
+                        {error ? <p className="settings-inline-error">{error}</p> : null}
+                        {success ? <p className="settings-inline-success">{success}</p> : null}
+                        {groupedFields.public.map(renderField)}
                     </div>
                 </div>
 
                 <div className="modal-settings-group">
                     <h4>PROFESSIONAL CREDENTIALS</h4>
                     <div className="pro-settings-stack">
-                        <div className="pro-settings-item">
-                            <div className="pro-settings-text">
-                                <label>Medical License</label>
-                                <p>{profile.license}</p>
-                            </div>
-                        </div>
-                        <div className="pro-settings-item">
-                            <div className="pro-settings-text">
-                                <label>Clinical Specialization</label>
-                                <p>{profile.specialization}</p>
-                            </div>
-                        </div>
+                        {groupedFields.credentials.map(renderField)}
                     </div>
                 </div>
             </div>

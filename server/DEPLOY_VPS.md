@@ -152,9 +152,9 @@ Useful commands:
 
 ```bash
 pm2 status
-pm2 logs pixtooth-api
-pm2 restart pixtooth-api
-pm2 stop pixtooth-api
+pm2 logs pixtooth-backend
+pm2 restart pixtooth-backend
+pm2 stop pixtooth-backend
 ```
 
 ## 7. Install And Configure Nginx
@@ -356,7 +356,7 @@ git pull origin debug-connection
 
 cd server
 npm install
-pm2 restart pixtooth-api
+pm2 restart pixtooth-backend
 ```
 
 ### Frontend update
@@ -387,7 +387,7 @@ Check PM2:
 
 ```bash
 pm2 status
-pm2 logs pixtooth-api
+pm2 logs pixtooth-backend
 ```
 
 Check Nginx:

@@ -146,6 +146,14 @@ class PatientRepository extends BaseRepository {
         }
     }
 
+    async deletePatientsByClinicId(clinicId) {
+        const patients = await this.getPatientsByClinicIds([clinicId]);
+
+        for (const patient of patients) {
+            await this.deletePatient(patient.id);
+        }
+    }
+
     async updatePatient(id, patientData) {
         const item = {
             PK: `PATIENT#${id}`,

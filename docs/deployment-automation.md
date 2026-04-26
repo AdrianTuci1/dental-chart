@@ -1,94 +1,47 @@
 # Automatizarea Deployment-ului pe VPS
 
-Acest document descrie două metode principale prin care putem automatiza procesul de deployment pentru aplicația Dental Chart pe serverul Contabo VPS.
+Acest document descrie metoda recomandată pentru deployment-ul backend-ului Dental Chart pe serverul VPS.
 
-## 1. Varianta A: GitHub Actions (Complet Automat)
-Aceasta este metoda recomandată pentru mediile de producție. Deployment-ul se declanșează automat de fiecare dată când faci `push` pe branch-ul `main`.
-
-### Cum funcționează:
-1. Faci `push` pe branch-ul `main`.
-2. GitHub pornește un "Runner" (un mic server temporar).
-3. Runner-ul se conectează prin SSH la VPS-ul tău.
-4. Execută comenzile de actualizare (git pull, npm install, pm2 restart).
-
-### Configurare:
-Creează un fișier `.github/workflows/deploy.yml` cu următorul conținut:
-
-```yaml
-name: Deploy to VPS
-
-on:
-  push:
-    branches: [ main ]
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          script: |
-            cd /opt/pixtooth/repo
-            git pull origin main
-            
-            # Backend
-            cd server
-            npm install --production
-            pm2 restart pixtooth-api
-            
-            # Frontend (dacă este servit de Nginx de pe VPS)
-            cd ..
-            npm install
-            npm run build
-```
-
-**Cerințe**: Trebuie să adaugi `VPS_HOST`, `VPS_USER` și `VPS_SSH_KEY` în **Settings > Secrets and variables > Actions** din repository-ul tău GitHub.
-
----
-
-## 2. Varianta B: Script Local (Manual-Automatizat)
-Dacă preferi să ai control total și să declanșezi deployment-ul manual de pe calculatorul tău printr-o singură comandă.
+## Metoda: Script Local (Manual-Automatizat)
+Aceasta este cea mai robustă metodă, oferindu-ți control total și feedback în timp real de pe calculatorul tău.
 
 ### Cum funcționează:
-Rulezi o comandă (ex: `npm run deploy`) care execută un script local. Acest script se conectează la server și rulează pașii necesari.
+Folosim `rsync` pentru a transfera doar fișierele modificate din folderul `server` către VPS și apoi repornim procesul prin SSH.
 
-### Configurare:
-Adaugă un script în `package.json` de la rădăcina proiectului:
+### Configurare în `package.json`:
+Comanda este deja configurată în rădăcina proiectului:
 
 ```json
 "scripts": {
-  "deploy": "ssh root@api.pixtooth.com 'cd /opt/pixtooth/repo && git pull origin main && cd server && npm install && pm2 restart pixtooth-api && cd .. && npm install && npm run build'"
+  "deploy": "npm run deploy:backend",
+  "deploy:backend": "rsync -avz --exclude 'node_modules' server/ root@api.pixtooth.com:/opt/pixtooth-backend/ && ssh root@api.pixtooth.com 'cd /opt/pixtooth-backend && npm install --production && pm2 restart pixtooth-backend'"
 }
 ```
 
-**Utilizare**: 
+### Utilizare:
+Din rădăcina proiectului (pe calculatorul tău), rulează:
+
 ```bash
 npm run deploy
 ```
 
----
-
-## Întrebări Frecvente
-
-### Se va întâmpla automat la push pe main?
-**Da**, dacă alegi **Varianta A (GitHub Actions)**. Este cea mai modernă metodă ("Continuous Deployment").
-
-### Putem rula o comandă locală?
-**Da**, dacă alegi **Varianta B (Script Local)**. Este utilă dacă vrei să testezi deployment-ul rapid fără să treci prin pipeline-ul GitHub.
-
-### Ce recomandăm?
-Recomandăm **GitHub Actions** deoarece:
-- Garantează că pe server ajunge exact ce este pe branch-ul `main`.
-- Oferă log-uri clare în interfața GitHub dacă ceva nu merge bine.
-- Nu depinde de configurația SSH de pe calculatorul tău personal (o poate face oricine are acces la repo).
+### Avantaje:
+1.  **Viteză**: `rsync` transferă doar diferențele (delta), nu tot folderul de fiecare dată.
+2.  **Siguranță**: Folderul `node_modules` este exclus automat; dependințele sunt instalate direct pe server pentru a asigura compatibilitatea cu Linux.
+3.  **Control**: Dacă există o eroare la conexiune sau la instalare, o vezi imediat în terminalul tău.
 
 ---
 
-## Pași de Securitate Importanți
-1. **Chei SSH**: Nu folosi parola de root în scripturi. Folosește chei SSH (`ssh-keygen`).
-2. **Variabile de Mediu**: Fișierul `.env` de pe server **nu** trebuie suprascris de automatizare. Acesta rămâne manual pe server pentru securitate.
-3. **Backup**: Înainte de automatizarea completă, asigură-te că ai un backup al bazei de date (DynamoDB în cazul nostru este gestionat de AWS, deci suntem ok).
+## Pregătirea VPS-ului (O singură dată)
+Pentru ca acest script să meargă fără să îți ceară parola de fiecare dată, asigură-te că ai cheia ta SSH pe server:
+
+1.  **Trimite cheia SSH pe server**:
+    ```bash
+    ssh-copy-id root@api.pixtooth.com
+    ```
+2.  **Asigură-te că folderul destinație există**:
+    ```bash
+    ssh root@api.pixtooth.com 'mkdir -p /opt/pixtooth-backend'
+    ```
+
+Gata! Acum ești la o singură comandă distanță de a avea codul live pe server.

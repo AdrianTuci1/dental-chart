@@ -49,6 +49,16 @@ describe('Frontend API Services', () => {
     });
 
     describe('medicService', () => {
+        it('updateMedic calls PUT /medics/:id', async () => {
+            const payload = { name: 'Updated Name' };
+            apiClient.mockResolvedValueOnce({ id: 'medic-1', ...payload });
+            await medicService.updateMedic('medic-1', payload);
+            expect(apiClient).toHaveBeenCalledWith('/medics/medic-1', {
+                method: 'PUT',
+                body: payload,
+            });
+        });
+
         it('rotateApiKey calls POST /medics/:id/api-key/rotate', async () => {
             apiClient.mockResolvedValueOnce({ id: 'medic-1', apiKey: 'dc_test_key' });
             await medicService.rotateApiKey('medic-1');
