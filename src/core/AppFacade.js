@@ -4,6 +4,7 @@ import { patientService, aiService } from '../api';
 import { ActionProxy } from './proxies/ActionProxy';
 import { ChartModel } from './models/ChartModel';
 import { AIAdapter } from './adapters/AIAdapter';
+import { AnalyticsFacade } from './analytics';
 
 const getStoreState = () => useAppStore.getState();
 
@@ -89,6 +90,22 @@ const composePersistablePatient = (id, patientData = null) => {
  * patient/chart state so every feature uses the same sync pipeline.
  */
 export const AppFacade = {
+    analytics: {
+        setUser: (user) => AnalyticsFacade.setUser(user),
+        pageViewed: (pathname) => AnalyticsFacade.trackPageView(pathname),
+        sessionStarted: (pathname) => AnalyticsFacade.trackSessionStarted(pathname),
+        sessionHeartbeat: (pathname) => AnalyticsFacade.trackSessionHeartbeat(pathname),
+        visibilityChanged: (state, pathname) => AnalyticsFacade.trackVisibilityChange(state, pathname),
+        loginCompleted: ({ id, subscriptionPlan }) => AnalyticsFacade.trackLoginCompleted({ id, subscriptionPlan }),
+        onboardingCompleted: ({ id, subscriptionPlan }) => AnalyticsFacade.trackOnboardingCompleted({ id, subscriptionPlan }),
+        settingsOpened: (medicId) => AnalyticsFacade.trackSettingsOpened(medicId),
+        menuClicked: ({ patientId, menuName }) => AnalyticsFacade.trackMenuClicked({ patientId, menuName }),
+        patientCreated: (patient) => AnalyticsFacade.trackPatientCreated(patient),
+        patientDeleted: (patientId) => AnalyticsFacade.trackPatientDeleted(patientId),
+        historyRecordAdded: ({ patientId, item }) => AnalyticsFacade.trackHistoryRecordAdded({ patientId, item }),
+        treatmentPlanItemAdded: ({ patientId, item }) => AnalyticsFacade.trackTreatmentPlanItemAdded({ patientId, item }),
+    },
+
     patient: {
         /**
          * Load all patients for a medic.
@@ -164,6 +181,7 @@ export const AppFacade = {
                 const response = await patientService.createPatient(PatientAdapter.toApi(payload));
                 const domainPatient = hydratePatient(PatientAdapter.toDomain(response));
                 getStoreState().addPatient(domainPatient);
+                AppFacade.analytics.patientCreated(domainPatient);
                 return domainPatient;
             } catch (error) {
                 console.error('[AppFacade] Failed to add patient', error);
@@ -196,6 +214,7 @@ export const AppFacade = {
                 await patientService.deletePatient(id);
                 const state = getStoreState();
                 state.deletePatient(id);
+                AppFacade.analytics.patientDeleted(id);
 
                 if (String(state.selectedPatient?.id) === String(id)) {
                     state.setTeeth({});
@@ -219,6 +238,7 @@ export const AppFacade = {
          */
         addToHistory: async (patientId, item) => {
             getStoreState().addToHistory(patientId, item);
+            AppFacade.analytics.historyRecordAdded({ patientId, item });
             return AppFacade.patient.update(patientId);
         },
 
@@ -227,6 +247,7 @@ export const AppFacade = {
          */
         addTreatmentPlanItem: async (patientId, item) => {
             getStoreState().addTreatmentPlanItem(patientId, item);
+            AppFacade.analytics.treatmentPlanItemAdded({ patientId, item });
             return AppFacade.patient.update(patientId);
         },
 

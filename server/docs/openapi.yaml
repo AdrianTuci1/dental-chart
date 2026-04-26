@@ -1,0 +1,421 @@
+openapi: 3.1.0
+info:
+  title: Dental Chart API
+  version: 1.0.0
+  description: >
+    Contract API for clinic collaboration, patient access, plan enforcement,
+    and limited external patient synchronization.
+
+servers:
+  - url: /
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: Medic-level API key. You can also send it as a Bearer token.
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+
+    ClinicInvitation:
+      type: object
+      required:
+        - invitedEmail
+      properties:
+        invitedEmail:
+          type: string
+          format: email
+        invitedByMedicId:
+          type: string
+        role:
+          type: string
+          enum: [owner, admin, member]
+
+    OwnershipTransfer:
+      type: object
+      required:
+        - newOwnerMedicId
+      properties:
+        newOwnerMedicId:
+          type: string
+
+    DeleteMedicRequest:
+      type: object
+      properties:
+        transferOwnershipTo:
+          oneOf:
+            - type: string
+            - type: object
+              additionalProperties:
+                type: string
+          description: Medic ID or a clinicId-to-medicId map for ownership transfers.
+
+    ExternalPatientPayload:
+      type: object
+      additionalProperties: false
+      required:
+        - name
+      properties:
+        id:
+          type: string
+          description: Optional on create, required on update.
+        name:
+          type: string
+        dateOfBirth:
+          type: string
+          format: date
+        gender:
+          type: string
+          enum: [Male, Female, Other]
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+
+    Patient:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        dateOfBirth:
+          type: string
+        gender:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        clinicId:
+          type: string
+        medicId:
+          type: string
+        ownerMedicId:
+          type: string
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: Server status
+
+  /api/clinics:
+    post:
+      summary: Create a clinic or organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - ownerMedicId
+              properties:
+                name:
+                  type: string
+                ownerMedicId:
+                  type: string
+                type:
+                  type: string
+                  enum: [personal, organization]
+      responses:
+        '201':
+          description: Clinic created
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/clinics/{id}:
+    get:
+      summary: Get clinic details including members and invitations
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Clinic found
+        '404':
+          description: Clinic not found
+
+  /api/clinics/{id}/members:
+    get:
+      summary: List clinic members
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Members list
+
+  /api/clinics/{id}/invitations:
+    post:
+      summary: Invite a medic into a clinic
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClinicInvitation'
+      responses:
+        '201':
+          description: Invitation created
+
+  /api/clinics/{id}/invitations/{inviteId}/accept:
+    post:
+      summary: Accept a clinic invitation
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: inviteId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - medicId
+              properties:
+                medicId:
+                  type: string
+      responses:
+        '200':
+          description: Invitation accepted
+
+  /api/clinics/{id}/ownership-transfer:
+    post:
+      summary: Transfer clinic ownership to another active member
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OwnershipTransfer'
+      responses:
+        '200':
+          description: Ownership transferred
+
+  /api/medics/{id}/clinics:
+    get:
+      summary: List clinics available to a medic account
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Clinics list
+
+  /api/medics/{id}:
+    delete:
+      summary: Delete a medic account and all patients owned by that medic
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeleteMedicRequest'
+      responses:
+        '200':
+          description: Medic deleted
+        '409':
+          description: Ownership transfer required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/medics/{id}/api-key/rotate:
+    post:
+      summary: Rotate medic API key
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: API key rotated
+
+  /api/external/patients:
+    post:
+      summary: Create or upsert a patient through the external contract API
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalPatientPayload'
+      responses:
+        '201':
+          description: Patient created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+        '403':
+          description: Plan limit or access issue
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/external/patients/{id}:
+    put:
+      summary: Update only the allowed patient contract fields
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExternalPatientPayload'
+      responses:
+        '200':
+          description: Patient updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Patient'
+
+    delete:
+      summary: Delete a patient through the external contract API
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Patient deleted
+
+  /api/auth/forgot-password:
+    post:
+      summary: Send password reset instructions by email
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Request accepted
+
+  /api/auth/reset-password:
+    post:
+      summary: Reset a password with token or 6-digit code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - newPassword
+              properties:
+                email:
+                  type: string
+                  format: email
+                token:
+                  type: string
+                code:
+                  type: string
+                newPassword:
+                  type: string
+      responses:
+        '200':
+          description: Password updated
+
+  /api/auth/change-password:
+    post:
+      summary: Change password for an authenticated user
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - currentPassword
+                - newPassword
+              properties:
+                currentPassword:
+                  type: string
+                newPassword:
+                  type: string
+      responses:
+        '200':
+          description: Password changed

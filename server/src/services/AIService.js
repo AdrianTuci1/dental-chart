@@ -1,4 +1,3 @@
-const fetch = require('node:fetch');
 const aiConfig = require('../config/aiConfig');
 
 class AIService {
@@ -11,7 +10,11 @@ class AIService {
             throw new Error('Modal Inference URL is not properly configured.');
         }
 
-        const response = await fetch(this.inferenceUrl, {
+        if (typeof globalThis.fetch !== 'function') {
+            throw new Error('Fetch API is not available in this Node runtime.');
+        }
+
+        const response = await globalThis.fetch(this.inferenceUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/octet-stream'

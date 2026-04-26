@@ -23,9 +23,33 @@ const getCurrentUser = async () => {
     return apiClient('/auth/me');
 };
 
+const forgotPassword = async (payload) => {
+    return apiClient('/auth/forgot-password', {
+        method: 'POST',
+        body: payload,
+    });
+};
+
+const resetPassword = async (payload) => {
+    return apiClient('/auth/reset-password', {
+        method: 'POST',
+        body: payload,
+    });
+};
+
+const changePassword = async (payload) => {
+    return apiClient('/auth/change-password', {
+        method: 'POST',
+        body: payload,
+    });
+};
+
 export const authService = {
     login,
     register,
     logout,
     getCurrentUser,
+    forgotPassword,
+    resetPassword,
+    changePassword,
 };

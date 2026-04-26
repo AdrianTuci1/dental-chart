@@ -28,16 +28,22 @@ import './App.css'
 
 
 import SignupPage from './pages/SignupPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
+import AnalyticsTracker from './components/AnalyticsTracker';
 
 function App() {
   return (
     <BrowserRouter>
       <OrientationGuard />
+      <AnalyticsTracker />
       <div className="application">
         <div className="">
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/patients" element={<PatientsListPage />} />
 
             <Route path="/patients/:patientId" element={<PatientLayout />}>

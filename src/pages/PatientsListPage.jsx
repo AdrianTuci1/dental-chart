@@ -114,7 +114,10 @@ const PatientsListPage = () => {
                         Patients</h1>
                     <div className="user-profile">
                         <span className="user-name">{medicProfile?.name || 'Loading...'}</span>
-                        <button className="settings-btn" onClick={() => setIsSettingsOpen(true)}>
+                        <button className="settings-btn" onClick={() => {
+                            AppFacade.analytics.settingsOpened(medicProfile?.id || null);
+                            setIsSettingsOpen(true);
+                        }}>
                             <Settings size={20} />
                         </button>
                     </div>
