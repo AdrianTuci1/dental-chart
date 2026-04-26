@@ -44,6 +44,11 @@ class TelemetryRepository extends BaseRepository {
             filterParts.push('eventName = :eventName');
         }
 
+        if (filters.source) {
+            expressionAttributeValues[':source'] = filters.source;
+            filterParts.push('source = :source');
+        }
+
         const command = new ScanCommand({
             TableName: this.tableName,
             FilterExpression: filterParts.join(' AND '),

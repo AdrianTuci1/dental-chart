@@ -21,7 +21,11 @@ export class WaveInteractionModel {
         // Guarantee a new object reference so useSyncExternalStore detects the change
         this.values = {
             gm: [...newValues.gm],
-            pd: [...newValues.pd]
+            pd: [...newValues.pd],
+            leftGm: newValues.leftGm,
+            leftPd: newValues.leftPd,
+            rightGm: newValues.rightGm,
+            rightPd: newValues.rightPd
         };
         this.emitChange();
     }

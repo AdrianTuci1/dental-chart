@@ -14,8 +14,14 @@
 
 .navArrow {
     cursor: pointer;
-    color: #3b82f6;
+    color: var(--color-primary);
     font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+}
+
+.navArrow:hover {
+    color: var(--color-primary-dark);
 }
 
 .toothTitle {
@@ -31,4 +37,10 @@
 
 .actionIcon {
     cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.actionIcon:hover {
+    color: var(--text-primary);
 }

@@ -139,12 +139,10 @@ const PeriodontalDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
 
             <div className="numpad">
                 {numpadValues.map(val => {
-                    const currentVal = activeTab === 'probing' ? currentSiteData.probingDepth : Math.abs(currentSiteData.gingivalMargin);
-                    const isSelected = val === currentVal || (val === '>12' && currentVal > 12);
                     return (
                         <button
                             key={val}
-                            className={`numpad-btn ${isSelected ? 'selected' : ''}`}
+                            className="numpad-btn"
                             onClick={() => handleNumpadClick(val)}
                         >
                             {val}

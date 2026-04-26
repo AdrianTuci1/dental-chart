@@ -32,6 +32,16 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
                 const medic = MOCK_HIERARCHY_DATA.find(m => m.id === medicId) || MOCK_HIERARCHY_DATA[0];
                 return medic ? medic.patients : [];
             }
+            if (parts[3] === 'api-key' && parts[4] === 'rotate' && customConfig.method === 'POST') {
+                return {
+                    ...user0profile,
+                    id: medicId,
+                    apiKey: `dc_mock_${Date.now().toString(36)}`,
+                    apiKeyMasked: 'dc_mock_...',
+                    apiKeyLastRotatedAt: new Date().toISOString(),
+                    apiKeyLastUsedAt: null,
+                };
+            }
         }
         if (endpoint.startsWith('/patients/')) {
             const parts = endpoint.split('/');

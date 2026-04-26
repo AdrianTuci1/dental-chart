@@ -28,8 +28,11 @@ const extractMedicIdFromAuthHeader = (authHeader) => {
     }
 };
 
+const extractMedicIdFromRequest = (req) => req?.auth?.userId || extractMedicIdFromAuthHeader(req?.headers?.authorization);
+
 module.exports = {
     signAuthToken,
     verifyAuthToken,
     extractMedicIdFromAuthHeader,
+    extractMedicIdFromRequest,
 };

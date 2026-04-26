@@ -1,33 +1,11 @@
 import React from 'react';
-import ToothZones from '../../../../Tooth/ToothZones';
+
 import styles from '../RestorationWizard.module.css';
 
 const FillingFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumber }) => {
     const { selectedZones, fillingMaterial, fillingQuality } = formState;
 
     if (currentStep === 1) {
-        return (
-            <div className={styles.stepContainer}>
-                <div className={styles.stepLabel}>SURFACES:</div>
-                <div className={styles.drawerZones}>
-                    <ToothZones
-                        toothNumber={toothNumber}
-                        selectedZones={selectedZones}
-                        onChange={(zones) => updateForm({ selectedZones: zones })}
-                        className={styles.fullWidthZones}
-                    />
-                </div>
-                <button
-                    className={styles.continueBtn}
-                    onClick={() => onNextStep(2)}
-                    disabled={selectedZones.length === 0}
-                >
-                    ADD DETAILS
-                </button>
-            </div>
-        );
-    }
-    if (currentStep === 2) {
         return (
             <div className={styles.stepContainer}>
                 <div className={styles.stepLabel}>MATERIAL:</div>
@@ -39,7 +17,7 @@ const FillingFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumb
                                     updateForm({ fillingMaterial: null, fillingQuality: null });
                                 } else {
                                     updateForm({ fillingMaterial: m });
-                                    onNextStep(3);
+                                    onNextStep(2);
                                 }
                             }}>
                             {m}
@@ -49,7 +27,7 @@ const FillingFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumb
             </div>
         );
     }
-    if (currentStep === 3) {
+    if (currentStep === 2) {
         return (
             <div className={styles.stepContainer}>
                 <div className={styles.stepLabel}>QUALITY:</div>

@@ -9,8 +9,13 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 const path = require('path');
+const { createRateLimit } = require('./src/middleware/rateLimitMiddleware');
+const { resolveApiRateLimitKey } = require('./src/utils/rateLimit');
+const { rateLimitConfig } = require('./src/config/rateLimit');
 
 // Middleware
+app.set('trust proxy', 1);
+
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
     contentSecurityPolicy: {
@@ -25,7 +30,7 @@ app.use(helmet({
     },
 }));
 app.use(cors({
-    origin: 'https://app.pixtooth.com', // În producție, înlocuiește cu URL-ul frontend-ului
+    origin: ['http://localhost:5173', 'https://app.pixtooth.com'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -34,7 +39,13 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
 const apiRoutes = require('./src/routes/api');
-app.use('/api', apiRoutes);
+
+const apiRateLimit = createRateLimit({
+    ...rateLimitConfig.api,
+    keyResolver: resolveApiRateLimitKey,
+});
+
+app.use('/api', apiRateLimit, apiRoutes);
 
 const docsDir = path.join(__dirname, 'docs');
 

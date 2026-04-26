@@ -21,7 +21,7 @@
 
 .navArrow {
     cursor: pointer;
-    color: var(--text-tertiary);
+    color: var(--color-primary);
     transition: color 0.2s;
     display: flex;
     align-items: center;
@@ -29,7 +29,7 @@
 }
 
 .navArrow:hover {
-    color: var(--text-primary);
+    color: var(--color-primary-dark);
 }
 
 .drawerActions {
@@ -40,7 +40,7 @@
 
 .actionIcon {
     cursor: pointer;
-    color: var(--text-tertiary);
+    color: var(--text-secondary);
     transition: color 0.2s;
     display: flex;
     align-items: center;

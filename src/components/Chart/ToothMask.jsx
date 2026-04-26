@@ -72,21 +72,26 @@ const ToothMask = ({
 
                 if (!zoneId) return null;
 
-                const overlayPath = getOverlayPath(toothNumber, zoneId, view);
-                if (!overlayPath) return null;
+                let overlayPath = null;
+                let slice = { y: 0, h: height }; // default full height for Whole Tooth
 
-                let viewForSlice = view;
-                const isLowerJaw = !isUpperJaw;
-                if (isLowerJaw) {
-                    if (view === 'frontal') {
-                        viewForSlice = 'lingual';
-                    } else if (view === 'lingual') {
-                        viewForSlice = 'frontal';
+                if (zoneId !== 'Whole Tooth') {
+                    overlayPath = getOverlayPath(toothNumber, zoneId, view);
+                    if (!overlayPath) return null;
+
+                    let viewForSlice = view;
+                    const isLowerJaw = !isUpperJaw;
+                    if (isLowerJaw) {
+                        if (view === 'frontal') {
+                            viewForSlice = 'lingual';
+                        } else if (view === 'lingual') {
+                            viewForSlice = 'frontal';
+                        }
                     }
-                }
 
-                const slice = getOverlaySlice(viewForSlice, zoneId);
-                if (slice.h <= 0) return null;
+                    slice = getOverlaySlice(viewForSlice, zoneId);
+                    if (slice.h <= 0) return null;
+                }
 
                 return { cond, overlayPath, slice };
             }).filter(Boolean);
@@ -115,7 +120,7 @@ const ToothMask = ({
             const colorGroups = new Map();
             overlayData.forEach((data, index) => {
                 const img = loadedOverlayImages[index];
-                if (!img) return;
+                if (data.cond.zone !== 'Whole Tooth' && !img) return;
                 const color = data.cond.color || 'rgba(100, 150, 255, 0.9)';
                 const opacity = data.cond.opacity !== undefined ? data.cond.opacity : 0.9;
                 const type = data.cond.type || 'unknown';
@@ -137,45 +142,51 @@ const ToothMask = ({
                     offCtx.clearRect(0, 0, width, height);
                     offCtx.save();
 
-                    const { needsHorizontalFlip, needsRotation } = getMaskTransforms(toothNumber, view);
+                    if (cond.zone === 'Whole Tooth') {
+                        // For whole tooth, just fill the entire canvas
+                        offCtx.fillStyle = cond.color || 'rgba(100, 150, 255, 0.9)';
+                        offCtx.fillRect(0, 0, width, height);
+                    } else {
+                        const { needsHorizontalFlip, needsRotation } = getMaskTransforms(toothNumber, view);
 
-                    let useHorizontalFlip = needsHorizontalFlip;
-                    let useVerticalFlip = (isUpperJaw && view === 'lingual');
-                    let useRotation = needsRotation;
+                        let useHorizontalFlip = needsHorizontalFlip;
+                        let useVerticalFlip = (isUpperJaw && view === 'lingual');
+                        let useRotation = needsRotation;
 
-                    if (cond.zone === 'Endo') {
-                        const endoTransforms = getEndoTransforms(toothNumber, view, { needsHorizontalFlip, needsRotation });
-                        useHorizontalFlip = endoTransforms.useHorizontalFlip;
-                        useVerticalFlip = endoTransforms.useVerticalFlip;
-                        useRotation = endoTransforms.useRotation;
+                        if (cond.zone === 'Endo') {
+                            const endoTransforms = getEndoTransforms(toothNumber, view, { needsHorizontalFlip, needsRotation });
+                            useHorizontalFlip = endoTransforms.useHorizontalFlip;
+                            useVerticalFlip = endoTransforms.useVerticalFlip;
+                            useRotation = endoTransforms.useRotation;
+                        }
+
+                        if (useRotation) {
+                            offCtx.translate(width / 2, height / 2);
+                            offCtx.rotate(Math.PI);
+                            offCtx.translate(-width / 2, -height / 2);
+                        }
+                        if (useHorizontalFlip) {
+                            offCtx.translate(width, 0);
+                            offCtx.scale(-1, 1);
+                        }
+                        if (useVerticalFlip) {
+                            offCtx.translate(0, height);
+                            offCtx.scale(1, -1);
+                        }
+
+                        offCtx.drawImage(
+                            img,
+                            0, slice.y, img.width, slice.h,
+                            0, 0, width, height
+                        );
+                        offCtx.restore();
+
+                        // Color the shape
+                        offCtx.globalCompositeOperation = 'source-in';
+                        offCtx.fillStyle = cond.color || 'rgba(100, 150, 255, 0.9)';
+                        offCtx.globalAlpha = 1; // opacity handled at group composite step
+                        offCtx.fillRect(0, 0, width, height);
                     }
-
-                    if (useRotation) {
-                        offCtx.translate(width / 2, height / 2);
-                        offCtx.rotate(Math.PI);
-                        offCtx.translate(-width / 2, -height / 2);
-                    }
-                    if (useHorizontalFlip) {
-                        offCtx.translate(width, 0);
-                        offCtx.scale(-1, 1);
-                    }
-                    if (useVerticalFlip) {
-                        offCtx.translate(0, height);
-                        offCtx.scale(1, -1);
-                    }
-
-                    offCtx.drawImage(
-                        img,
-                        0, slice.y, img.width, slice.h,
-                        0, 0, width, height
-                    );
-                    offCtx.restore();
-
-                    // Color the shape
-                    offCtx.globalCompositeOperation = 'source-in';
-                    offCtx.fillStyle = cond.color || 'rgba(100, 150, 255, 0.9)';
-                    offCtx.globalAlpha = 1; // opacity handled at group composite step
-                    offCtx.fillRect(0, 0, width, height);
                     offCtx.globalCompositeOperation = 'source-over';
 
                     // Merge into group canvas: source-atop prevents overlap darkening

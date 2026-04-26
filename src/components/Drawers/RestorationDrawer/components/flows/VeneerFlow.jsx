@@ -1,34 +1,11 @@
 import React from 'react';
-import ToothZones from '../../../../Tooth/ToothZones';
+
 import styles from '../RestorationWizard.module.css';
 
 const VeneerFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumber }) => {
     const { selectedZones, veneerMaterial, veneerQuality, veneerDetail } = formState;
 
     if (currentStep === 1) {
-        return (
-            <div className={styles.stepContainer}>
-                <div className={styles.stepLabel}>SURFACES:</div>
-                <div className={styles.drawerZones}>
-                    <ToothZones
-                        toothNumber={toothNumber}
-                        selectedZones={selectedZones}
-                        onChange={(zones) => updateForm({ selectedZones: zones })}
-                        className={styles.fullWidthZones}
-                        restorationType="veneer"
-                    />
-                </div>
-                <button
-                    className={styles.continueBtn}
-                    onClick={() => onNextStep(2)}
-                    disabled={selectedZones.length === 0}
-                >
-                    ADD DETAILS
-                </button>
-            </div>
-        );
-    }
-    if (currentStep === 2) {
         return (
             <div className={styles.stepContainer}>
                 <div className={styles.stepLabel}>MATERIAL:</div>
@@ -40,7 +17,7 @@ const VeneerFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumbe
                                     updateForm({ veneerMaterial: null, veneerQuality: null, veneerDetail: null });
                                 } else {
                                     updateForm({ veneerMaterial: m });
-                                    onNextStep(3);
+                                    onNextStep(2);
                                 }
                             }}>
                             {m}
@@ -50,7 +27,7 @@ const VeneerFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumbe
             </div>
         );
     }
-    if (currentStep === 3) {
+    if (currentStep === 2) {
         return (
             <div className={styles.stepContainer}>
                 <div className={styles.stepLabel}>QUALITY:</div>
@@ -62,7 +39,7 @@ const VeneerFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumbe
                                     updateForm({ veneerQuality: null, veneerDetail: null });
                                 } else {
                                     updateForm({ veneerQuality: q });
-                                    onNextStep(4);
+                                    onNextStep(3);
                                 }
                             }}>
                             {q}
@@ -72,7 +49,7 @@ const VeneerFlow = ({ formState, updateForm, currentStep, onNextStep, toothNumbe
             </div>
         );
     }
-    if (currentStep === 4) {
+    if (currentStep === 3) {
         return (
             <div className={styles.stepContainer}>
                 <div className={styles.stepLabel}>DETAIL:</div>

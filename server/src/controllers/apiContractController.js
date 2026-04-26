@@ -6,6 +6,10 @@ const patientService = new PatientService();
 
 const getApiKeyFromRequest = (req) => {
     const bearerHeader = req.headers.authorization;
+    if (bearerHeader?.startsWith('ApiKey ')) {
+        return bearerHeader.slice('ApiKey '.length);
+    }
+
     if (bearerHeader?.startsWith('Bearer ')) {
         return bearerHeader.slice('Bearer '.length);
     }

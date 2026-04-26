@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 const initialFormState = {
     selectedZones: [],
@@ -18,15 +18,15 @@ const initialFormState = {
 export const usePathologyForm = () => {
     const [formState, setFormState] = useState(initialFormState);
 
-    const updateForm = (updates) => {
+    const updateForm = useCallback((updates) => {
         setFormState(prev => ({ ...prev, ...updates }));
-    };
+    }, []);
 
-    const resetForm = () => {
+    const resetForm = useCallback(() => {
         setFormState(initialFormState);
-    };
+    }, []);
 
-    const loadFormFromItem = (type, item, index) => {
+    const loadFormFromItem = useCallback((type, item, index) => {
         resetForm();
         // Use timeout to allow state reset to process before setting new values
         // or manually merge with initial state to ensure clean slate
@@ -61,7 +61,7 @@ export const usePathologyForm = () => {
         }
 
         setFormState(cleanState);
-    };
+    }, [resetForm]);
 
     return {
         formState,

@@ -5,6 +5,7 @@
     padding: 24px;
     gap: 16px;
     flex: 1;
+    overflow-y: auto;
 }
 
 .summaryList {
@@ -31,8 +32,7 @@
 }
 
 .summaryValue {
-    color: #0ea5e9;
-    /* Sky-500 */
+    color: var(--color-primary);
     font-weight: 500;
 }
 
@@ -86,7 +86,7 @@
 .continueBtn {
     width: 100%;
     padding: 12px;
-    outline: 2px solid #3b82f6;
+    outline: 2px solid var(--color-primary);
     color: white;
     border: none;
     border-radius: 6px;
@@ -110,7 +110,7 @@
 .saveFull {
     width: 100%;
     padding: 16px;
-    background-color: #0ea5e9;
+    background-color: var(--color-primary);
     color: white;
     border: none;
     border-radius: 6px;
@@ -121,7 +121,7 @@
 }
 
 .saveFull:hover {
-    background-color: #0284c7;
+    background-color: var(--color-primary-dark);
 }
 
 /* Zones container in drawer */

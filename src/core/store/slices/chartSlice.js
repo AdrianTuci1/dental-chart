@@ -16,6 +16,7 @@ const syncSelectedPatientChart = (state) => {
 export const createChartSlice = (set) => ({
     teeth: {}, // Map of toothNumber -> Tooth object
     resolvedTeeth: {}, // Computed Map of permanent array indices -> display tooth info
+    previewTeeth: {}, // Live preview data from drawers
     selectedTooth: null,
     chartView: 'normal', // 'normal', 'upper', or 'lower'
     viewMode: 'overview', // 'overview', 'endo', 'perio', 'restoration'
@@ -40,6 +41,13 @@ export const createChartSlice = (set) => ({
             syncSelectedPatientChart(state);
         }));
     },
+    setPreviewTooth: (toothNumber, previewData) => set(produce((state) => {
+        if (previewData) {
+            state.previewTeeth[toothNumber] = previewData;
+        } else {
+            delete state.previewTeeth[toothNumber];
+        }
+    })),
     selectTooth: (toothNumber) => set({ selectedTooth: toothNumber }),
     setChartView: (view) => set({ chartView: view }),
     setViewMode: (mode) => set({ viewMode: mode }),

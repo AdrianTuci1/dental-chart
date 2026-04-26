@@ -2,7 +2,7 @@ const MedicRepository = require('../models/repositories/MedicRepository');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 const { MOCK_PATIENTS_TEMPLATES } = require('../utils/mockData');
-const { generateApiKey, maskApiKey } = require('../utils/apiKeys');
+const { createApiKeyRecord, hashApiKey, maskApiKey } = require('../utils/apiKeys');
 const { createHttpError } = require('../utils/httpError');
 const EmailService = require('./EmailService');
 
@@ -32,10 +32,15 @@ class MedicService {
             throw createHttpError('A medic with this email already exists', 409);
         }
 
+        const apiKeyRecord = createApiKeyRecord();
+
         const newMedic = {
             id: medicData.id || uuidv4(),
             subscriptionPlan: medicData.subscriptionPlan || 'free',
-            apiKey: medicData.apiKey || generateApiKey(),
+            apiKey: null,
+            apiKeyHash: medicData.apiKeyHash || apiKeyRecord.hash,
+            apiKeyPrefix: medicData.apiKeyPrefix || apiKeyRecord.prefix,
+            apiKeyLastRotatedAt: new Date().toISOString(),
             ...medicData,
         };
 
@@ -55,7 +60,10 @@ class MedicService {
         // Always seed mock data for new medic accounts in this stage
         await this.seedMedicData(newMedic.id);
 
-        return createdMedic;
+        return this.toPublicMedic({
+            ...createdMedic,
+            apiKey: apiKeyRecord.rawKey,
+        });
     }
 
     async seedMedicData(medicId) {
@@ -98,7 +106,7 @@ class MedicService {
         return {
             ...this.toPublicMedic(medic),
             clinics,
-            apiKeyMasked: maskApiKey(medic.apiKey),
+            apiKeyMasked: this.getApiKeyMaskedValue(medic),
         };
     }
 
@@ -114,7 +122,21 @@ class MedicService {
             throw createHttpError('API key is required', 400);
         }
 
-        return this.medicRepository.getMedicByApiKey(apiKey);
+        const apiKeyHash = hashApiKey(apiKey);
+        const medic = await this.medicRepository.getMedicByApiKeyHash(apiKeyHash);
+        if (medic) {
+            await this.touchApiKeyUsage(medic);
+            return medic;
+        }
+
+        const legacyMedic = await this.medicRepository.getMedicByLegacyApiKey(apiKey);
+        if (!legacyMedic) {
+            return null;
+        }
+
+        const migratedMedic = await this.migrateLegacyApiKey(legacyMedic, apiKey);
+        await this.touchApiKeyUsage(migratedMedic);
+        return migratedMedic;
     }
 
     async getMedicPatients(medicId) {
@@ -131,14 +153,20 @@ class MedicService {
             throw createHttpError('Medic not found', 404);
         }
 
+        const apiKeyRecord = createApiKeyRecord();
+
         const updatedMedic = await this.medicRepository.updateMedic(medicId, {
             ...medic,
-            apiKey: generateApiKey(),
+            apiKey: null,
+            apiKeyHash: apiKeyRecord.hash,
+            apiKeyPrefix: apiKeyRecord.prefix,
+            apiKeyLastRotatedAt: new Date().toISOString(),
         });
 
         return {
-            ...updatedMedic,
-            apiKeyMasked: maskApiKey(updatedMedic.apiKey),
+            ...this.toPublicMedic(updatedMedic),
+            apiKey: apiKeyRecord.rawKey,
+            apiKeyMasked: this.getApiKeyMaskedValue(updatedMedic),
         };
     }
 
@@ -181,10 +209,43 @@ class MedicService {
 
         const {
             passwordHash,
+            apiKeyHash,
+            apiKeyPrefix,
             ...publicMedic
         } = medic;
 
         return publicMedic;
+    }
+
+    getApiKeyMaskedValue(medic) {
+        if (medic?.apiKey) {
+            return maskApiKey(medic.apiKey);
+        }
+
+        if (medic?.apiKeyPrefix) {
+            return `${medic.apiKeyPrefix}...`;
+        }
+
+        return null;
+    }
+
+    async touchApiKeyUsage(medic) {
+        await this.medicRepository.updateMedic(medic.id, {
+            ...medic,
+            apiKeyLastUsedAt: new Date().toISOString(),
+        });
+    }
+
+    async migrateLegacyApiKey(medic, legacyApiKey) {
+        const updatedMedic = await this.medicRepository.updateMedic(medic.id, {
+            ...medic,
+            apiKey: null,
+            apiKeyHash: hashApiKey(legacyApiKey),
+            apiKeyPrefix: medic.apiKeyPrefix || legacyApiKey.slice(0, 10),
+            apiKeyLastRotatedAt: medic.apiKeyLastRotatedAt || new Date().toISOString(),
+        });
+
+        return updatedMedic;
     }
 
     async createPasswordResetRequest(email) {

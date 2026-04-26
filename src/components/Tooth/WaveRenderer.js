@@ -128,20 +128,24 @@ export class WaveRenderer {
         const xPos = this.getXPositions();
         const fixedLevel = 1;
 
+        const leftGm = this.values.leftGm !== undefined ? this.values.leftGm : fixedLevel;
+        const rightGm = this.values.rightGm !== undefined ? this.values.rightGm : fixedLevel;
         const gmPoints = [
-            { x: xPos[0], y: this.getYForLevel(fixedLevel) },
+            { x: xPos[0], y: this.getYForLevel(leftGm) },
             { x: xPos[1], y: this.getYForLevel(this.values.gm[0]) },
             { x: xPos[2], y: this.getYForLevel(this.values.gm[1]) },
             { x: xPos[3], y: this.getYForLevel(this.values.gm[2]) },
-            { x: xPos[4], y: this.getYForLevel(fixedLevel) }
+            { x: xPos[4], y: this.getYForLevel(rightGm) }
         ];
 
+        const leftPd = this.values.leftPd !== undefined ? this.values.leftPd : fixedLevel;
+        const rightPd = this.values.rightPd !== undefined ? this.values.rightPd : fixedLevel;
         const pdPoints = [
-            { x: xPos[0], y: this.getYForLevel(fixedLevel) },
+            { x: xPos[0], y: this.getYForLevel(leftPd) },
             { x: xPos[1], y: this.getYForLevel(this.values.pd[0]) },
             { x: xPos[2], y: this.getYForLevel(this.values.pd[1]) },
             { x: xPos[3], y: this.getYForLevel(this.values.pd[2]) },
-            { x: xPos[4], y: this.getYForLevel(fixedLevel) }
+            { x: xPos[4], y: this.getYForLevel(rightPd) }
         ];
 
         // 2. Draw Fill
