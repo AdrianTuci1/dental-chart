@@ -1,4 +1,10 @@
-const { PutCommand, GetCommand, QueryCommand } = require('@aws-sdk/lib-dynamodb');
+const {
+    PutCommand,
+    GetCommand,
+    QueryCommand,
+    ScanCommand,
+    DeleteCommand,
+} = require('@aws-sdk/lib-dynamodb');
 const BaseRepository = require('./BaseRepository');
 
 class PatientRepository extends BaseRepository {
@@ -51,21 +57,65 @@ class PatientRepository extends BaseRepository {
     }
 
     async getPatientsByMedicId(medicId) {
-        // For a true Single-Table Design, we'd use a GSI.
-        // For this demo/mock execution, we'll Scan with a filter on medicId.
-        const { ScanCommand } = require('@aws-sdk/lib-dynamodb');
         const command = new ScanCommand({
             TableName: this.tableName,
-            FilterExpression: 'medicId = :medicId AND SK = :sk',
+            FilterExpression: 'medicId = :medicId AND SK = :sk AND begins_with(PK, :patientPrefix)',
             ExpressionAttributeValues: {
                 ':medicId': medicId,
-                ':sk': 'METADATA#'
-            }
+                ':sk': 'METADATA#',
+                ':patientPrefix': 'PATIENT#',
+            },
         });
 
         console.log(`[PatientRepository] Scanning for patients with medicId: ${medicId}`);
         const response = await this.send(command);
         console.log(`[PatientRepository] Found ${response.Items ? response.Items.length : 0} patients`);
+        return response.Items || [];
+    }
+
+    async getPatientsByOwnerMedicId(ownerMedicId) {
+        const command = new ScanCommand({
+            TableName: this.tableName,
+            FilterExpression: 'ownerMedicId = :ownerMedicId AND SK = :sk AND begins_with(PK, :patientPrefix)',
+            ExpressionAttributeValues: {
+                ':ownerMedicId': ownerMedicId,
+                ':sk': 'METADATA#',
+                ':patientPrefix': 'PATIENT#',
+            },
+        });
+
+        const response = await this.send(command);
+        return response.Items || [];
+    }
+
+    async countPatientsByOwnerMedicId(ownerMedicId) {
+        const patients = await this.getPatientsByOwnerMedicId(ownerMedicId);
+        return patients.length;
+    }
+
+    async getPatientsByClinicIds(clinicIds = []) {
+        if (!clinicIds.length) {
+            return [];
+        }
+
+        const expressionAttributeValues = {
+            ':sk': 'METADATA#',
+            ':patientPrefix': 'PATIENT#',
+        };
+
+        const clinicPlaceholders = clinicIds.map((clinicId, index) => {
+            const key = `:clinicId${index}`;
+            expressionAttributeValues[key] = clinicId;
+            return key;
+        });
+
+        const command = new ScanCommand({
+            TableName: this.tableName,
+            FilterExpression: `SK = :sk AND begins_with(PK, :patientPrefix) AND clinicId IN (${clinicPlaceholders.join(', ')})`,
+            ExpressionAttributeValues: expressionAttributeValues,
+        });
+
+        const response = await this.send(command);
         return response.Items || [];
     }
 
@@ -75,8 +125,6 @@ class PatientRepository extends BaseRepository {
         
         if (items.length === 0) return;
 
-        const { DeleteCommand } = require('@aws-sdk/lib-dynamodb');
-        
         // Delete each item found
         for (const item of items) {
             const command = new DeleteCommand({
@@ -87,6 +135,14 @@ class PatientRepository extends BaseRepository {
                 }
             });
             await this.send(command);
+        }
+    }
+
+    async deletePatientsByOwnerMedicId(ownerMedicId) {
+        const patients = await this.getPatientsByOwnerMedicId(ownerMedicId);
+
+        for (const patient of patients) {
+            await this.deletePatient(patient.id);
         }
     }
 

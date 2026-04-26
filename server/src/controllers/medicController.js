@@ -7,7 +7,7 @@ exports.createMedic = async (req, res) => {
         const newMedic = await medicService.createMedic(medicData);
         res.status(201).json(newMedic);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(err.statusCode || 500).json({ error: err.message });
     }
 };
 
@@ -21,7 +21,7 @@ exports.getMedic = async (req, res) => {
         }
         res.json(medic);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(err.statusCode || 500).json({ error: err.message });
     }
 };
 
@@ -31,7 +31,7 @@ exports.getMedicPatients = async (req, res) => {
         const patients = await medicService.getMedicPatients(id);
         res.json(patients);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(err.statusCode || 500).json({ error: err.message });
     }
 };
 
@@ -41,6 +41,27 @@ exports.seedMedicData = async (req, res) => {
         await medicService.seedMedicData(id);
         res.json({ message: 'Success: Seeded/Updated mock data for medic' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(err.statusCode || 500).json({ error: err.message });
+    }
+};
+
+exports.deleteMedic = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const transferOwnershipTo = req.body?.transferOwnershipTo || req.query.transferOwnershipTo || null;
+        const result = await medicService.deleteMedicAndPatients(id, transferOwnershipTo);
+        res.json(result);
+    } catch (err) {
+        res.status(err.statusCode || 500).json({ error: err.message });
+    }
+};
+
+exports.rotateApiKey = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const medic = await medicService.rotateApiKey(id);
+        res.json(medic);
+    } catch (err) {
+        res.status(err.statusCode || 500).json({ error: err.message });
     }
 };

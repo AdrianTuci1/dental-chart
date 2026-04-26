@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { User, Lock } from 'lucide-react';
+import { AppFacade } from '../core/AppFacade';
 
 import './HomePage.css';
 
@@ -46,10 +47,12 @@ const HomePage = () => {
             localStorage.setItem('token', response.token);
             const userData = { id: response.id, name: response.name, email: response.email };
             login(userData);
+            AppFacade.analytics.setUser({ ...userData, subscriptionPlan: response.subscriptionPlan });
+            AppFacade.analytics.loginCompleted({ id: response.id, subscriptionPlan: response.subscriptionPlan });
 
             // Set medicProfile in appStore so PatientsListPage has it immediately
             const { useAppStore } = await import('../core/store/appStore');
-            useAppStore.getState().setMedicProfile(userData);
+            useAppStore.getState().setMedicProfile({ ...userData, subscriptionPlan: response.subscriptionPlan });
 
             navigate('/patients');
         } catch (err) {
@@ -103,9 +106,9 @@ const HomePage = () => {
                     </div>
 
                     <div style={{ textAlign: 'left', marginTop: '-10px' }}>
-                        <a href="#" style={{ fontSize: '0.85rem', color: 'var(--color-primary)', textDecoration: 'none' }}>
+                        <Link to="/forgot-password" style={{ fontSize: '0.85rem', color: 'var(--color-primary)', textDecoration: 'none' }}>
                             Forgot password?
-                        </a>
+                        </Link>
                     </div>
 
                     {error && <div className="error-message" style={{ color: 'red', fontSize: '0.85rem', marginBottom: '10px' }}>{error}</div>}

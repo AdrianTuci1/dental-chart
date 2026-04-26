@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Mail, Lock, CheckCircle } from 'lucide-react';
+import { AppFacade } from '../core/AppFacade';
 import './SignupPage.css';
 
 const SignupPage = () => {
@@ -51,7 +52,9 @@ const SignupPage = () => {
             const userData = { id: response.id, name: response.name, email: response.email };
 
             useAuthStore.getState().login(userData);
-            useAppStore.getState().setMedicProfile(userData);
+            useAppStore.getState().setMedicProfile({ ...userData, subscriptionPlan: response.subscriptionPlan });
+            AppFacade.analytics.setUser({ ...userData, subscriptionPlan: response.subscriptionPlan });
+            AppFacade.analytics.onboardingCompleted({ id: response.id, subscriptionPlan: response.subscriptionPlan });
             
             navigate('/patients');
         } catch (err) {

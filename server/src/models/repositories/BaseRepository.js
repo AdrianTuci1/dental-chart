@@ -1,11 +1,30 @@
 const { docClient } = require('../../config/dynamoConfig');
 
 const SEARCHABLE_FIELDS_BY_SK = {
-    'METADATA#': ['id', 'medicId', 'name', 'email', 'clinicId', 'createdAt', 'updatedAt', 'phoneNumber'],
+    'METADATA#': [
+        'id',
+        'medicId',
+        'ownerMedicId',
+        'defaultClinicId',
+        'clinicId',
+        'name',
+        'email',
+        'phone',
+        'phoneNumber',
+        'dateOfBirth',
+        'gender',
+        'lastExamDate',
+        'subscriptionPlan',
+        'apiKey',
+        'ownerRole',
+        'createdAt',
+        'updatedAt',
+    ],
+    'MEMBER#': ['clinicId', 'medicId', 'name', 'email', 'role', 'status', 'joinedAt', 'createdAt', 'updatedAt'],
+    'INVITE#': ['id', 'clinicId', 'medicId', 'invitedEmail', 'role', 'status', 'invitedByMedicId', 'acceptedAt', 'createdAt', 'updatedAt'],
+    'EVENT#': ['id', 'timestamp', 'source', 'category', 'eventName', 'userId', 'clinicId', 'entityType', 'entityId', 'sessionId'],
     'HISTORY#': ['updatedAt'],
     'PLAN#': ['updatedAt'],
-    'CLINIC#': ['id', 'name', 'createdAt', 'updatedAt'],
-    'MEDIC#': ['id', 'clinicId', 'email', 'name', 'createdAt', 'updatedAt'],
 };
 
 const getSearchableFields = (sk = '') => {
@@ -47,7 +66,15 @@ class BaseRepository {
         const data = {};
 
         Object.keys(originalItem).forEach(key => {
-            if (searchableFields.includes(key) || key === 'PK' || key === 'SK' || key === 'id' || key === 'medicId') {
+            if (
+                searchableFields.includes(key)
+                || key === 'PK'
+                || key === 'SK'
+                || key === 'id'
+                || key === 'medicId'
+                || key === 'clinicId'
+                || key === 'ownerMedicId'
+            ) {
                 newItem[key] = originalItem[key];
             } else {
                 data[key] = originalItem[key];

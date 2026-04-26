@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>API Documentation</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <script id="api-reference"></script>
+    <script>
+        const docsBaseUrl = `${window.location.origin}/docs/`
+        const specUrl = new URL('openapi.yaml', docsBaseUrl)
+
+        fetch(specUrl)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Failed to load OpenAPI YAML');
+                }
+
+                return response.text();
+            })
+            .then((spec) => {
+                document.getElementById('api-reference').dataset.spec = spec;
+            })
+            .catch((error) => {
+                document.body.innerHTML = '<pre style="padding:16px;font-family:monospace;white-space:pre-wrap;">Failed to load docs: ' + error.message + '</pre>';
+            });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+</body>
+</html>

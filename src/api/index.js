@@ -4,6 +4,7 @@ import { patientService } from './patientService';
 import { chartService } from './chartService';
 import { toothService } from './toothService';
 import { aiService } from './aiService';
+import { telemetryService } from './telemetryService';
 
 export {
     apiClient,
@@ -12,4 +13,5 @@ export {
     chartService,
     toothService,
     aiService,
+    telemetryService,
 };

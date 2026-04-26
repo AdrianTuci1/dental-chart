@@ -13,13 +13,11 @@
     justify-content: center;
 }
 
-/* Modal Frame */
 .settings-modal {
     width: 95%;
     max-width: 1100px;
     height: 85vh;
     background-color: #0f0f0f;
-    /* Deep dark */
     border-radius: 12px;
     display: flex;
     overflow: hidden;
@@ -40,7 +38,6 @@
     }
 }
 
-/* Sidebar */
 .modal-sidebar {
     width: 280px;
     background-color: #0d0d0d;
@@ -138,17 +135,19 @@
     background-color: rgba(255, 77, 77, 0.1);
 }
 
+.settings-support-item {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
 .mt-auto {
     margin-top: auto;
 }
 
-/* Main Area */
 .modal-main {
     flex: 1;
     display: flex;
     flex-direction: column;
     background-color: #0d0d0d;
-    /* Same as sidebar for unified look */
 }
 
 .modal-topbar {
@@ -184,11 +183,9 @@
     color: #fff;
 }
 
-/* Nested Content Container */
 .modal-content-area {
     flex: 1;
     padding: 0 var(--spacing-8) var(--spacing-8);
-    /* Balanced inset */
     overflow: hidden;
     display: flex;
 }
@@ -198,11 +195,9 @@
     background-color: #121212;
     border-radius: 12px;
     padding: var(--spacing-12);
-    /* More generous padding */
     overflow-y: auto;
 }
 
-/* Scrollbars */
 .luxe-scroll::-webkit-scrollbar {
     width: 6px;
 }
@@ -216,7 +211,6 @@
     background: transparent;
 }
 
-/* Professional Settings Stack */
 .pro-settings-stack {
     display: flex;
     flex-direction: column;
@@ -232,7 +226,6 @@
     padding: var(--spacing-5) var(--spacing-6);
     transition: background 0.2s;
 }
-
 
 .pro-settings-item.vertical {
     flex-direction: column;
@@ -259,7 +252,6 @@
     margin: 0;
 }
 
-/* API Key Box */
 .api-key-box {
     display: flex;
     gap: var(--spacing-3);
@@ -278,7 +270,6 @@
     outline: none;
 }
 
-/* Subscription Hero */
 .pro-plan-hero {
     background: linear-gradient(135deg, rgba(168, 85, 247, 0.15), rgba(124, 58, 237, 0.1));
     border: 1px solid rgba(168, 85, 247, 0.2);
@@ -288,6 +279,12 @@
     justify-content: space-between;
     align-items: center;
     text-align: left;
+    gap: var(--spacing-6);
+}
+
+.pro-plan-hero.is-free {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15), rgba(249, 115, 22, 0.12));
+    border-color: rgba(251, 191, 36, 0.2);
 }
 
 .plan-badge-luxe {
@@ -320,7 +317,6 @@
     font-size: 0.875rem;
 }
 
-/* Buttons */
 .pro-btn-primary {
     background: #a855f7;
     color: #fff;
@@ -366,7 +362,6 @@
     cursor: pointer;
 }
 
-/* Global Elements */
 .modal-toggle-switch-dummy {
     width: 36px;
     height: 20px;
@@ -410,8 +405,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--spacing-12);
-    max-width: 640px;
-    /* Keep content focused and professional */
+    max-width: 720px;
 }
 
 .modal-settings-group {
@@ -427,21 +421,79 @@
     padding-left: 2px;
 }
 
-/* Profile Specific */
-.profile-simple {
-    text-align: left;
-}
-
-.profile-avatar-simple {
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, #a855f7, #7c3aed);
-    border-radius: 20px;
-    display: flex;
+.settings-inline-badge {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    min-width: 72px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(168, 85, 247, 0.14);
+    color: #d8b4fe;
+    font-size: 0.75rem;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.settings-card-topline {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-4);
+    align-items: flex-start;
+}
+
+.settings-meta-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--spacing-4);
+}
+
+.settings-meta-cell {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 12px 14px;
+}
+
+.settings-meta-cell span {
+    display: block;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.settings-meta-cell strong {
+    font-size: 0.8rem;
     color: #fff;
-    margin-bottom: var(--spacing-4);
+    word-break: break-word;
+}
+
+@media (max-width: 960px) {
+    .settings-modal {
+        flex-direction: column;
+        height: 92vh;
+    }
+
+    .modal-sidebar {
+        width: 100%;
+        padding-bottom: 0;
+    }
+
+    .modal-content-container {
+        padding: var(--spacing-8);
+    }
+
+    .pro-plan-hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .settings-meta-grid {
+        grid-template-columns: 1fr;
+    }
 }

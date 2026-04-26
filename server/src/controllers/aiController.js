@@ -47,7 +47,7 @@ function serveFallback(res, reason) {
  * Gated by AI_ANALYSIS_ENABLED
  */
 exports.serveAsset = (req, res) => {
-    const relativePath = req.params[0]; 
+    const relativePath = Array.isArray(req.params) ? req.params[0] : req.params[0];
     const publicDir = path.resolve(__dirname, '../../public');
     const safePath = path.resolve(publicDir, relativePath);
 
