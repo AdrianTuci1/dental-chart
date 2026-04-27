@@ -175,7 +175,7 @@ const ChartQuickselect = () => {
 
             {isRestDrawerOpen && (
                 <RestorationDrawer
-                    toothNumber={Array.from(selectedTeeth)[0]}
+                    selectedTeeth={Array.from(selectedTeeth)}
                     position={getDrawerPosition()}
                     onClose={closeDrawers}
                     initialType="crown"
