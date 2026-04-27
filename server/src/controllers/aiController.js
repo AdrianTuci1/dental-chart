@@ -1,5 +1,9 @@
 const AIService = require('../services/AIService');
+const UserAnalyticsService = require('../services/UserAnalyticsService');
+const { extractMedicIdFromRequest } = require('../utils/auth');
+
 const aiService = new AIService();
+const analyticsService = new UserAnalyticsService();
 
 const path = require('path');
 const fs = require('fs');
@@ -12,6 +16,13 @@ exports.analyzeXray = async (req, res) => {
 
     try {
         const result = await aiService.analyzeImage(req.body);
+        
+        // Track AI usage
+        const userId = extractMedicIdFromRequest(req);
+        if (userId) {
+            void analyticsService.trackFeatureUsage(userId, 'ai_analysis');
+        }
+
         res.json(result);
     } catch (error) {
         console.error('[AI Controller] Error:', error.message);

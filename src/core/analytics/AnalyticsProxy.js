@@ -1,6 +1,6 @@
-import { telemetryService } from '../../api';
+import { analyticsService } from '../../api';
 import { GA4EventAdapter } from './adapters/GA4EventAdapter';
-import { InternalTelemetryAdapter } from './adapters/InternalTelemetryAdapter';
+import { AnalyticsAdapter } from './adapters/AnalyticsAdapter';
 
 class AnalyticsProxy {
     constructor() {
@@ -62,10 +62,12 @@ class AnalyticsProxy {
         }
 
         try {
-            const telemetryPayload = InternalTelemetryAdapter.toEventPayload(eventName, params, this.sessionId);
-            await telemetryService.trackEvent(telemetryPayload);
+            const profilePayload = AnalyticsAdapter.toProfileUpdate(eventName, params);
+            if (profilePayload) {
+                await analyticsService.updateProfile(profilePayload);
+            }
         } catch (error) {
-            console.error('[AnalyticsProxy] Failed to persist event', error);
+            console.error('[AnalyticsProxy] Failed to update user profile', error);
         }
     }
 }

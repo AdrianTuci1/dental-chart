@@ -1,9 +1,7 @@
 const MedicService = require('../services/MedicService');
-const TelemetryService = require('../services/TelemetryService');
 const bcrypt = require('bcryptjs');
 const { signAuthToken, extractMedicIdFromRequest } = require('../utils/auth');
 const medicService = new MedicService();
-const telemetryService = new TelemetryService();
 
 /**
  * Auth Controller
@@ -31,17 +29,10 @@ exports.register = async (req, res) => {
         const token = signAuthToken(newMedic);
         const publicMedic = medicService.toPublicMedic(newMedic);
 
-        await telemetryService.trackEvent({
-            eventName: 'user_registered',
-            category: 'auth',
-            userId: publicMedic.id,
-            clinicId: publicMedic.defaultClinicId || null,
-            entityType: 'medic',
-            entityId: publicMedic.id,
-            metadata: {
-                plan: publicMedic.subscriptionPlan,
-            },
-        });
+        const UserAnalyticsService = require('../services/UserAnalyticsService');
+        const analyticsService = new UserAnalyticsService();
+        await analyticsService.trackLogin(publicMedic.id);
+        await analyticsService.trackOnboarding(publicMedic.id, 'registered');
 
         res.status(201).json({
             id: publicMedic.id,
@@ -82,17 +73,9 @@ exports.login = async (req, res) => {
         const token = signAuthToken(medic);
         const publicMedic = medicService.toPublicMedic(medic);
 
-        await telemetryService.trackEvent({
-            eventName: 'user_logged_in',
-            category: 'auth',
-            userId: publicMedic.id,
-            clinicId: publicMedic.defaultClinicId || null,
-            entityType: 'medic',
-            entityId: publicMedic.id,
-            metadata: {
-                plan: publicMedic.subscriptionPlan,
-            },
-        });
+        const UserAnalyticsService = require('../services/UserAnalyticsService');
+        const analyticsService = new UserAnalyticsService();
+        await analyticsService.trackLogin(publicMedic.id);
 
         res.status(200).json({
             id: publicMedic.id,

@@ -1,11 +1,19 @@
 const PatientService = require('../services/PatientService');
+const UserAnalyticsService = require('../services/UserAnalyticsService');
 
 const patientService = new PatientService();
+const analyticsService = new UserAnalyticsService();
 
 exports.createPatient = async (req, res) => {
     try {
         const patientData = req.body;
         const newPatient = await patientService.createPatient(patientData);
+        
+        // Track feature usage in user profile
+        if (patientData.medicId) {
+            void analyticsService.trackFeatureUsage(patientData.medicId, 'patient_created');
+        }
+        
         res.status(201).json(newPatient);
     } catch (err) {
         res.status(err.statusCode || 500).json({ error: err.message });
@@ -52,6 +60,12 @@ exports.updatePatient = async (req, res) => {
         const { id } = req.params;
         const patientData = req.body;
         const updatedPatient = await patientService.updatePatient(id, patientData);
+
+        // Track feature usage
+        if (updatedPatient.medicId) {
+            void analyticsService.trackFeatureUsage(updatedPatient.medicId, 'patient_updated');
+        }
+
         res.json(updatedPatient);
     } catch (err) {
         res.status(err.statusCode || 500).json({ error: err.message });

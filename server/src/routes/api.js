@@ -1,6 +1,6 @@
 const express = require('express');
 const authRoutes = require('./modules/authRoutes');
-const telemetryRoutes = require('./modules/telemetryRoutes');
+const analyticsRoutes = require('./modules/analyticsRoutes');
 const clinicRoutes = require('./modules/clinicRoutes');
 const medicRoutes = require('./modules/medicRoutes');
 const patientRoutes = require('./modules/patientRoutes');
@@ -10,7 +10,7 @@ const externalContractRoutes = require('./modules/externalContractRoutes');
 const router = express.Router();
 
 router.use('/auth', authRoutes);
-router.use('/telemetry', telemetryRoutes);
+router.use('/analytics', analyticsRoutes);
 router.use('/clinics', clinicRoutes);
 router.use('/medics', medicRoutes);
 router.use('/patients', patientRoutes);
