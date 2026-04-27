@@ -25,13 +25,17 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
             imgSrc: ["'self'", "data:", "https:"],
             fontSrc: ["'self'", "data:", "https://cdn.jsdelivr.net"],
-            connectSrc: ["'self'", "https://cdn.jsdelivr.net"],
+            connectSrc: ["'self'", "https://api.pixtooth.com", "https://*.pages.dev", "https://cdn.jsdelivr.net"],
         },
     },
 }));
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://app.pixtooth.com'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    origin: [
+        'http://localhost:5173', 
+        'https://app.pixtooth.com',
+        /\.pages\.dev$/ // Permite orice subdomeniu .pages.dev (Cloudflare)
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(bodyParser.json());
