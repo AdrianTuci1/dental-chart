@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAppStore } from '../../../core/store/appStore';
 import { AppFacade } from '../../../core/AppFacade';
 import styles from './RestorationDrawer.module.css';
@@ -12,52 +12,67 @@ import TypeSelector from './components/TypeSelector';
 import RestorationWizard from './components/RestorationWizard';
 import { useRestorationForm } from './hooks/useRestorationForm';
 
-const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, onPrevious, initialType = null }) => {
-    const { teeth, selectedPatient } = useAppStore(); // Removed updateTooth and addTreatmentPlanItem
-    const updateTooth = useAppStore(state => state.updateTooth); // Added specific updateTooth selector
-    const tooth = teeth[toothNumber];
+const RestorationDrawer = React.memo(({ toothNumber, selectedTeeth = [], position = 'right', onClose, onNext, onPrevious, initialType = null }) => {
+    const teeth = useAppStore((state) => state.teeth);
+    const selectedPatient = useAppStore((state) => state.selectedPatient);
 
-    const [view, setView] = useState(initialType ? 'configure' : 'list'); // 'list' or 'configure'
+    // Normalize teeth list: either from selectedTeeth array or the single toothNumber
+    const teethToUpdate = useMemo(() => {
+        if (selectedTeeth && selectedTeeth.length > 0) return selectedTeeth;
+        return toothNumber ? [toothNumber] : [];
+    }, [selectedTeeth, toothNumber]);
+
+    // Create a stable string key for the teethToUpdate list to avoid effect loops
+    const teethKey = teethToUpdate.join(',');
+
+    const firstToothNumber = teethToUpdate[0];
+    const tooth = teeth[firstToothNumber];
+
+    const [view, setView] = useState(initialType ? 'configure' : 'list');
     const [selectedRestorationType, setSelectedRestorationType] = useState(initialType);
     const [currentStep, setCurrentStep] = useState(initialType ? 1 : 0);
 
     const { formState, updateForm, resetForm } = useRestorationForm();
 
-    // Reset form when tooth changes or drawer closes/opens
     useEffect(() => {
-        // Reset local variables only once on mount or tooth change
         resetForm();
-    }, [toothNumber, resetForm]);
+    }, [firstToothNumber, resetForm]);
 
     useEffect(() => {
-        const presetZones = getRestorationPresetZones(selectedRestorationType, toothNumber);
-
+        if (!selectedRestorationType || !firstToothNumber) return;
+        const presetZones = getRestorationPresetZones(selectedRestorationType, firstToothNumber);
         if (presetZones.length > 0) {
             updateForm({ selectedZones: presetZones });
         }
-    }, [selectedRestorationType, toothNumber, updateForm]);
+    }, [selectedRestorationType, firstToothNumber, updateForm]);
 
-    // Automatically select all zones for Implants or Pontics
     useEffect(() => {
-        if (selectedRestorationType === 'crown') {
+        if (selectedRestorationType === 'crown' && firstToothNumber) {
             const isFullCoverage = formState.crownBase === 'Implant' || formState.crownType === 'Pontic';
             if (isFullCoverage) {
-                const zones = getFullCoverageZones(toothNumber);
+                const zones = getFullCoverageZones(firstToothNumber);
                 updateForm({ selectedZones: zones });
             }
         }
-    }, [selectedRestorationType, formState.crownBase, formState.crownType, toothNumber, updateForm]);
+    }, [selectedRestorationType, formState.crownBase, formState.crownType, firstToothNumber, updateForm]);
 
     const setPreviewTooth = useAppStore((state) => state.setPreviewTooth);
 
     useEffect(() => {
+        if (!tooth || !firstToothNumber) return;
         const previewTooth = buildRestorationPreview(tooth, selectedRestorationType, formState);
-        setPreviewTooth(toothNumber, previewTooth);
+
+        // Show preview for all selected teeth
+        teethToUpdate.forEach(tNum => {
+            setPreviewTooth(tNum, previewTooth);
+        });
 
         return () => {
-            setPreviewTooth(toothNumber, null);
+            teethToUpdate.forEach(tNum => {
+                setPreviewTooth(tNum, null);
+            });
         };
-    }, [tooth, toothNumber, selectedRestorationType, formState, setPreviewTooth]);
+    }, [tooth, firstToothNumber, teethKey, selectedRestorationType, formState, setPreviewTooth]);
 
     const restorationTypes = [
         { id: 'filling', label: 'Filling', route: 'filling' },
@@ -66,18 +81,10 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
     ];
 
     const handleTypeSelect = (typeId) => {
-        if (selectedRestorationType === typeId) {
-            setCurrentStep(1);
-        } else {
-            setSelectedRestorationType(typeId);
-            setView('configure');
-            resetForm();
-            // We need to set the type again because resetForm clears it?
-            // No, restoration type is local state, form state contains details.
-            // But if we want to support switching types mid-flow, we should be careful.
-
-            setCurrentStep(1);
-        }
+        setSelectedRestorationType(typeId);
+        setView('configure');
+        resetForm();
+        setCurrentStep(1);
     };
 
     const handleBack = () => {
@@ -87,9 +94,12 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
     };
 
     const handleSave = () => {
-        if (!tooth) return;
+        if (teethToUpdate.length === 0) return;
 
-        const updatedRestoration = { ...tooth.restoration };
+        const batchUpdates = {};
+        const treatmentPlanItems = [];
+        const timestamp = Date.now();
+
         const {
             selectedZones,
             fillingMaterial, fillingQuality,
@@ -98,35 +108,28 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
             editingIndex
         } = formState;
 
-        const newItemId = editingIndex !== null ? null : Date.now().toString();
-        let procedureString = '';
-        let baseItem = {}; // Define baseItem for AppFacade call
+        teethToUpdate.forEach((tNum, index) => {
+            const currentTooth = teeth[tNum];
+            if (!currentTooth) return;
 
-        switch (selectedRestorationType) {
-            case 'filling':
-                if (fillingMaterial || selectedZones.length > 0) {
+            const updatedRestoration = { ...currentTooth.restoration };
+            const newItemId = editingIndex !== null ? null : `${tNum}-${timestamp}-${index}`;
+            let procedureString = '';
+            let baseItem = null;
+
+            switch (selectedRestorationType) {
+                case 'filling':
                     const newFilling = {
-                        id: newItemId, // Only applied if new
+                        id: newItemId,
                         status: 'planned',
                         zones: selectedZones,
                         material: fillingMaterial || 'Composite',
                         quality: fillingQuality || 'Sufficient'
                     };
-                    if (editingIndex !== null && updatedRestoration.fillings && updatedRestoration.fillings[editingIndex]) {
-                        updatedRestoration.fillings[editingIndex] = { ...updatedRestoration.fillings[editingIndex], ...newFilling };
-                    } else {
-                        updatedRestoration.fillings = [...(updatedRestoration.fillings || []), newFilling];
-                        procedureString = `Filling, ${fillingMaterial || 'Composite'}, ${fillingQuality || 'Sufficient'}, ${selectedZones.join(', ')}`;
-                        baseItem = {
-                            id: newItemId,
-                            tooth: toothNumber,
-                            procedure: procedureString,
-                        };
-                    }
-                }
-                break;
-            case 'veneer':
-                if (selectedZones.length > 0) {
+                    updatedRestoration.fillings = [...(updatedRestoration.fillings || []), newFilling];
+                    procedureString = `Filling, ${newFilling.material}, ${newFilling.quality}, ${selectedZones.join(', ')}`;
+                    break;
+                case 'veneer':
                     const newVeneer = {
                         id: newItemId,
                         status: 'planned',
@@ -135,21 +138,10 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                         quality: veneerQuality || 'Sufficient',
                         detail: veneerDetail || 'Flush'
                     };
-                    if (editingIndex !== null && updatedRestoration.veneers && updatedRestoration.veneers[editingIndex]) {
-                        updatedRestoration.veneers[editingIndex] = { ...updatedRestoration.veneers[editingIndex], ...newVeneer };
-                    } else {
-                        updatedRestoration.veneers = [...(updatedRestoration.veneers || []), newVeneer];
-                        procedureString = `Veneer, ${veneerMaterial || 'Ceramic'}, ${veneerQuality || 'Sufficient'}, ${veneerDetail || 'Flush'}`;
-                        baseItem = {
-                            id: newItemId,
-                            tooth: toothNumber,
-                            procedure: procedureString,
-                        };
-                    }
-                }
-                break;
-            case 'crown':
-                if (crownMaterial || crownType || crownBase) {
+                    updatedRestoration.veneers = [...(updatedRestoration.veneers || []), newVeneer];
+                    procedureString = `Veneer, ${newVeneer.material}, ${newVeneer.quality}, ${newVeneer.detail}`;
+                    break;
+                case 'crown':
                     const newCrown = {
                         id: newItemId,
                         status: 'planned',
@@ -164,52 +156,40 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                         newCrown.implantType = implantType;
                         extraInfo = `, ${implantType}`;
                     }
-                    if (editingIndex !== null && updatedRestoration.crowns && updatedRestoration.crowns[editingIndex]) {
-                        updatedRestoration.crowns[editingIndex] = { ...updatedRestoration.crowns[editingIndex], ...newCrown };
-                    } else {
-                        updatedRestoration.crowns = [...(updatedRestoration.crowns || []), newCrown];
-                        procedureString = `Crown, ${crownMaterial || 'Ceramic'}, ${crownType || 'Single Crown'}, ${crownBase || 'Natural'}${extraInfo}`;
-                        baseItem = {
-                            id: newItemId,
-                            tooth: toothNumber,
-                            type: 'restoration',
-                            subtype: 'crown',
-                            material: newCrown.material,
-                            crownType: newCrown.type,
-                            base: newCrown.base,
-                            zones: selectedZones,
-                            procedure: procedureString,
-                        };
-                    }
-                }
-                break;
-            default:
-                break;
-        }
+                    updatedRestoration.crowns = [...(updatedRestoration.crowns || []), newCrown];
+                    procedureString = `Crown, ${newCrown.material}, ${newCrown.type}, ${newCrown.base}${extraInfo}`;
+                    break;
+            }
 
-        // 1. Update the tooth state in the store locally (no API call)
-        updateTooth(toothNumber, { restoration: updatedRestoration });
+            batchUpdates[tNum] = { restoration: updatedRestoration };
 
-        // 2. Add to treatment plan if it's a new item (triggers AppFacade sync)
-        if (newItemId && procedureString && selectedPatient) {
-            AppFacade.patient.addTreatmentPlanItem(selectedPatient.id, {
-                ...baseItem,
-                status: 'planned'
+            if (newItemId && procedureString) {
+                treatmentPlanItems.push({
+                    id: newItemId,
+                    tooth: tNum,
+                    procedure: procedureString,
+                    status: 'planned'
+                });
+            }
+        });
+
+        // 1. Bulk update state
+        AppFacade.chart.updateTeethBatch(batchUpdates);
+
+        // 2. Add to treatment plan if new items
+        if (treatmentPlanItems.length > 0 && selectedPatient) {
+            treatmentPlanItems.forEach(item => {
+                AppFacade.patient.addTreatmentPlanItem(selectedPatient.id, item);
             });
-        } else if (selectedPatient) {
-            // Force sync even if no new plan item (e.g. just updating existing tooth status)
-            AppFacade.patient.update(selectedPatient.id, useAppStore.getState().selectedPatient);
         }
 
-        handleBack();
+        onClose(); // Use onClose instead of handleBack to finish multi-step flow
     };
-
-    // handleEditItem removed because it was unused
 
     return (
         <div className={`${styles.restorationDrawer} ${position === 'left' ? styles.left : styles.right}`}>
             <DrawerHeader
-                toothNumber={toothNumber}
+                toothNumber={teethToUpdate.length > 1 ? `${teethToUpdate.length} teeth` : firstToothNumber}
                 onNext={onNext}
                 onPrevious={onPrevious}
                 onClose={onClose}
@@ -219,7 +199,10 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                 {view === 'list' ? (
                     <div className={styles.scrollableContent}>
                         <div className={styles.summaryList}>
-                            <span className={styles.summaryLabel}>Restoration:</span>
+                            <span className={styles.summaryLabel}>Apply to {teethToUpdate.length} selected teeth:</span>
+                            <div className={styles.selectedTeethBadge}>
+                                {teethToUpdate.join(', ')}
+                            </div>
                         </div>
                         <TypeSelector
                             restorationTypes={restorationTypes}
@@ -236,12 +219,12 @@ const RestorationDrawer = ({ toothNumber, position = 'right', onClose, onNext, o
                         onBack={handleBack}
                         formState={formState}
                         updateForm={updateForm}
-                        toothNumber={toothNumber}
+                        toothNumber={firstToothNumber}
                     />
                 )}
             </div>
         </div>
     );
-};
+});
 
 export default RestorationDrawer;

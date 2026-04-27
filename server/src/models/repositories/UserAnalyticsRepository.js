@@ -11,58 +11,98 @@ class UserAnalyticsRepository extends BaseRepository {
      * Updates user analytics profile in a single record within the main table.
      */
     async updateUserProfile(userId, updates = {}) {
+        if (!userId) {
+            console.error('[UserAnalyticsRepository] Cannot update profile: userId is missing');
+            return null;
+        }
+
         const timestamp = Date.now();
         const pk = `TELEMETRY#${userId}`;
-        const sk = 'PROFILE';
+        const sk = 'ANALYTICS#';
 
-        let updateExpression = 'SET lastActive = :lastActive, userId = :userId';
+        const expressionAttributeNames = {
+            '#lastActive': 'lastActive',
+            '#userId': 'userId'
+        };
+        
         const expressionAttributeValues = {
             ':lastActive': timestamp,
             ':userId': userId,
         };
-        const expressionAttributeNames = {};
 
-        // 1. Increment login count if requested
+        let setParts = ['#lastActive = :lastActive', '#userId = :userId'];
+        let addParts = [];
+
+        // 1. Increment login count
         if (updates.incrementLogin) {
-            updateExpression += ', loginCount = if_not_exists(loginCount, :zero) + :one';
+            expressionAttributeNames['#loginCount'] = 'loginCount';
             expressionAttributeValues[':zero'] = 0;
             expressionAttributeValues[':one'] = 1;
+            setParts.push('#loginCount = if_not_exists(#loginCount, :zero) + :one');
+            
+            // Set firstActive only once
+            expressionAttributeNames['#firstActive'] = 'firstActive';
+            setParts.push('#firstActive = if_not_exists(#firstActive, :lastActive)');
         }
 
-        // 2. Set boolean flags (onboarding, feature usage)
+        // 1.1 Increment time spent (heartbeat)
+        if (updates.incrementTime) {
+            expressionAttributeNames['#totalTimeSpent'] = 'totalTimeSpent';
+            expressionAttributeValues[':zeroTime'] = 0;
+            expressionAttributeValues[':timeIncrement'] = updates.incrementTime; // e.g., 1 minute
+            setParts.push('#totalTimeSpent = if_not_exists(#totalTimeSpent, :zeroTime) + :timeIncrement');
+        }
+
+        // 2. Set boolean flags
         if (updates.flags) {
             Object.entries(updates.flags).forEach(([key, value]) => {
                 const attrName = `#${key}`;
                 const valName = `:${key}`;
-                updateExpression += `, ${attrName} = :${key}`;
                 expressionAttributeNames[attrName] = key;
                 expressionAttributeValues[valName] = value;
+                setParts.push(`${attrName} = ${valName}`);
             });
         }
 
-        // 3. Add to visited menus (using a Set in DynamoDB to ensure uniqueness)
+        // 3. Add to visited menus (using Set)
         if (updates.menuVisited) {
-            updateExpression += ' ADD visitedMenus :menu';
-            expressionAttributeValues[':menu'] = new Set([updates.menuVisited]);
+            expressionAttributeNames['#visitedMenus'] = 'visitedMenus';
+            expressionAttributeValues[':menuSet'] = new Set([updates.menuVisited]);
+            addParts.push('#visitedMenus :menuSet');
+        }
+
+        let updateExpression = `SET ${setParts.join(', ')}`;
+        if (addParts.length > 0) {
+            updateExpression += ` ADD ${addParts.join(', ')}`;
         }
 
         const command = new UpdateCommand({
             TableName: this.tableName,
-            Key: { id: pk, timestamp: sk },
+            Key: { PK: pk, SK: sk },
             UpdateExpression: updateExpression,
             ExpressionAttributeValues: expressionAttributeValues,
-            ExpressionAttributeNames: Object.keys(expressionAttributeNames).length > 0 ? expressionAttributeNames : undefined,
+            ExpressionAttributeNames: expressionAttributeNames,
             ReturnValues: 'ALL_NEW',
         });
 
-        const response = await this.send(command);
-        return response.Attributes;
+        try {
+            const response = await this.send(command);
+            return response.Attributes;
+        } catch (error) {
+            console.error('[UserAnalyticsRepository] Update failed:', error.message);
+            throw error;
+        }
     }
 
     async getUserProfile(userId) {
+        if (!userId) return null;
+        
         const command = new GetCommand({
             TableName: this.tableName,
-            Key: { id: `TELEMETRY#${userId}`, timestamp: 'PROFILE' },
+            Key: { 
+                PK: `TELEMETRY#${userId}`, 
+                SK: 'ANALYTICS#' 
+            },
         });
         const response = await this.send(command);
         return response.Item;

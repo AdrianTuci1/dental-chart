@@ -31,8 +31,12 @@ exports.register = async (req, res) => {
 
         const UserAnalyticsService = require('../services/UserAnalyticsService');
         const analyticsService = new UserAnalyticsService();
-        await analyticsService.trackLogin(publicMedic.id);
-        await analyticsService.trackOnboarding(publicMedic.id, 'registered');
+        try {
+            await analyticsService.trackLogin(publicMedic.id);
+            await analyticsService.trackOnboarding(publicMedic.id, 'registered');
+        } catch (analyticsError) {
+            console.error('[Analytics] Failed to track registration:', analyticsError);
+        }
 
         res.status(201).json({
             id: publicMedic.id,
@@ -75,7 +79,11 @@ exports.login = async (req, res) => {
 
         const UserAnalyticsService = require('../services/UserAnalyticsService');
         const analyticsService = new UserAnalyticsService();
-        await analyticsService.trackLogin(publicMedic.id);
+        try {
+            await analyticsService.trackLogin(publicMedic.id);
+        } catch (analyticsError) {
+            console.error('[Analytics] Failed to track login:', analyticsError);
+        }
 
         res.status(200).json({
             id: publicMedic.id,

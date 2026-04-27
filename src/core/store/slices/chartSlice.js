@@ -1,5 +1,6 @@
 import { produce } from 'immer';
 import { ChartModel } from '../../models/ChartModel';
+import { ToothModel } from '../../models/ToothModel';
 import { resolveDentition } from '../../../utils/toothUtils';
 
 const syncSelectedPatientChart = (state) => {
@@ -38,6 +39,14 @@ export const createChartSlice = (set) => ({
     updateTeeth: (updates) => {
         set(produce((state) => {
             ChartModel.updateTeeth(state, updates);
+            syncSelectedPatientChart(state);
+        }));
+    },
+    resetTeeth: (toothNumbers) => {
+        set(produce((state) => {
+            toothNumbers.forEach(num => {
+                state.teeth[num] = ToothModel.create(num);
+            });
             syncSelectedPatientChart(state);
         }));
     },

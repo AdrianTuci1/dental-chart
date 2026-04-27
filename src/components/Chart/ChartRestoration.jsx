@@ -30,15 +30,14 @@ const ChartRestoration = () => {
     const handleToothClick = (toothNumber) => {
         selectTooth(toothNumber);
     };
-
-    const handleCloseDrawer = () => {
+    const handleCloseDrawer = React.useCallback(() => {
         if (selectedTooth) {
             setPreviewTooth(selectedTooth, null);
         }
         selectTooth(null);
-    };
+    }, [selectedTooth, setPreviewTooth, selectTooth]);
 
-    const handleNextTooth = () => {
+    const handleNextTooth = React.useCallback(() => {
         if (!selectedTooth) return;
         const current = parseInt(selectedTooth);
         const toothNumbers = Object.keys(teeth).map(Number).sort((a, b) => a - b);
@@ -47,9 +46,9 @@ const ChartRestoration = () => {
             setPreviewTooth(selectedTooth, null);
             selectTooth(toothNumbers[currentIndex + 1]);
         }
-    };
+    }, [selectedTooth, teeth, setPreviewTooth, selectTooth]);
 
-    const handlePreviousTooth = () => {
+    const handlePreviousTooth = React.useCallback(() => {
         if (!selectedTooth) return;
         const current = parseInt(selectedTooth);
         const toothNumbers = Object.keys(teeth).map(Number).sort((a, b) => a - b);
@@ -58,7 +57,7 @@ const ChartRestoration = () => {
             setPreviewTooth(selectedTooth, null);
             selectTooth(toothNumbers[currentIndex - 1]);
         }
-    };
+    }, [selectedTooth, teeth, setPreviewTooth, selectTooth]);
 
     const getDrawerPosition = (toothNumber) => {
         if (!toothNumber) return 'right';

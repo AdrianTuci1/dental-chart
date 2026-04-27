@@ -32,6 +32,11 @@ class UserAnalyticsService {
         return this.repository.updateUserProfile(userId, { menuVisited: menuName });
     }
 
+    async trackHeartbeat(userId, minutes = 1) {
+        if (process.env.ENABLE_TELEMETRY === 'false') return;
+        return this.repository.updateUserProfile(userId, { incrementTime: minutes });
+    }
+
     async getUserAnalytics(userId) {
         const data = await this.repository.getUserProfile(userId);
         if (!data) return null;
