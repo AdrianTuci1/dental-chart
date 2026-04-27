@@ -2,15 +2,16 @@
  * Adapts individual UI events to the "User Analytics Profile" format.
  */
 export const AnalyticsAdapter = {
-    // Configuration for route mapping
+    // Configuration for route mapping - ordered from most specific to least specific
     ROUTE_MAP: [
-        { pattern: '/patients', exact: true, name: 'Patients List' },
-        { pattern: '/dashboard', includes: true, name: 'Patient Dashboard' },
-        { pattern: '/chart', includes: true, name: 'Patient Chart' },
-        { pattern: '/report', includes: true, name: 'Patient Report' },
-        { pattern: '/teeth/', includes: true, name: 'Tooth Details' },
-        { pattern: '/scan/', includes: true, name: 'AI Scan View' },
-        { pattern: '/settings', includes: true, name: 'Settings' }
+        { pattern: '/settings', name: 'Settings' },
+        { pattern: '/tooth', name: 'Tooth' },
+        { pattern: '/scan', name: 'Scan' },
+        { pattern: '/chart', name: 'Chart' },
+        { pattern: '/report', name: 'Report' },
+        { pattern: '/dashboard', name: 'Dashboard' },
+        { pattern: '/patients/', name: 'Dashboard' }, // matches /patients/id
+        { pattern: '/patients', name: 'Patients' }
     ],
 
     toProfileUpdate(eventName, params = {}) {
@@ -18,23 +19,29 @@ export const AnalyticsAdapter = {
 
         // 1. Map page views or menu clicks to menuName
         if (eventName === 'page_viewed' || eventName === 'menu_clicked' || eventName === 'page_view' || eventName === 'app_session_heartbeat') {
-            // Priority: params.menuName > params.metadata.menuName > params.pathname > window.location
+            // Priority: params.menuName > params.metadata.menuName > params.pathname > params.metadata.pathname > window.location
             const rawMenu = params.menuName || 
                            params.metadata?.menuName || 
                            params.pathname || 
+                           params.metadata?.pathname ||
                            params.page_path || 
-                           params.page_title || 
                            (typeof window !== 'undefined' ? window.location.pathname : null);
             
             if (rawMenu) {
-                // Find matching route name from configuration
+                // Normalize input to a path format (e.g. "chart" -> "/chart") for consistent matching
+                const normalizedPath = String(rawMenu).startsWith('/') ? rawMenu : `/${rawMenu}`;
+                
+                // Try ROUTE_MAP
                 const match = this.ROUTE_MAP.find(route => {
-                    if (route.exact) return rawMenu === route.pattern || rawMenu === route.pattern.substring(1);
-                    if (route.includes) return rawMenu.includes(route.pattern);
-                    return false;
+                    // Special case for exact patients list
+                    if (route.pattern === '/patients') return normalizedPath === '/patients' || normalizedPath === '/patients/';
+                    return String(normalizedPath).includes(route.pattern);
                 });
 
-                payload.menuName = match ? match.name : (rawMenu === '/' ? 'General Dashboard' : rawMenu);
+                if (match) {
+                    payload.menuName = match.name;
+                }
+                // Note: If no match is found, we don't set menuName, effectively skipping telemetry for unknown/auth pages
             }
         }
 

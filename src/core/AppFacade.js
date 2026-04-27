@@ -6,6 +6,8 @@ import { ChartModel } from './models/ChartModel';
 import { AIAdapter } from './adapters/AIAdapter';
 import { AnalyticsFacade } from './analytics';
 
+import { PatientModel } from './models/PatientModel';
+
 const getStoreState = () => useAppStore.getState();
 
 const getStoredPatientById = (id) => {
@@ -380,6 +382,31 @@ export const AppFacade = {
                 AppFacade.patient.syncPatient(state.selectedPatient.id);
             }
         },
+
+        resetTooth: async (toothNumber) => {
+            return AppFacade.chart.resetTeethBatch([toothNumber]);
+        },
+
+        resetTeethBatch: async (toothNumbers) => {
+            const state = getStoreState();
+            const patient = state.selectedPatient;
+            if (!patient) return;
+
+            // 1. Perform hard reset in local store (replaces objects)
+            state.resetTeeth(toothNumbers);
+
+            // Get fresh state after local reset
+            const freshState = getStoreState();
+            // 2. Prepare cleaned interventions and ALSO the reset chart teeth
+            const cleanedPayload = {
+                ...PatientModel.prepareResetPayload(patient, toothNumbers),
+                chart: {
+                    teeth: freshState.teeth
+                }
+            };
+            // 3. Persist the full clean state
+            return AppFacade.patient.update(patient.id, cleanedPayload);
+        }
     },
 
     scan: {
@@ -388,14 +415,14 @@ export const AppFacade = {
         rotate: (direction) => useAppStore.getState().rotateImage(direction),
         reset: () => useAppStore.getState().resetTransform(),
         zoom: (deltaY) => useAppStore.getState().zoomImage(deltaY),
-        
+
         startDragging: (x, y) => useAppStore.getState().startDragging(x, y),
         updateDragging: (x, y) => useAppStore.getState().updateDragging(x, y),
         stopDragging: () => useAppStore.getState().stopDragging(),
 
         startTouch: (touches) => useAppStore.getState().startTouch(touches),
         updateTouch: (touches) => useAppStore.getState().updateTouch(touches),
-        
+
         setScanImage: (image) => {
             const state = useAppStore.getState();
             state.setScanImage(image);
@@ -404,7 +431,7 @@ export const AppFacade = {
             }
         },
         deleteDetection: (id) => useAppStore.getState().deleteDetection(id),
-        
+
         startProcessing: () => useAppStore.getState().startProcessing(),
         updateProgress: (progress) => useAppStore.getState().updateProgress(progress),
         stopProcessing: () => useAppStore.getState().stopProcessing(),

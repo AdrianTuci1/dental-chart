@@ -12,14 +12,18 @@ import TypeSelector from './components/TypeSelector';
 import RestorationWizard from './components/RestorationWizard';
 import { useRestorationForm } from './hooks/useRestorationForm';
 
-const RestorationDrawer = ({ toothNumber, selectedTeeth = [], position = 'right', onClose, onNext, onPrevious, initialType = null }) => {
-    const { teeth, selectedPatient } = useAppStore();
+const RestorationDrawer = React.memo(({ toothNumber, selectedTeeth = [], position = 'right', onClose, onNext, onPrevious, initialType = null }) => {
+    const teeth = useAppStore((state) => state.teeth);
+    const selectedPatient = useAppStore((state) => state.selectedPatient);
 
     // Normalize teeth list: either from selectedTeeth array or the single toothNumber
     const teethToUpdate = useMemo(() => {
         if (selectedTeeth && selectedTeeth.length > 0) return selectedTeeth;
         return toothNumber ? [toothNumber] : [];
     }, [selectedTeeth, toothNumber]);
+
+    // Create a stable string key for the teethToUpdate list to avoid effect loops
+    const teethKey = teethToUpdate.join(',');
 
     const firstToothNumber = teethToUpdate[0];
     const tooth = teeth[firstToothNumber];
@@ -58,7 +62,7 @@ const RestorationDrawer = ({ toothNumber, selectedTeeth = [], position = 'right'
         if (!tooth || !firstToothNumber) return;
         const previewTooth = buildRestorationPreview(tooth, selectedRestorationType, formState);
 
-        // Show preview for all selected teeth if possible, or just the first one
+        // Show preview for all selected teeth
         teethToUpdate.forEach(tNum => {
             setPreviewTooth(tNum, previewTooth);
         });
@@ -68,7 +72,7 @@ const RestorationDrawer = ({ toothNumber, selectedTeeth = [], position = 'right'
                 setPreviewTooth(tNum, null);
             });
         };
-    }, [tooth, firstToothNumber, teethToUpdate, selectedRestorationType, formState, setPreviewTooth]);
+    }, [tooth, firstToothNumber, teethKey, selectedRestorationType, formState, setPreviewTooth]);
 
     const restorationTypes = [
         { id: 'filling', label: 'Filling', route: 'filling' },
@@ -221,6 +225,6 @@ const RestorationDrawer = ({ toothNumber, selectedTeeth = [], position = 'right'
             </div>
         </div>
     );
-};
+});
 
 export default RestorationDrawer;

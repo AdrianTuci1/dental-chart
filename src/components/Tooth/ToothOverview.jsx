@@ -7,7 +7,6 @@ import ConfirmationModal from '../UI/ConfirmationModal';
 import './ToothOverview.css';
 import EndodonticSection from './EndodonticSection';
 import PeriodontalSection from './PeriodontalSection';
-import { ToothModel } from '../../core/models/ToothModel';
 
 import EndoTestDetail from './EndoTestDetail';
 import { suggestPulpalDiagnosis } from '../../utils/endoDiagnosis';
@@ -118,7 +117,7 @@ const ToothOverview = () => {
         const toothNumber = tooth.isoNumber || tooth.toothNumber;
 
         if (modalState.action === 'reset') {
-            AppFacade.chart.updateTooth(toothNumber, ToothModel.create(toothNumber));
+            AppFacade.chart.resetTooth(toothNumber);
         } else if (modalState.action === 'missing') {
             AppFacade.chart.updateTooth(toothNumber, {
                 isMissing: true,

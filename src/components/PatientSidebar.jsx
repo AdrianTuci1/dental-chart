@@ -6,7 +6,6 @@ import AnalysisControls from './UI/AnalysisControls';
 import './PatientSidebar.css';
 import { RiToothLine } from 'react-icons/ri';
 import { GrDocumentPdf } from 'react-icons/gr';
-import { AppFacade } from '../core/AppFacade';
 
 const PatientSidebar = () => {
     const { patientId } = useParams();
@@ -41,7 +40,6 @@ const PatientSidebar = () => {
             <nav className="sidebar-nav">
                 <NavLink
                     to={`/patients/${patientId}/chart`}
-                    onClick={() => AppFacade.analytics.menuClicked({ patientId, menuName: 'chart' })}
                     className={({ isActive }) =>
                         `sidebar-nav-link ${isActive ? 'active' : ''}`
                     }
@@ -51,7 +49,6 @@ const PatientSidebar = () => {
                 </NavLink>
                 <NavLink
                     to={`/patients/${patientId}/dashboard`}
-                    onClick={() => AppFacade.analytics.menuClicked({ patientId, menuName: 'dashboard' })}
                     className={({ isActive }) =>
                         `sidebar-nav-link ${isActive ? 'active' : ''}`
                     }
@@ -62,7 +59,6 @@ const PatientSidebar = () => {
 
                 <NavLink
                     to={`/patients/${patientId}/scan`}
-                    onClick={() => AppFacade.analytics.menuClicked({ patientId, menuName: 'scan' })}
                     className={({ isActive }) =>
                         `sidebar-nav-link ${isActive ? 'active' : ''}`
                     }
@@ -73,7 +69,6 @@ const PatientSidebar = () => {
 
                 <NavLink
                     to={`/patients/${patientId}/report`}
-                    onClick={() => AppFacade.analytics.menuClicked({ patientId, menuName: 'report' })}
                     className={({ isActive }) =>
                         `sidebar-nav-link ${isActive ? 'active' : ''}`
                     }

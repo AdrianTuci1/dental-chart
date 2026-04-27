@@ -23,18 +23,35 @@ const DevelopmentDrawer = ({ selectedTeeth, position = 'right', onClose }) => {
     ];
 
     const handleApply = (action) => {
-        const updates = {};
+        const adultTeethToReset = [];
+        const otherUpdates = {};
+
         selectedTeeth.forEach(toothNumber => {
             const isMolar = parseInt(toothNumber) % 10 >= 6;
             if (isMolar && (action.developmentState === 'baby tooth' || action.developmentState === 'baby tooth missing')) {
                 return;
             }
-            updates[toothNumber] = {
-                ...action,
-                missingDate: action.isMissing ? new Date().toISOString() : null,
-            };
+
+            if (action.developmentState === 'adult tooth') {
+                adultTeethToReset.push(toothNumber);
+            } else {
+                otherUpdates[toothNumber] = {
+                    ...action,
+                    missingDate: action.isMissing ? new Date().toISOString() : null,
+                };
+            }
         });
-        AppFacade.chart.updateTeethBatch(updates);
+
+        // Apply resets for adult teeth (clears everything)
+        if (adultTeethToReset.length > 0) {
+            AppFacade.chart.resetTeethBatch(adultTeethToReset);
+        }
+
+        // Apply standard updates for other states
+        if (Object.keys(otherUpdates).length > 0) {
+            AppFacade.chart.updateTeethBatch(otherUpdates);
+        }
+
         onClose();
     };
 

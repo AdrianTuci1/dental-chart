@@ -64,36 +64,22 @@ export class ToothModel {
      * @param {Object} payload - The updates to apply
      */
     static update(tooth, payload) {
+        // If the payload contains these objects, we want to replace them to allow full resets
+        // instead of shallow merging which might preserve old unwanted fields.
         if (payload.pathology) {
-            tooth.pathology = { ...tooth.pathology, ...payload.pathology };
+            tooth.pathology = payload.pathology;
         }
 
         if (payload.restoration) {
-            tooth.restoration = { ...tooth.restoration, ...payload.restoration };
+            tooth.restoration = payload.restoration;
         }
 
         if (payload.periodontal) {
-            const previousSites = tooth.periodontal.sites;
-            tooth.periodontal = { ...tooth.periodontal, ...payload.periodontal };
-
-            if (payload.periodontal.sites) {
-                tooth.periodontal.sites = {
-                    ...previousSites,
-                    ...payload.periodontal.sites,
-                };
-            }
+            tooth.periodontal = payload.periodontal;
         }
 
         if (payload.endodontic) {
-            const previousTests = tooth.endodontic.tests;
-            tooth.endodontic = { ...tooth.endodontic, ...payload.endodontic };
-
-            if (payload.endodontic.tests) {
-                tooth.endodontic.tests = {
-                    ...previousTests,
-                    ...payload.endodontic.tests,
-                };
-            }
+            tooth.endodontic = payload.endodontic;
         }
 
         if (payload.conditions) tooth.conditions = payload.conditions;

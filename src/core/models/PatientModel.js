@@ -109,4 +109,30 @@ export class PatientModel {
             }
         }
     }
+
+    /**
+     * Prepares a clean payload for resetting specific teeth.
+     * Extracts only the history and treatment plan items that ARE NOT associated with the reset teeth.
+     * 
+     * @param {Object} patient - The current patient data
+     * @param {Array<number|string>} toothNumbers - The teeth to clear
+     * @returns {Object} A payload suitable for AppFacade.patient.update
+     */
+    static prepareResetPayload(patient, toothNumbers) {
+        if (!patient) return {};
+        const nums = toothNumbers.map(n => parseInt(n));
+
+        return {
+            history: {
+                completedItems: (patient.history?.completedItems || []).filter(
+                    item => !nums.includes(parseInt(item.tooth))
+                )
+            },
+            treatmentPlan: {
+                items: (patient.treatmentPlan?.items || []).filter(
+                    item => !nums.includes(parseInt(item.tooth))
+                )
+            }
+        };
+    }
 }
