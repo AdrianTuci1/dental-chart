@@ -13,7 +13,7 @@ class UserAnalyticsRepository extends BaseRepository {
     async updateUserProfile(userId, updates = {}) {
         const timestamp = Date.now();
         const pk = `TELEMETRY#${userId}`;
-        const sk = 'PROFILE';
+        const sk = 'ANALYTICS#'; // Standardized SK format for the main table
 
         let updateExpression = 'SET lastActive = :lastActive, userId = :userId';
         const expressionAttributeValues = {
@@ -42,13 +42,15 @@ class UserAnalyticsRepository extends BaseRepository {
 
         // 3. Add to visited menus (using a Set in DynamoDB to ensure uniqueness)
         if (updates.menuVisited) {
+            // If the expression already has a SET, we need to handle ADD separately 
+            // or use a separate command. In DynamoDB, SET and ADD can be in the same UpdateExpression.
             updateExpression += ' ADD visitedMenus :menu';
             expressionAttributeValues[':menu'] = new Set([updates.menuVisited]);
         }
 
         const command = new UpdateCommand({
             TableName: this.tableName,
-            Key: { id: pk, timestamp: sk },
+            Key: { PK: pk, SK: sk },
             UpdateExpression: updateExpression,
             ExpressionAttributeValues: expressionAttributeValues,
             ExpressionAttributeNames: Object.keys(expressionAttributeNames).length > 0 ? expressionAttributeNames : undefined,
@@ -62,7 +64,10 @@ class UserAnalyticsRepository extends BaseRepository {
     async getUserProfile(userId) {
         const command = new GetCommand({
             TableName: this.tableName,
-            Key: { id: `TELEMETRY#${userId}`, timestamp: 'PROFILE' },
+            Key: { 
+                PK: `TELEMETRY#${userId}`, 
+                SK: 'ANALYTICS#' 
+            },
         });
         const response = await this.send(command);
         return response.Item;
