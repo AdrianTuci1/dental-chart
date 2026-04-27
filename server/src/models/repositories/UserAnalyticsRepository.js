@@ -11,41 +11,57 @@ class UserAnalyticsRepository extends BaseRepository {
      * Updates user analytics profile in a single record within the main table.
      */
     async updateUserProfile(userId, updates = {}) {
+        if (!userId) {
+            console.error('[UserAnalyticsRepository] Cannot update profile: userId is missing');
+            return null;
+        }
+
         const timestamp = Date.now();
         const pk = `TELEMETRY#${userId}`;
-        const sk = 'ANALYTICS#'; // Standardized SK format for the main table
+        const sk = 'ANALYTICS#';
 
-        let updateExpression = 'SET lastActive = :lastActive, userId = :userId';
+        const expressionAttributeNames = {
+            '#lastActive': 'lastActive',
+            '#userId': 'userId'
+        };
+        
         const expressionAttributeValues = {
             ':lastActive': timestamp,
             ':userId': userId,
         };
-        const expressionAttributeNames = {};
 
-        // 1. Increment login count if requested
+        let setParts = ['#lastActive = :lastActive', '#userId = :userId'];
+        let addParts = [];
+
+        // 1. Increment login count
         if (updates.incrementLogin) {
-            updateExpression += ', loginCount = if_not_exists(loginCount, :zero) + :one';
+            expressionAttributeNames['#loginCount'] = 'loginCount';
             expressionAttributeValues[':zero'] = 0;
             expressionAttributeValues[':one'] = 1;
+            setParts.push('#loginCount = if_not_exists(#loginCount, :zero) + :one');
         }
 
-        // 2. Set boolean flags (onboarding, feature usage)
+        // 2. Set boolean flags
         if (updates.flags) {
             Object.entries(updates.flags).forEach(([key, value]) => {
                 const attrName = `#${key}`;
                 const valName = `:${key}`;
-                updateExpression += `, ${attrName} = :${key}`;
                 expressionAttributeNames[attrName] = key;
                 expressionAttributeValues[valName] = value;
+                setParts.push(`${attrName} = ${valName}`);
             });
         }
 
-        // 3. Add to visited menus (using a Set in DynamoDB to ensure uniqueness)
+        // 3. Add to visited menus (using Set)
         if (updates.menuVisited) {
-            // If the expression already has a SET, we need to handle ADD separately 
-            // or use a separate command. In DynamoDB, SET and ADD can be in the same UpdateExpression.
-            updateExpression += ' ADD visitedMenus :menu';
-            expressionAttributeValues[':menu'] = new Set([updates.menuVisited]);
+            expressionAttributeNames['#visitedMenus'] = 'visitedMenus';
+            expressionAttributeValues[':menuSet'] = new Set([updates.menuVisited]);
+            addParts.push('#visitedMenus :menuSet');
+        }
+
+        let updateExpression = `SET ${setParts.join(', ')}`;
+        if (addParts.length > 0) {
+            updateExpression += ` ADD ${addParts.join(', ')}`;
         }
 
         const command = new UpdateCommand({
@@ -53,15 +69,22 @@ class UserAnalyticsRepository extends BaseRepository {
             Key: { PK: pk, SK: sk },
             UpdateExpression: updateExpression,
             ExpressionAttributeValues: expressionAttributeValues,
-            ExpressionAttributeNames: Object.keys(expressionAttributeNames).length > 0 ? expressionAttributeNames : undefined,
+            ExpressionAttributeNames: expressionAttributeNames,
             ReturnValues: 'ALL_NEW',
         });
 
-        const response = await this.send(command);
-        return response.Attributes;
+        try {
+            const response = await this.send(command);
+            return response.Attributes;
+        } catch (error) {
+            console.error('[UserAnalyticsRepository] Update failed:', error.message);
+            throw error;
+        }
     }
 
     async getUserProfile(userId) {
+        if (!userId) return null;
+        
         const command = new GetCommand({
             TableName: this.tableName,
             Key: { 
