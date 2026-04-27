@@ -17,8 +17,14 @@ export const AnalyticsAdapter = {
         const payload = {};
 
         // 1. Map page views or menu clicks to menuName
-        if (eventName === 'page_viewed' || eventName === 'menu_clicked' || eventName === 'page_view') {
-            const rawMenu = params.menuName || params.metadata?.menuName || params.pathname || params.page_path || params.page_title;
+        if (eventName === 'page_viewed' || eventName === 'menu_clicked' || eventName === 'page_view' || eventName === 'app_session_heartbeat') {
+            // Priority: params.menuName > params.metadata.menuName > params.pathname > window.location
+            const rawMenu = params.menuName || 
+                           params.metadata?.menuName || 
+                           params.pathname || 
+                           params.page_path || 
+                           params.page_title || 
+                           (typeof window !== 'undefined' ? window.location.pathname : null);
             
             if (rawMenu) {
                 // Find matching route name from configuration
@@ -29,8 +35,6 @@ export const AnalyticsAdapter = {
                 });
 
                 payload.menuName = match ? match.name : (rawMenu === '/' ? 'General Dashboard' : rawMenu);
-            } else {
-                payload.menuName = 'Unknown Section';
             }
         }
 
@@ -43,6 +47,7 @@ export const AnalyticsAdapter = {
             payload.heartbeat = { minutes: params.minutes || 1 };
         }
 
+        // Ensure we don't return an empty object if no mapping was found
         return Object.keys(payload).length > 0 ? payload : null;
     },
 };
