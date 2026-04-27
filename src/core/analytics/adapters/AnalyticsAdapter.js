@@ -7,8 +7,33 @@ export const AnalyticsAdapter = {
         const payload = {};
 
         // 1. Map page views or menu clicks to menuName
-        if (eventName === 'page_viewed' || eventName === 'menu_clicked') {
-            payload.menuName = params.menuName || params.metadata?.menuName || params.pathname || 'Unknown';
+        if (eventName === 'page_viewed' || eventName === 'menu_clicked' || eventName === 'page_view') {
+            const rawMenu = params.menuName || params.metadata?.menuName || params.pathname || params.page_path || params.page_title;
+            
+            if (rawMenu) {
+                let cleanMenu = rawMenu;
+
+                // Systematic Route Mapping
+                if (cleanMenu === '/patients' || cleanMenu === 'patients') {
+                    cleanMenu = 'Patients List';
+                } else if (cleanMenu.includes('/dashboard')) {
+                    cleanMenu = 'Patient Dashboard';
+                } else if (cleanMenu.includes('/chart')) {
+                    cleanMenu = 'Patient Chart';
+                } else if (cleanMenu.includes('/report')) {
+                    cleanMenu = 'Patient Report';
+                } else if (cleanMenu.includes('/teeth/')) {
+                    cleanMenu = 'Tooth Details';
+                } else if (cleanMenu.startsWith('/scan/')) {
+                    cleanMenu = 'AI Scan View';
+                } else if (cleanMenu === '/' || cleanMenu === '/dashboard') {
+                    cleanMenu = 'General Dashboard';
+                }
+
+                payload.menuName = cleanMenu;
+            } else {
+                payload.menuName = 'Unknown Section';
+            }
         }
 
         // 2. Map onboarding events
@@ -24,9 +49,6 @@ export const AnalyticsAdapter = {
         if (eventName === 'app_session_heartbeat') {
             payload.heartbeat = { minutes: params.minutes || 1 };
         }
-
-        // 4. Fallback for other events - if it's a feature, we could track it as used
-        // but for now we focus on the user's explicit request for navigation and onboarding.
 
         return Object.keys(payload).length > 0 ? payload : null;
     },
