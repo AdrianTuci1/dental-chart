@@ -10,7 +10,7 @@ const analyticsService = new UserAnalyticsService();
 exports.trackNavigation = async (req, res) => {
     try {
         const userId = extractMedicIdFromRequest(req) || req.body.userId;
-        const { menuName, onboardingStep } = req.body;
+        const { menuName, onboardingStep, heartbeat } = req.body;
 
         if (!userId) {
             return res.status(400).json({ error: 'User ID is required' });
@@ -22,6 +22,10 @@ exports.trackNavigation = async (req, res) => {
 
         if (onboardingStep) {
             await analyticsService.trackOnboarding(userId, onboardingStep);
+        }
+
+        if (heartbeat) {
+            await analyticsService.trackHeartbeat(userId, heartbeat.minutes || 1);
         }
 
         res.status(200).json({ success: true });

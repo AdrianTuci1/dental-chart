@@ -20,7 +20,12 @@ export const AnalyticsAdapter = {
             payload.onboardingStep = 'logged_in';
         }
 
-        // 3. Fallback for other events - if it's a feature, we could track it as used
+        // 3. Map heartbeats (for time spent tracking)
+        if (eventName === 'app_session_heartbeat') {
+            payload.heartbeat = { minutes: params.minutes || 1 };
+        }
+
+        // 4. Fallback for other events - if it's a feature, we could track it as used
         // but for now we focus on the user's explicit request for navigation and onboarding.
 
         return Object.keys(payload).length > 0 ? payload : null;

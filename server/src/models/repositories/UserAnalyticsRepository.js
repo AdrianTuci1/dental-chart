@@ -39,6 +39,18 @@ class UserAnalyticsRepository extends BaseRepository {
             expressionAttributeValues[':zero'] = 0;
             expressionAttributeValues[':one'] = 1;
             setParts.push('#loginCount = if_not_exists(#loginCount, :zero) + :one');
+            
+            // Set firstActive only once
+            expressionAttributeNames['#firstActive'] = 'firstActive';
+            setParts.push('#firstActive = if_not_exists(#firstActive, :lastActive)');
+        }
+
+        // 1.1 Increment time spent (heartbeat)
+        if (updates.incrementTime) {
+            expressionAttributeNames['#totalTimeSpent'] = 'totalTimeSpent';
+            expressionAttributeValues[':zeroTime'] = 0;
+            expressionAttributeValues[':timeIncrement'] = updates.incrementTime; // e.g., 1 minute
+            setParts.push('#totalTimeSpent = if_not_exists(#totalTimeSpent, :zeroTime) + :timeIncrement');
         }
 
         // 2. Set boolean flags
