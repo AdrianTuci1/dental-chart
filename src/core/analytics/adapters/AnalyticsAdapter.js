@@ -8,7 +8,7 @@ export const AnalyticsAdapter = {
 
         // 1. Map page views or menu clicks to menuName
         if (eventName === 'page_viewed' || eventName === 'menu_clicked') {
-            payload.menuName = params.menuName || params.pathname || 'Unknown';
+            payload.menuName = params.menuName || params.metadata?.menuName || params.pathname || 'Unknown';
         }
 
         // 2. Map onboarding events
