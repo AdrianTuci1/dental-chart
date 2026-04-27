@@ -56,8 +56,19 @@ class UserAnalyticsRepository extends BaseRepository {
         // 2. Set boolean flags
         if (updates.flags) {
             Object.entries(updates.flags).forEach(([key, value]) => {
-                const attrName = `#${key}`;
-                const valName = `:${key}`;
+                const attrName = `#flag_${key}`;
+                const valName = `:flag_${key}`;
+                expressionAttributeNames[attrName] = key;
+                expressionAttributeValues[valName] = value;
+                setParts.push(`${attrName} = ${valName}`);
+            });
+        }
+
+        // 2.1 Set generic metadata
+        if (updates.metadata) {
+            Object.entries(updates.metadata).forEach(([key, value]) => {
+                const attrName = `#meta_${key}`;
+                const valName = `:meta_${key}`;
                 expressionAttributeNames[attrName] = key;
                 expressionAttributeValues[valName] = value;
                 setParts.push(`${attrName} = ${valName}`);

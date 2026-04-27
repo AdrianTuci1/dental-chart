@@ -1,3 +1,5 @@
+import { AnalyticsAdapter } from '../core/analytics/adapters/AnalyticsAdapter';
+
 const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3001') + '/api';
 
 /**
@@ -9,27 +11,78 @@ const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3001') + '/a
  * - Error handling
  */
 const useMock = () => import.meta.env.VITE_DEV_MODE === 'true' || !import.meta.env.VITE_API_URL;
+const MOCK_TOKEN = 'mock-session-token';
+
+const withAnalyticsMetadata = async (endpoint, body) => {
+    if (endpoint !== '/auth/register' || !body || typeof body !== 'object' || Array.isArray(body)) {
+        return body;
+    }
+
+    const analyticsMetadata = await AnalyticsAdapter.getRegistrationMetadata();
+
+    if (!analyticsMetadata) {
+        return body;
+    }
+
+    return {
+        ...body,
+        analyticsMetadata,
+    };
+};
 
 /**
  * Generic API client wrapper around fetch.
  */
 const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
+    const requestBody = await withAnalyticsMetadata(endpoint, body);
+
     if (useMock()) {
-        console.log(`[MockAPI] ${customConfig.method || (body ? 'POST' : 'GET')} ${endpoint}`);
+        console.log(`[MockAPI] ${customConfig.method || (requestBody ? 'POST' : 'GET')} ${endpoint}`);
         const { MOCK_HIERARCHY_DATA, user0profile } = await import('../utils/mockData');
+        const token = localStorage.getItem('token');
         
         // Simple mock routing
-        if (endpoint === '/auth/me') return user0profile;
+        if (endpoint === '/auth/login' && customConfig.method === 'POST') {
+            return {
+                id: user0profile.id,
+                name: requestBody?.email ? requestBody.email.split('@')[0] : user0profile.name,
+                email: requestBody?.email || user0profile.email,
+                token: MOCK_TOKEN,
+            };
+        }
+        if (endpoint === '/auth/register' && customConfig.method === 'POST') {
+            return {
+                id: `medic-${Date.now().toString(36)}`,
+                name: requestBody?.name || user0profile.name,
+                email: requestBody?.email || user0profile.email,
+                token: MOCK_TOKEN,
+            };
+        }
+        if (endpoint === '/auth/me') {
+            if (!token) {
+                throw new Error('Unauthorized');
+            }
+            return {
+                ...user0profile,
+                token,
+            };
+        }
         if (endpoint.startsWith('/medics/')) {
             const parts = endpoint.split('/');
             const medicId = parts[2];
             if (parts.length === 3) {
                 // GET /medics/:id
+                if (customConfig.method === 'DELETE') {
+                    return {
+                        deleted: true,
+                        medicId,
+                    };
+                }
                 if (customConfig.method === 'PUT') {
                     return {
                         ...user0profile,
                         id: medicId,
-                        ...body,
+                        ...requestBody,
                     };
                 }
                 return user0profile; // For now return default profile
@@ -56,7 +109,7 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
             return {
                 id: clinicId,
                 displayId: `CLN-${clinicId.slice(-4).toUpperCase()}`,
-                ...body,
+                ...requestBody,
             };
         }
         if (endpoint === '/clinics/invitations/pending') {
@@ -66,7 +119,7 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
             return {
                 id: Date.now().toString(),
                 status: 'pending',
-                ...body,
+                ...requestBody,
             };
         }
         if (endpoint.startsWith('/clinics/') && endpoint.includes('/members/') && customConfig.method === 'DELETE') {
@@ -92,7 +145,7 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
         }
 
         // Default fallback for mock
-        const fallbackPaths = ['/auth/login', '/auth/signup', '/patients'];
+        const fallbackPaths = ['/auth/signup', '/patients'];
         if (customConfig.method === 'POST' || fallbackPaths.some(p => endpoint.includes(p))) {
             return { success: true, message: 'Mock action successful', id: Date.now().toString() };
         }
@@ -119,8 +172,8 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
         },
     };
 
-    if (body) {
-        config.body = JSON.stringify(body);
+    if (requestBody) {
+        config.body = JSON.stringify(requestBody);
     }
 
     let data;

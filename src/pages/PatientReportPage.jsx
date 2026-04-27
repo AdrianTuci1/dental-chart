@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Printer, Download, Mail, Activity, Heart, Wind, Cigarette, Wine, Snowflake, Flame, Hand, Gavel, Zap, Hourglass, AlertCircle } from 'lucide-react';
+import React, { useEffect } from 'react';
+import { useLocation, useParams } from 'react-router-dom';
+import { Activity, Heart, Wind, Cigarette, Wine, Snowflake, Flame, Hand, Gavel, Zap, Hourglass, AlertCircle } from 'lucide-react';
 import { useAppStore } from '../core/store/appStore';
 import { AppFacade } from '../core/AppFacade';
+import { authService } from '../api';
 import NormalView from '../components/Chart/views/NormalView';
 import UpperJawView from '../components/Chart/views/UpperJawView';
 import LowerJawView from '../components/Chart/views/LowerJawView';
@@ -10,23 +11,43 @@ import LowerJawView from '../components/Chart/views/LowerJawView';
 import './PatientReportPage.css';
 
 const PatientReportPage = () => {
-    const { selectedPatient, teeth, resolvedTeeth } = useAppStore();
+    const location = useLocation();
+    const { selectedPatient, resolvedTeeth, medicProfile, setMedicProfile } = useAppStore();
     const { patientId: id } = useParams();
     const [isLoading, setIsLoading] = React.useState(true);
+    const isPrintMode = location.pathname.endsWith('/report/pdf');
 
     useEffect(() => {
         let isMounted = true;
         const loadPatient = async () => {
             if (!id) return;
-            
-            if (selectedPatient && String(selectedPatient.id) === String(id)) {
+
+            const hasSelectedPatient = selectedPatient && String(selectedPatient.id) === String(id);
+            const hasMedicProfile = Boolean(medicProfile?.id);
+
+            if (hasSelectedPatient && hasMedicProfile) {
                 if (isMounted) setIsLoading(false);
                 return;
             }
 
             if (isMounted) setIsLoading(true);
             try {
-                await AppFacade.patient.loadFull(id);
+                const tasks = [];
+
+                if (!hasSelectedPatient) {
+                    tasks.push(AppFacade.patient.loadFull(id));
+                }
+
+                if (!hasMedicProfile) {
+                    tasks.push(
+                        authService.getCurrentUser().then((profile) => {
+                            setMedicProfile(profile);
+                            return profile;
+                        })
+                    );
+                }
+
+                await Promise.all(tasks);
             } catch (error) {
                 console.error("Failed to load patient for report", error);
             } finally {
@@ -35,13 +56,39 @@ const PatientReportPage = () => {
         };
         loadPatient();
         return () => { isMounted = false; };
-    }, [id]);
+    }, [id, medicProfile?.id, selectedPatient?.id, setMedicProfile]);
+
+    useEffect(() => {
+        if (!isPrintMode || isLoading || !selectedPatient) {
+            return;
+        }
+
+        const printTimer = window.setTimeout(() => {
+            window.print();
+        }, 250);
+
+        return () => window.clearTimeout(printTimer);
+    }, [isLoading, isPrintMode, selectedPatient]);
 
     if (isLoading) {
         return <div className="report-loading">Loading report data...</div>;
     }
 
     if (!selectedPatient) return <div>Patient not found.</div>;
+
+    const matchedClinic = medicProfile?.clinics?.find(
+        (clinic) => String(clinic.id) === String(selectedPatient.clinicId)
+    );
+    const isCurrentMedicAssignedToPatient = Boolean(
+        medicProfile?.id &&
+        [selectedPatient.ownerMedicId, selectedPatient.medicId].some(
+            (medicId) => medicId && String(medicId) === String(medicProfile.id)
+        )
+    );
+    const reportClinicName = matchedClinic?.name || medicProfile?.location || '';
+    const treatingDoctorName = selectedPatient.ownerMedicName
+        || selectedPatient.medicName
+        || (isCurrentMedicAssignedToPatient ? medicProfile?.name : '');
 
     // Helper to calculate age
     const calculateAge = (dob) => {
@@ -54,6 +101,27 @@ const PatientReportPage = () => {
             age--;
         }
         return age;
+    };
+
+    const formatDateOfBirth = (dob) => {
+        if (!dob) return 'N/A';
+
+        const age = calculateAge(dob);
+        const formattedDate = new Date(dob).toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        return Number.isFinite(age) ? `${formattedDate} (${age} years)` : formattedDate;
+    };
+
+    const openPrintPreview = () => {
+        if (!id) {
+            return;
+        }
+
+        window.open(`/patients/${id}/report/pdf`, '_blank', 'noopener,noreferrer');
     };
 
     // Process medical issues from store
@@ -94,13 +162,15 @@ const PatientReportPage = () => {
     }, {});
 
     return (
-        <div className="report-page-layout">
+        <div className={`report-page-layout${isPrintMode ? ' print-mode' : ''}`}>
             {/* Top Action Bar */}
-            <div className="report-pdf-action-bar">
-                <button className="create-pdf-btn">
+            {!isPrintMode && (
+                <div className="report-pdf-action-bar">
+                    <button className="create-pdf-btn" type="button" onClick={openPrintPreview}>
                     CREATE PDF
-                </button>
-            </div>
+                    </button>
+                </div>
+            )}
 
             <div className="report-content-container">
                 {/* Header Section */}
@@ -122,21 +192,15 @@ const PatientReportPage = () => {
                     </div>
                     <div className="info-row">
                         <span className="info-label">Date of birth:</span>
-                        <span className="info-value">
-                            {selectedPatient.dateOfBirth ? new Date(selectedPatient.dateOfBirth).toLocaleDateString('en-US', {
-                                month: 'long',
-                                day: 'numeric',
-                                year: 'numeric'
-                            }) : 'N/A'} ({calculateAge(selectedPatient.dateOfBirth)} years)
-                        </span>
+                        <span className="info-value">{formatDateOfBirth(selectedPatient.dateOfBirth)}</span>
                     </div>
                     <div className="info-row">
                         <span className="info-label">Praxis name:</span>
-                        <span className="info-value">Adrian</span>
+                        <span className="info-value">{reportClinicName || 'N/A'}</span>
                     </div>
                     <div className="info-row">
                         <span className="info-label">Treating doctor:</span>
-                        <span className="info-value">Adrian</span>
+                        <span className="info-value">{treatingDoctorName || 'N/A'}</span>
                     </div>
                     <div className="info-row">
                         <span className="info-label">Export created:</span>

@@ -11,7 +11,7 @@ const medicService = new MedicService();
 
 exports.register = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, analyticsMetadata } = req.body;
 
         if (!name || !email || !password) {
             return res.status(400).json({ error: 'name, email and password are required' });
@@ -34,6 +34,15 @@ exports.register = async (req, res) => {
         try {
             await analyticsService.trackLogin(publicMedic.id);
             await analyticsService.trackOnboarding(publicMedic.id, 'registered');
+
+            const registrationMetadata = {};
+            if (typeof analyticsMetadata?.gtagClientId === 'string' && analyticsMetadata.gtagClientId.trim()) {
+                registrationMetadata.gtagClientId = analyticsMetadata.gtagClientId.trim();
+            }
+
+            if (Object.keys(registrationMetadata).length > 0) {
+                await analyticsService.trackMetadata(publicMedic.id, registrationMetadata);
+            }
         } catch (analyticsError) {
             console.error('[Analytics] Failed to track registration:', analyticsError);
         }

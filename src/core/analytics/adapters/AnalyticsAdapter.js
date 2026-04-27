@@ -14,6 +14,69 @@ export const AnalyticsAdapter = {
         { pattern: '/patients', name: 'Patients' }
     ],
 
+    getCookieGtagClientId() {
+        if (typeof document === 'undefined') {
+            return null;
+        }
+
+        const gaCookie = document.cookie
+            .split('; ')
+            .find((cookie) => cookie.startsWith('_ga='));
+
+        if (!gaCookie) {
+            return null;
+        }
+
+        const rawValue = decodeURIComponent(gaCookie.split('=').slice(1).join('='));
+        const segments = rawValue.split('.');
+
+        if (segments.length < 4) {
+            return rawValue || null;
+        }
+
+        return `${segments[segments.length - 2]}.${segments[segments.length - 1]}`;
+    },
+
+    async getGtagClientId({ timeoutMs = 800 } = {}) {
+        const cookieClientId = this.getCookieGtagClientId();
+        const measurementId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+
+        if (!measurementId || typeof window === 'undefined' || typeof window.gtag !== 'function') {
+            return cookieClientId;
+        }
+
+        return new Promise((resolve) => {
+            let settled = false;
+            const finish = (value) => {
+                if (settled) {
+                    return;
+                }
+
+                settled = true;
+                window.clearTimeout(timeoutId);
+                resolve(value || cookieClientId || null);
+            };
+
+            const timeoutId = window.setTimeout(() => finish(cookieClientId), timeoutMs);
+
+            try {
+                window.gtag('get', measurementId, 'client_id', finish);
+            } catch {
+                finish(cookieClientId);
+            }
+        });
+    },
+
+    async getRegistrationMetadata() {
+        const gtagClientId = await this.getGtagClientId();
+
+        if (!gtagClientId) {
+            return null;
+        }
+
+        return { gtagClientId };
+    },
+
     toProfileUpdate(eventName, params = {}) {
         const payload = {};
 
