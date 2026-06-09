@@ -127,6 +127,15 @@ export const AppFacade = {
                 throw error;
             }
         },
+
+        deleteAccount: async (medicId, payload) => {
+            try {
+                return await medicService.deleteMedic(medicId, payload);
+            } catch (error) {
+                console.error('[AppFacade] Failed to delete medic account', error);
+                throw error;
+            }
+        },
     },
 
     clinic: {

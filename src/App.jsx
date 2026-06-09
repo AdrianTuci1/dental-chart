@@ -31,6 +31,7 @@ import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import AnalyticsTracker from './components/AnalyticsTracker';
+import RequireAuth from './components/RequireAuth';
 
 function App() {
   return (
@@ -44,32 +45,36 @@ function App() {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
-            <Route path="/patients" element={<PatientsListPage />} />
+            <Route element={<RequireAuth />}>
+              <Route path="/patients" element={<PatientsListPage />} />
 
-            <Route path="/patients/:patientId" element={<PatientLayout />}>
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<PatientDashboardPage />} />
-              <Route path="report" element={<PatientReportPage />} />
+              <Route path="/patients/:patientId" element={<PatientLayout />}>
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<PatientDashboardPage />} />
+                <Route path="report" element={<PatientReportPage />} />
 
-              <Route path="chart" element={<PatientChartPage />}>
-                <Route index element={<ChartOverview />} />
-                <Route path="overview/:view?" element={<ChartOverview />} />
-                <Route path="quickselect/:view?" element={<ChartQuickselect />} />
-                <Route path="periodontal-probing/:view?" element={<ChartPeriodontalProbing />} />
-                <Route path="pathology/:view?" element={<ChartPathology />} />
-                <Route path="restoration/:view?" element={<ChartRestoration />} />
-                <Route path=":view" element={<ChartOverview />} />
+                <Route path="chart" element={<PatientChartPage />}>
+                  <Route index element={<ChartOverview />} />
+                  <Route path="overview/:view?" element={<ChartOverview />} />
+                  <Route path="quickselect/:view?" element={<ChartQuickselect />} />
+                  <Route path="periodontal-probing/:view?" element={<ChartPeriodontalProbing />} />
+                  <Route path="pathology/:view?" element={<ChartPathology />} />
+                  <Route path="restoration/:view?" element={<ChartRestoration />} />
+                  <Route path=":view" element={<ChartOverview />} />
+                </Route>
+
+                <Route path="tooth/:toothNumber" element={<ToothDetailPage />}>
+                  <Route index element={<ToothOverview />} />
+                  <Route path="endodontic" element={<ToothEndodontic />} />
+                  <Route path="periodontal/:site?" element={<ToothPeriodontal />} />
+                  <Route path="pathology/:type?" element={<ToothPathology />} />
+                  <Route path="restoration/:type?" element={<ToothRestoration />} />
+                </Route>
+
+                <Route path="scan" element={<ScanPage />} />
               </Route>
 
-              <Route path="tooth/:toothNumber" element={<ToothDetailPage />}>
-                <Route index element={<ToothOverview />} />
-                <Route path="endodontic" element={<ToothEndodontic />} />
-                <Route path="periodontal/:site?" element={<ToothPeriodontal />} />
-                <Route path="pathology/:type?" element={<ToothPathology />} />
-                <Route path="restoration/:type?" element={<ToothRestoration />} />
-              </Route>
-
-              <Route path="scan" element={<ScanPage />} />
+              <Route path="/patients/:patientId/report/pdf" element={<PatientReportPage />} />
             </Route>
           </Routes>
         </div>

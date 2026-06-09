@@ -37,6 +37,11 @@ class UserAnalyticsService {
         return this.repository.updateUserProfile(userId, { incrementTime: minutes });
     }
 
+    async trackMetadata(userId, metadata) {
+        if (process.env.ENABLE_TELEMETRY === 'false') return;
+        return this.repository.updateUserProfile(userId, { metadata });
+    }
+
     async getUserAnalytics(userId) {
         const data = await this.repository.getUserProfile(userId);
         if (!data) return null;

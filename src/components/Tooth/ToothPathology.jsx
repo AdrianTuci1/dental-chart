@@ -69,6 +69,7 @@ const ToothPathology = () => {
     const { setPreviewData } = useOutletContext(); // Get preview setter
 
     const resetAllStates = () => {
+        setSelectedZones([]);
         setDecayMaterial(null);
         setCavitation(null);
         setCavitationLevel(null);

@@ -354,8 +354,8 @@ const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
                             ) : null}
                             <div className="pro-settings-item">
                                 <div className="pro-settings-text">
-                                    <label>Delete Organization</label>
-                                    <p>This removes the clinic and patients linked to it.</p>
+                                    <label>Delete This Organization</label>
+                                    <p>This removes only this clinic and the patients linked to it. It does not delete your user account.</p>
                                 </div>
                                 <button
                                     className="pro-btn-danger"

@@ -28,6 +28,8 @@ const HomePage = () => {
                 email: email,
                 role: 'dentist'
             };
+
+            localStorage.setItem('token', 'mock-session-token');
             
             login(userData);
             

@@ -1,11 +1,16 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { Home, Users, Settings, LogOut } from 'lucide-react';
-import useAuthStore from '../store/authStore';
+import { clearClientSession } from '../core/session/sessionActions';
 import './GlobalSidebar.css';
 
 const GlobalSidebar = () => {
-    const logout = useAuthStore((state) => state.logout);
+    const navigate = useNavigate();
+
+    const handleLogout = () => {
+        clearClientSession();
+        navigate('/');
+    };
 
     return (
         <div className="global-sidebar">
@@ -46,7 +51,7 @@ const GlobalSidebar = () => {
 
             <div className="sidebar-footer">
                 <button
-                    onClick={() => logout()}
+                    onClick={handleLogout}
                     className="sidebar-logout-btn"
                     title="Logout"
                 >

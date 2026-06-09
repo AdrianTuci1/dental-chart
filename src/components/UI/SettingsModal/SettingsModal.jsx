@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import SidebarSection from './SidebarSection';
 import { LOGOUT_ACTION, SIDEBAR_SECTIONS, VIEW_CONFIG } from './navigation';
@@ -9,6 +10,7 @@ import GeneralSettingsView from './views/GeneralSettingsView';
 import ApiAccessView from './views/ApiAccessView';
 import SupportView from './views/SupportView';
 import { getAvatarColor, getDisplayValue, getInitials } from '../profileUtils';
+import { clearClientSession } from '../../../core/session/sessionActions';
 import './SettingsModal.css';
 
 const VIEW_COMPONENTS = {
@@ -21,6 +23,7 @@ const VIEW_COMPONENTS = {
 };
 
 const SettingsModal = ({ isOpen, onClose, userProfile, onProfileRefresh }) => {
+    const navigate = useNavigate();
     const [activeView, setActiveView] = useState('profile');
 
     if (!isOpen) return null;
@@ -31,6 +34,12 @@ const SettingsModal = ({ isOpen, onClose, userProfile, onProfileRefresh }) => {
     const avatarSeed = userProfile?.name || userProfile?.email || userProfile?.id;
     const initials = getInitials(userProfile?.name, userProfile?.email);
     const avatarColor = userProfile?.avatarInfo?.color || getAvatarColor(avatarSeed);
+
+    const handleLogout = () => {
+        clearClientSession();
+        onClose?.();
+        navigate('/');
+    };
 
     return (
         <div className="modal-overlay" onClick={onClose}>
@@ -60,7 +69,7 @@ const SettingsModal = ({ isOpen, onClose, userProfile, onProfileRefresh }) => {
                         ))}
 
                         <div className="sidebar-section mt-auto">
-                            <button className="sidebar-nav-item logout" type="button">
+                            <button className="sidebar-nav-item logout" type="button" onClick={handleLogout}>
                                 <LogoutIcon size={16} />
                                 <span>{LOGOUT_ACTION.label}</span>
                             </button>
@@ -80,7 +89,7 @@ const SettingsModal = ({ isOpen, onClose, userProfile, onProfileRefresh }) => {
 
                     <div className="modal-content-area shadow-inner">
                         <div className="modal-content-container luxe-scroll">
-                            <ActiveView userProfile={userProfile} onProfileRefresh={onProfileRefresh} />
+                            <ActiveView userProfile={userProfile} onProfileRefresh={onProfileRefresh} onClose={onClose} />
                         </div>
                     </div>
                 </main>
