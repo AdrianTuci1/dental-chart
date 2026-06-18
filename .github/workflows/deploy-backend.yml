@@ -60,9 +60,9 @@ jobs:
           EOF
           chmod 600 ~/.ssh/config
 
-      - name: Prepare remote release directory
+      - name: Clean up stale incoming directories
         run: |
-          ssh vps "mkdir -p '$DEPLOY_ROOT/incoming/$RELEASE_ID'"
+          ssh vps "rm -rf '$DEPLOY_ROOT/incoming' && mkdir -p '$DEPLOY_ROOT/incoming/$RELEASE_ID'"
 
       - name: Upload backend release
         run: |
@@ -73,16 +73,36 @@ jobs:
             --exclude '.git' \
             server/ "vps:$DEPLOY_ROOT/incoming/$RELEASE_ID/"
 
+      - name: Write environment variables on VPS
+        run: |
+          ssh vps "cat > '$DEPLOY_ROOT/shared/.env' << 'ENVEOF'
+NODE_ENV=production
+HOST=127.0.0.1
+PORT=${{ env.BACKEND_PORT }}
+CORS_ORIGIN=https://app.pixtooth.com
+
+JWT_SECRET=${{ secrets.JWT_SECRET }}
+REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}
+
+AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+AWS_REGION=${{ vars.AWS_REGION || 'eu-central-1' }}
+DYNAMODB_TABLE_NAME=${{ vars.DYNAMODB_TABLE_NAME || 'DentalChart' }}
+
+ENABLE_TELEMETRY=false
+AI_ANALYSIS_ENABLED=false
+ENVEOF"
+
       - name: Bootstrap VPS and activate release
         run: |
           ssh vps << 'REMOTE'
             set -euo pipefail
             export DEPLOY_ROOT='${{ env.DEPLOY_ROOT }}'
             export BACKEND_PORT='${{ env.BACKEND_PORT }}'
-          export BACKEND_HOST='${{ env.BACKEND_HOST }}'
-          export API_DOMAIN='${{ env.API_DOMAIN }}'
-          export RELEASE_ID='${{ env.RELEASE_ID }}'
-          cd "$DEPLOY_ROOT/incoming/$RELEASE_ID"
-          bash scripts/bootstrap-vps.sh
-          bash scripts/deploy-release.sh
+            export BACKEND_HOST='${{ env.BACKEND_HOST }}'
+            export API_DOMAIN='${{ env.API_DOMAIN }}'
+            export RELEASE_ID='${{ env.RELEASE_ID }}'
+            cd "$DEPLOY_ROOT/incoming/$RELEASE_ID"
+            bash scripts/bootstrap-vps.sh
+            bash scripts/deploy-release.sh
           REMOTE
