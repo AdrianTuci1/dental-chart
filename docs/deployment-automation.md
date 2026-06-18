@@ -25,7 +25,7 @@ Important:
 
 ## Backend
 
-The workflow is `.github/workflows/deploy-backend.yml`.
+The workflow is `.github/workflows/backend-deploy.yml`.
 
 Default production settings:
 
