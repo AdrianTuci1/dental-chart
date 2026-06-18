@@ -1,0 +1,110 @@
+name: 🚀 Backend Manual Deploy
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: backend-manual-production
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate Backend
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Run backend tests
+        run: npm test -- --runInBand
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy Backend to VPS
+    needs: validate
+    env:
+      DEPLOY_ROOT: /root/pixtooth-backend
+      BACKEND_PORT: '3100'
+      BACKEND_HOST: 127.0.0.1
+      API_DOMAIN: api.pixtooth.com
+      RELEASE_ID: ${{ github.run_id }}-${{ github.sha }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          cat >> ~/.ssh/config <<EOF
+          Host vps
+            HostName ${{ secrets.VPS_IP }}
+            User ${{ secrets.VPS_USER }}
+            IdentityFile ~/.ssh/deploy_key
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+          EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Clean up stale incoming directories
+        run: |
+          ssh vps "rm -rf '$DEPLOY_ROOT/incoming' && mkdir -p '$DEPLOY_ROOT/incoming/$RELEASE_ID'"
+
+      - name: Upload backend release
+        run: |
+          rsync -avz --delete \
+            --exclude 'node_modules' \
+            --exclude '.env' \
+            --exclude 'logs' \
+            --exclude '.git' \
+            server/ "vps:$DEPLOY_ROOT/incoming/$RELEASE_ID/"
+
+      - name: Write environment variables on VPS
+        run: |
+          JWT_SECRET=$(openssl rand -hex 32)
+          REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)
+          ssh vps "cat > '$DEPLOY_ROOT/shared/.env' << ENVEOF
+NODE_ENV=production
+HOST=127.0.0.1
+PORT=$BACKEND_PORT
+CORS_ORIGIN=https://app.pixtooth.com
+
+JWT_SECRET=${JWT_SECRET}
+REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+
+AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+AWS_REGION=${{ vars.AWS_REGION || 'eu-central-1' }}
+DYNAMODB_TABLE_NAME=${{ vars.DYNAMODB_TABLE_NAME || 'DentalChart' }}
+
+ENABLE_TELEMETRY=false
+AI_ANALYSIS_ENABLED=false
+ENVEOF"
+
+      - name: Bootstrap VPS and activate release
+        run: |
+          ssh vps << 'REMOTE'
+            set -euo pipefail
+            export DEPLOY_ROOT='${{ env.DEPLOY_ROOT }}'
+            export BACKEND_PORT='${{ env.BACKEND_PORT }}'
+            export BACKEND_HOST='${{ env.BACKEND_HOST }}'
+            export API_DOMAIN='${{ env.API_DOMAIN }}'
+            export RELEASE_ID='${{ env.RELEASE_ID }}'
+            cd "$DEPLOY_ROOT/incoming/$RELEASE_ID"
+            bash scripts/bootstrap-vps.sh
+            bash scripts/deploy-release.sh
+          REMOTE
