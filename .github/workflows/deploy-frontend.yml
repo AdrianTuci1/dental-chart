@@ -1,4 +1,4 @@
-name: Deploy Frontend to Cloudflare Pages
+name: 🚀 Deploy Frontend to Cloudflare Pages
 
 on:
   workflow_dispatch:
@@ -8,51 +8,39 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  validate:
+  deploy:
+    name: Build & Deploy Frontend
     runs-on: ubuntu-latest
-    name: Validate Frontend
+    permissions:
+      deployments: write
     steps:
-      - name: Checkout repository
+      - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: npm ci
 
-      - name: Run frontend tests
+      - name: 🧪 Run frontend tests
         run: npx vitest run
 
-      - name: Build frontend
+      - name: 🔨 Build frontend
         run: npm run build
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
-      - name: Upload production bundle
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-dist
-          path: dist
-          if-no-files-found: error
-
-  deploy:
-    runs-on: ubuntu-latest
-    name: Deploy to Cloudflare Pages
-    needs: validate
-    steps:
-      - name: Download production bundle
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-dist
-          path: dist
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+      - name: 🚀 Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=pixtooth-app
+          projectName: pixtooth-app
+          directory: dist
+          productionBranch: fix/public-route-guard
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
