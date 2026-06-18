@@ -2,6 +2,15 @@ name: 🚀 Deploy Backend to VPS
 
 on:
   workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment
+        required: true
+        default: prod
+        type: choice
+        options:
+          - prod
+          - staging
 
 concurrency:
   group: deploy-backend-production
@@ -35,6 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy Backend to VPS
     needs: validate
+    environment: ${{ inputs.environment }}
     env:
       DEPLOY_ROOT: ${{ vars.DEPLOY_ROOT || '/root/pixtooth-backend' }}
       BACKEND_PORT: ${{ vars.BACKEND_PORT || '3100' }}
