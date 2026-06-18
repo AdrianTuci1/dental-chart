@@ -1,0 +1,47 @@
+name: Deploy Backend to VPS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy Backend to VPS
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          cat >> ~/.ssh/config <<EOF
+          Host vps
+            HostName ${{ secrets.VPS_IP }}
+            User ${{ secrets.VPS_USER }}
+            IdentityFile ~/.ssh/deploy_key
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+          EOF
+          chmod 600 ~/.ssh/config
+
+      - name: Deploy via rsync and restart
+        run: |
+          rsync -avz --delete \
+            --exclude 'node_modules' \
+            --exclude '.env' \
+            --exclude 'logs' \
+            --exclude '.git' \
+            server/ vps:/root/pixtooth-backend/
+
+      - name: Install dependencies and restart
+        run: |
+          ssh vps << 'REMOTE'
+            cd /root/pixtooth-backend
+            npm ci --production
+            # Dacă folosești PM2:
+            pm2 restart pixtooth-api || pm2 start app.js --name pixtooth-api
+            # Dacă folosești systemd, decomentează:
+            # sudo systemctl restart pixtooth-api
+          REMOTE
