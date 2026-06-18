@@ -40,8 +40,11 @@ jobs:
           ssh vps << 'REMOTE'
             cd /root/pixtooth-backend
             npm ci --production
-            # Dacă folosești PM2:
-            pm2 restart pixtooth-api || pm2 start app.js --name pixtooth-api
-            # Dacă folosești systemd, decomentează:
-            # sudo systemctl restart pixtooth-api
+            # Crează directorul de loguri dacă nu există
+            mkdir -p logs
+            # Salvează configurația PM2 pentru startup
+            pm2 start ecosystem.config.js --env production
+            pm2 save
+            # Asigură-te că PM2 pornește la boot (dacă nu e deja configurat)
+            pm2 startup systemd -u root --hp /root 2>/dev/null || true
           REMOTE
