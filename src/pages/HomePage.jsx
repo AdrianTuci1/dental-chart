@@ -30,6 +30,7 @@ const HomePage = () => {
             };
 
             localStorage.setItem('token', 'mock-session-token');
+            localStorage.setItem('refreshToken', 'mock-refresh-token');
             
             login(userData);
             
@@ -45,8 +46,9 @@ const HomePage = () => {
             const { authService } = await import('../api');
             const response = await authService.login({ email, password });
             
-            // authService.login returns { id, name, email, token }
+            // authService.login returns { id, name, email, token, refreshToken }
             localStorage.setItem('token', response.token);
+            localStorage.setItem('refreshToken', response.refreshToken);
             const userData = { id: response.id, name: response.name, email: response.email };
             login(userData);
             AppFacade.analytics.setUser({ ...userData, subscriptionPlan: response.subscriptionPlan });

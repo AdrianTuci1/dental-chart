@@ -67,24 +67,39 @@ class MedicService {
     }
 
     async seedMedicData(medicId) {
+        const { v4: uuidv4 } = require('uuid');
+
         for (const patient of MOCK_PATIENTS_TEMPLATES) {
             const { history, treatmentPlan, ...patientInfo } = patient;
             
-            // 1. Create Patient (stripping the template ID so a new one is generated if needed, 
-            // but PatientService now matches by ID if provided, which is fine for mock-1)
-            const createdPatient = await this.patientService.createPatient({
-                ...patientInfo,
-                medicId: medicId
-            }, { skipPlanLimit: true });
+            // Generate unique IDs for each seeded patient to avoid cross-medic conflicts
+            const patientId = uuidv4();
+            const remapId = (oldId) => oldId.replace(/patient-1/g, patientId);
 
-            // 2. Create Treatment Plan (Bulk)
+            const seededPatient = {
+                ...patientInfo,
+                id: patientId,
+                medicId: medicId
+            };
+            
+            const createdPatient = await this.patientService.createPatient(seededPatient, { skipPlanLimit: true });
+
+            // 2. Create Treatment Plan (Bulk) — remap IDs to be unique
             if (treatmentPlan && treatmentPlan.items) {
-                await this.treatmentPlanService.updateTreatmentPlan(createdPatient.id, treatmentPlan.items);
+                const remappedItems = treatmentPlan.items.map(item => ({
+                    ...item,
+                    id: remapId(item.id)
+                }));
+                await this.treatmentPlanService.updateTreatmentPlan(createdPatient.id, remappedItems);
             }
 
-            // 3. Create History (Bulk)
+            // 3. Create History (Bulk) — remap IDs to be unique
             if (history && history.completedItems) {
-                await this.historyService.updateHistory(createdPatient.id, history.completedItems);
+                const remappedItems = history.completedItems.map(item => ({
+                    ...item,
+                    id: remapId(item.id)
+                }));
+                await this.historyService.updateHistory(createdPatient.id, remappedItems);
             }
         }
     }
