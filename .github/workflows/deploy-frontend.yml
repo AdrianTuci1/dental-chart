@@ -42,5 +42,5 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: pixtooth-app
           directory: dist
-          productionBranch: fix/public-route-guard
+          branch: main
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
