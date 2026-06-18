@@ -38,6 +38,7 @@ healthcheck() {
 }
 
 reload_current_release() {
+    pm2 delete pixtooth-api >/dev/null 2>&1 || true
     PIXTOOTH_CURRENT_DIR="$CURRENT_LINK" \
     PIXTOOTH_SHARED_LOG_DIR="$SHARED_LOG_DIR" \
     HOST="$BACKEND_HOST" \

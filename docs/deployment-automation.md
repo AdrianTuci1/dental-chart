@@ -30,7 +30,7 @@ The workflow is `.github/workflows/deploy-backend.yml`.
 Default production settings:
 
 - deploy root: `/root/pixtooth-backend`
-- PM2 app name: `pixtooth-api`
+- PM2 app name: `pixtooth-backend`
 - bind host: `127.0.0.1`
 - bind port: `3100`
 - public API domain: `api.pixtooth.com`
