@@ -13,6 +13,8 @@ router.post('/register', publicAuthRateLimit, authController.register);
 router.post('/login', publicAuthRateLimit, authController.login);
 router.post('/forgot-password', publicAuthRateLimit, authController.forgotPassword);
 router.post('/reset-password', publicAuthRateLimit, authController.resetPassword);
+router.post('/refresh', publicAuthRateLimit, authController.refresh);
+router.post('/logout', authController.logout);
 
 router.get('/me', requireAuth, authController.getMe);
 router.post('/change-password', requireAuth, authController.changePassword);

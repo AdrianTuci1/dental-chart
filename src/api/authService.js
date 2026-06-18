@@ -14,9 +14,20 @@ const register = async (userData) => {
     });
 };
 
-const logout = () => {
-    localStorage.removeItem('token');
-    // Optional: Call backend to invalidate token if needed
+const logout = async () => {
+    const { clearTokens } = await import('./apiClient');
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (refreshToken) {
+        try {
+            await apiClient('/auth/logout', {
+                method: 'POST',
+                body: { refreshToken },
+            });
+        } catch {
+            // Ignore logout errors
+        }
+    }
+    clearTokens();
 };
 
 const getCurrentUser = async () => {

@@ -1,6 +1,6 @@
 const MedicService = require('../services/MedicService');
 const bcrypt = require('bcryptjs');
-const { signAuthToken, extractMedicIdFromRequest } = require('../utils/auth');
+const { signAuthToken, generateRefreshToken, verifyRefreshToken, revokeRefreshToken, extractMedicIdFromRequest } = require('../utils/auth');
 const medicService = new MedicService();
 
 /**
@@ -27,6 +27,7 @@ exports.register = async (req, res) => {
         const newMedic = await medicService.createMedic({ name, email, passwordHash });
 
         const token = signAuthToken(newMedic);
+        const refreshToken = generateRefreshToken(newMedic.id);
         const publicMedic = medicService.toPublicMedic(newMedic);
 
         const UserAnalyticsService = require('../services/UserAnalyticsService');
@@ -53,6 +54,7 @@ exports.register = async (req, res) => {
             email: publicMedic.email,
             subscriptionPlan: publicMedic.subscriptionPlan,
             token,
+            refreshToken,
         });
     } catch (err) {
         console.error('[AuthController Register Error]', err);
@@ -84,6 +86,7 @@ exports.login = async (req, res) => {
         }
 
         const token = signAuthToken(medic);
+        const refreshToken = generateRefreshToken(medic.id);
         const publicMedic = medicService.toPublicMedic(medic);
 
         const UserAnalyticsService = require('../services/UserAnalyticsService');
@@ -100,6 +103,7 @@ exports.login = async (req, res) => {
             email: publicMedic.email,
             subscriptionPlan: publicMedic.subscriptionPlan,
             token,
+            refreshToken,
         });
     } catch (err) {
         console.error('[AuthController Login Error]', err);
@@ -164,5 +168,50 @@ exports.changePassword = async (req, res) => {
     } catch (err) {
         console.error('[AuthController changePassword Error]', err);
         res.status(err.statusCode || 500).json({ error: err.message });
+    }
+};
+
+exports.refresh = async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+        if (!refreshToken) {
+            return res.status(401).json({ error: 'Refresh token required' });
+        }
+
+        const medicId = verifyRefreshToken(refreshToken);
+        if (!medicId) {
+            return res.status(401).json({ error: 'Invalid or expired refresh token' });
+        }
+
+        const medic = await medicService.getMedicProfile(medicId);
+        if (!medic) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+
+        // Rotate refresh token: revoke old, generate new
+        revokeRefreshToken(refreshToken);
+        const newRefreshToken = generateRefreshToken(medicId);
+        const newToken = signAuthToken(medic);
+
+        res.json({
+            token: newToken,
+            refreshToken: newRefreshToken,
+        });
+    } catch (err) {
+        console.error('[AuthController refresh Error]', err);
+        res.status(401).json({ error: 'Invalid refresh token' });
+    }
+};
+
+exports.logout = async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+        if (refreshToken) {
+            revokeRefreshToken(refreshToken);
+        }
+        res.json({ success: true });
+    } catch (err) {
+        console.error('[AuthController logout Error]', err);
+        res.status(500).json({ error: err.message });
     }
 };
