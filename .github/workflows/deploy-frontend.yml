@@ -3,10 +3,14 @@ name: Deploy Frontend to Cloudflare Pages
 on:
   workflow_dispatch:
 
+concurrency:
+  group: deploy-frontend-production
+  cancel-in-progress: false
+
 jobs:
-  build-and-deploy:
+  validate:
     runs-on: ubuntu-latest
-    name: Build and Deploy to Cloudflare Pages
+    name: Validate Frontend
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -20,10 +24,31 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Run frontend tests
+        run: npx vitest run
+
       - name: Build frontend
         run: npm run build
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+      - name: Upload production bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist
+          if-no-files-found: error
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Cloudflare Pages
+    needs: validate
+    steps:
+      - name: Download production bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-dist
+          path: dist
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

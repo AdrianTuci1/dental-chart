@@ -1,47 +1,84 @@
-# Automatizarea Deployment-ului pe VPS
+# CI/CD and Deploy Notes
 
-Acest document descrie metoda recomandată pentru deployment-ul backend-ului Dental Chart pe serverul VPS.
+This repository now has separate validation and deployment flows for frontend and backend.
 
-## Metoda: Script Local (Manual-Automatizat)
-Aceasta este cea mai robustă metodă, oferindu-ți control total și feedback în timp real de pe calculatorul tău.
+## What is covered
 
-### Cum funcționează:
-Folosim `rsync` pentru a transfera doar fișierele modificate din folderul `server` către VPS și apoi repornim procesul prin SSH.
+- Frontend CI: install, run Vitest, build with Vite.
+- Backend CI: install, run Jest.
+- Frontend deploy: only uploads the already validated `dist/` artifact to Cloudflare Pages.
+- Backend deploy: uploads a release folder to the VPS, bootstraps the machine if needed, reloads PM2 in cluster mode, and rolls back to the previous release if the new one fails `/health`.
 
-### Configurare în `package.json`:
-Comanda este deja configurată în rădăcina proiectului:
+## Frontend
 
-```json
-"scripts": {
-  "deploy": "npm run deploy:backend",
-  "deploy:backend": "rsync -avz --exclude 'node_modules' server/ root@api.pixtooth.com:/opt/pixtooth-backend/ && ssh root@api.pixtooth.com 'cd /opt/pixtooth-backend && npm install --production && pm2 restart pixtooth-backend'"
-}
-```
+The workflow is `.github/workflows/deploy-frontend.yml`.
 
-### Utilizare:
-Din rădăcina proiectului (pe calculatorul tău), rulează:
+- Cloudflare Pages project: `pixtooth-app`
+- Expected production domain: `app.pixtooth.com`
+- API origin secret: `VITE_API_URL`
 
-```bash
-npm run deploy
-```
+Important:
 
-### Avantaje:
-1.  **Viteză**: `rsync` transferă doar diferențele (delta), nu tot folderul de fiecare dată.
-2.  **Siguranță**: Folderul `node_modules` este exclus automat; dependințele sunt instalate direct pe server pentru a asigura compatibilitatea cu Linux.
-3.  **Control**: Dacă există o eroare la conexiune sau la instalare, o vezi imediat în terminalul tău.
+- The workflow deploys the frontend bundle.
+- The custom domain `app.pixtooth.com` must still be attached once in the Cloudflare Pages project settings.
+- If the frontend CI or build fails, Cloudflare does not receive a new production bundle, so the previous working frontend stays live.
 
----
+## Backend
 
-## Pregătirea VPS-ului (O singură dată)
-Pentru ca acest script să meargă fără să îți ceară parola de fiecare dată, asigură-te că ai cheia ta SSH pe server:
+The workflow is `.github/workflows/deploy-backend.yml`.
 
-1.  **Trimite cheia SSH pe server**:
-    ```bash
-    ssh-copy-id root@api.pixtooth.com
-    ```
-2.  **Asigură-te că folderul destinație există**:
-    ```bash
-    ssh root@api.pixtooth.com 'mkdir -p /opt/pixtooth-backend'
-    ```
+Default production settings:
 
-Gata! Acum ești la o singură comandă distanță de a avea codul live pe server.
+- deploy root: `/root/pixtooth-backend`
+- PM2 app name: `pixtooth-api`
+- bind host: `127.0.0.1`
+- bind port: `3100`
+- public API domain: `api.pixtooth.com`
+
+The deploy flow is:
+
+1. Run backend tests in GitHub Actions.
+2. Upload the backend into `incoming/<release-id>` on the VPS.
+3. Run `server/scripts/bootstrap-vps.sh`.
+4. Run `server/scripts/deploy-release.sh`.
+5. Switch `current` to the new release.
+6. `pm2 startOrReload` the cluster.
+7. Verify `http://127.0.0.1:3100/health`.
+8. If the health check fails, restore the previous release and reload PM2 again.
+
+Because the live release is only switched at the end, a failed deploy no longer overwrites the currently working backend in place.
+
+## Empty VPS bootstrap
+
+`server/scripts/bootstrap-vps.sh` is intended for Debian/Ubuntu-style VPS machines and is idempotent.
+
+It ensures:
+
+- Node.js 22 is installed if missing.
+- `nginx`, `curl`, `rsync`, `ca-certificates`, and `gnupg` exist.
+- `pm2` is installed globally.
+- the deploy folders exist under the configured deploy root.
+- a shared `.env` file exists.
+- the Nginx site for `api.pixtooth.com` proxies to `127.0.0.1:3100`.
+
+The Nginx template used by the script is:
+
+- `server/deploy/nginx/api.pixtooth.com.conf`
+
+## Required GitHub secrets
+
+- `VPS_IP`
+- `VPS_USER`
+- `VPS_SSH_KEY`
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+- `VITE_API_URL`
+
+## Optional GitHub repository variables
+
+- `DEPLOY_ROOT`
+- `BACKEND_PORT`
+- `BACKEND_HOST`
+- `API_DOMAIN`
+
+If those variables are not set, the defaults above are used.

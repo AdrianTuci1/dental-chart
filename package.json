@@ -6,11 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "test": "npx vitest run",
+    "test:frontend": "npx vitest run",
+    "test:backend": "npm test --prefix server -- --runInBand",
+    "ci": "npm run test:frontend && npm run build && npm run test:backend",
     "lint": "eslint .",
     "preview": "vite preview",
     "deploy": "npm run deploy:backend",
     "deploy:frontend": "npm run build && npx wrangler pages deploy dist --project-name pixtooth-app",
-    "deploy:backend": "set -a; [ -f .env.deploy ] && . ./.env.deploy; set +a; rsync -avz --exclude 'node_modules' server/ $VPS_USER@$VPS_IP:/root/pixtooth-backend/ && ssh $VPS_USER@$VPS_IP 'cd /root/pixtooth-backend && npm install && npm audit fix --force --production && pm2 restart pixtooth-api'"
+    "deploy:backend": "set -a; [ -f .env.deploy ] && . ./.env.deploy; set +a; DEPLOY_ROOT=${DEPLOY_ROOT:-/root/pixtooth-backend}; RELEASE_ID=$(date +%Y%m%d%H%M%S); ssh $VPS_USER@$VPS_IP \"mkdir -p $DEPLOY_ROOT/incoming/$RELEASE_ID\" && rsync -avz --delete --exclude 'node_modules' --exclude '.env' --exclude 'logs' --exclude '.git' server/ $VPS_USER@$VPS_IP:$DEPLOY_ROOT/incoming/$RELEASE_ID/ && ssh $VPS_USER@$VPS_IP \"cd $DEPLOY_ROOT/incoming/$RELEASE_ID && DEPLOY_ROOT=$DEPLOY_ROOT BACKEND_PORT=${BACKEND_PORT:-3100} BACKEND_HOST=${BACKEND_HOST:-127.0.0.1} API_DOMAIN=${API_DOMAIN:-api.pixtooth.com} RELEASE_ID=$RELEASE_ID bash scripts/bootstrap-vps.sh && DEPLOY_ROOT=$DEPLOY_ROOT BACKEND_PORT=${BACKEND_PORT:-3100} BACKEND_HOST=${BACKEND_HOST:-127.0.0.1} RELEASE_ID=$RELEASE_ID bash scripts/deploy-release.sh\""
   },
   "dependencies": {
     "date-fns": "^4.1.0",

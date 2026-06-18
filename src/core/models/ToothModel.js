@@ -53,7 +53,11 @@ export class ToothModel {
         // Ensure Endodontic structure
         if (!tooth.endodontic) tooth.endodontic = {};
         if (tooth.endodontic.hasRootCanal === undefined) tooth.endodontic.hasRootCanal = false;
-        if (!tooth.endodontic.tests) tooth.endodontic.tests = { cold: null, heat: null, percussion: null, electricity: 0 };
+        if (!tooth.endodontic.tests) tooth.endodontic.tests = {};
+        if (tooth.endodontic.tests.cold === undefined) tooth.endodontic.tests.cold = null;
+        if (tooth.endodontic.tests.heat === undefined) tooth.endodontic.tests.heat = null;
+        if (tooth.endodontic.tests.percussion === undefined) tooth.endodontic.tests.percussion = null;
+        if (tooth.endodontic.tests.electricity === undefined) tooth.endodontic.tests.electricity = 0;
 
         if (!tooth.conditions) tooth.conditions = [];
     }
@@ -89,5 +93,7 @@ export class ToothModel {
                 tooth[key] = payload[key];
             }
         });
+
+        this.initializeData(tooth, tooth.toothNumber || tooth.isoNumber);
     }
 }
