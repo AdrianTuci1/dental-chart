@@ -32,6 +32,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import AnalyticsTracker from './components/AnalyticsTracker';
 import RequireAuth from './components/RequireAuth';
+import PublicRoute from './components/PublicRoute';
 
 function App() {
   return (
@@ -41,10 +42,12 @@ function App() {
       <div className="application">
         <div className="">
           <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route element={<PublicRoute />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
+            </Route>
             <Route element={<RequireAuth />}>
               <Route path="/patients" element={<PatientsListPage />} />
 
