@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import { getToothImage, mapViewToImageView, getToothCondition, isUpperJaw as checkIsUpperJaw } from '../../utils/toothUtils';
+import { toothImageCache } from '../../utils/toothImageCache';
 import ToothMask from './ToothMask';
 import './ToothRenderer.css';
 
@@ -34,6 +36,26 @@ const ToothRenderer = ({
     const maskImagePath = getToothImage(toothNumber, maskCondition, imageView);
     const imageScale = 0.9;
 
+    // Cached image state for base tooth image
+    const [cachedToothImage, setCachedToothImage] = useState(() =>
+        toothImagePath ? toothImageCache.get(toothImagePath) : null
+    );
+
+    useEffect(() => {
+        if (!toothImagePath) return;
+        const cached = toothImageCache.get(toothImagePath);
+        if (cached) {
+            setCachedToothImage(cached);
+            return;
+        }
+        let cancelled = false;
+        toothImageCache.preload(toothImagePath).then((img) => {
+            if (!cancelled) setCachedToothImage(img);
+        }).catch(() => {
+            // Fallback: let browser handle it via <img src>
+        });
+        return () => { cancelled = true; };
+    }, [toothImagePath]);
 
     // Rotation Logic (Reverted for Lingual based on user feedback)
     // Only Frontal/Buccal Lower Jaw are rotated 180 (Roots Up -> Roots Down).
@@ -97,7 +119,7 @@ const ToothRenderer = ({
                 ) : toothImagePath ? (
                     <>
                         <img
-                            src={toothImagePath}
+                            src={cachedToothImage?.src || toothImagePath}
                             alt={`Tooth ${toothNumber} - ${imageView} view`}
                             className="tooth-image"
                             style={{
