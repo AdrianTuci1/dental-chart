@@ -3,10 +3,44 @@ name: Deploy Backend to VPS
 on:
   workflow_dispatch:
 
+concurrency:
+  group: deploy-backend-production
+  cancel-in-progress: false
+
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate Backend
+    defaults:
+      run:
+        working-directory: server
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Run backend tests
+        run: npm test -- --runInBand
+
   deploy:
     runs-on: ubuntu-latest
     name: Deploy Backend to VPS
+    needs: validate
+    env:
+      DEPLOY_ROOT: ${{ vars.DEPLOY_ROOT || '/root/pixtooth-backend' }}
+      BACKEND_PORT: ${{ vars.BACKEND_PORT || '3100' }}
+      BACKEND_HOST: ${{ vars.BACKEND_HOST || '127.0.0.1' }}
+      API_DOMAIN: ${{ vars.API_DOMAIN || 'api.pixtooth.com' }}
+      RELEASE_ID: ${{ github.run_id }}-${{ github.sha }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,22 +60,29 @@ jobs:
           EOF
           chmod 600 ~/.ssh/config
 
-      - name: Deploy via rsync and restart
+      - name: Prepare remote release directory
+        run: |
+          ssh vps "mkdir -p '$DEPLOY_ROOT/incoming/$RELEASE_ID'"
+
+      - name: Upload backend release
         run: |
           rsync -avz --delete \
             --exclude 'node_modules' \
             --exclude '.env' \
             --exclude 'logs' \
             --exclude '.git' \
-            server/ vps:/root/pixtooth-backend/
+            server/ "vps:$DEPLOY_ROOT/incoming/$RELEASE_ID/"
 
-      - name: Install dependencies and restart
+      - name: Bootstrap VPS and activate release
         run: |
           ssh vps << 'REMOTE'
-            cd /root/pixtooth-backend
-            npm ci --production
-            # Dacă folosești PM2:
-            pm2 restart pixtooth-api || pm2 start app.js --name pixtooth-api
-            # Dacă folosești systemd, decomentează:
-            # sudo systemctl restart pixtooth-api
+            set -euo pipefail
+            export DEPLOY_ROOT='${{ env.DEPLOY_ROOT }}'
+            export BACKEND_PORT='${{ env.BACKEND_PORT }}'
+            export BACKEND_HOST='${{ env.BACKEND_HOST }}'
+            export API_DOMAIN='${{ env.API_DOMAIN }}'
+            export RELEASE_ID='${{ env.RELEASE_ID }}'
+            cd "$DEPLOY_ROOT/incoming/$RELEASE_ID"
+            bash scripts/bootstrap-vps.sh
+            bash scripts/deploy-release.sh
           REMOTE

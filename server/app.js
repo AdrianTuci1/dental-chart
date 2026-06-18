@@ -6,7 +6,24 @@ require('dotenv').config();
 const helmet = require('helmet');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3100;
+const HOST = process.env.HOST;
+
+const parseAllowedOrigins = (value) => {
+    const configuredOrigins = value
+        ? value.split(',').map((origin) => origin.trim()).filter(Boolean)
+        : [];
+
+    const defaults = [
+        'http://localhost:5173',
+        'https://app.pixtooth.com',
+    ];
+
+    return [...new Set([...defaults, ...configuredOrigins])];
+};
+
+const allowedOrigins = parseAllowedOrigins(process.env.CORS_ORIGIN);
+const pagesDomainPattern = /\.pages\.dev$/;
 
 const path = require('path');
 const { createRateLimit } = require('./src/middleware/rateLimitMiddleware');
@@ -30,11 +47,17 @@ app.use(helmet({
     },
 }));
 app.use(cors({
-    origin: [
-        'http://localhost:5173', 
-        'https://app.pixtooth.com',
-        /\.pages\.dev$/ // Permite orice subdomeniu .pages.dev (Cloudflare)
-    ],
+    origin(origin, callback) {
+        if (!origin) {
+            return callback(null, true);
+        }
+
+        if (allowedOrigins.includes(origin) || pagesDomainPattern.test(origin)) {
+            return callback(null, true);
+        }
+
+        return callback(new Error('Origin not allowed by CORS'));
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
@@ -73,9 +96,16 @@ app.get('/health', (req, res) => {
 
 // Start Server only if not imported as a module (e.g for testing)
 if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`Server is running on port ${PORT}`);
-    });
+    const onListen = () => {
+        const address = HOST || '0.0.0.0';
+        console.log(`Server is running on ${address}:${PORT}`);
+    };
+
+    if (HOST) {
+        app.listen(PORT, HOST, onListen);
+    } else {
+        app.listen(PORT, onListen);
+    }
 }
 
 module.exports = app;
