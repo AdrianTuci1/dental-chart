@@ -6,7 +6,7 @@ const sharedLogDir = process.env.PIXTOOTH_SHARED_LOG_DIR || path.join(currentDir
 module.exports = {
   apps: [
     {
-      name: 'pixtooth-api',
+      name: 'pixtooth-backend',
       cwd: currentDir,
       script: 'app.js',
       instances: 'max',

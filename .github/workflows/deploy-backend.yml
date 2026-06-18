@@ -79,10 +79,10 @@ jobs:
             set -euo pipefail
             export DEPLOY_ROOT='${{ env.DEPLOY_ROOT }}'
             export BACKEND_PORT='${{ env.BACKEND_PORT }}'
-            export BACKEND_HOST='${{ env.BACKEND_HOST }}'
-            export API_DOMAIN='${{ env.API_DOMAIN }}'
-            export RELEASE_ID='${{ env.RELEASE_ID }}'
-            cd "$DEPLOY_ROOT/incoming/$RELEASE_ID"
-            bash scripts/bootstrap-vps.sh
-            bash scripts/deploy-release.sh
+          export BACKEND_HOST='${{ env.BACKEND_HOST }}'
+          export API_DOMAIN='${{ env.API_DOMAIN }}'
+          export RELEASE_ID='${{ env.RELEASE_ID }}'
+          cd "$DEPLOY_ROOT/incoming/$RELEASE_ID"
+          bash scripts/bootstrap-vps.sh
+          bash scripts/deploy-release.sh
           REMOTE

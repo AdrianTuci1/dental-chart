@@ -127,13 +127,13 @@ Start the backend:
 
 ```bash
 cd /opt/pixtooth/repo/server
-pm2 start npm --name pixtooth-api -- start
+pm2 start npm --name pixtooth-backend -- start
 ```
 
 If your backend runs with another script, adapt it:
 
 ```bash
-pm2 start npm --name pixtooth-api -- run start
+pm2 start npm --name pixtooth-backend -- run start
 ```
 
 Save PM2 process list:
@@ -436,7 +436,7 @@ Nginx:
 
 PM2:
 
-- `pixtooth-api`
+- `pixtooth-backend`
 
 ## 17. Optional Next Step
 
