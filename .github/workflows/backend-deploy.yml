@@ -78,22 +78,22 @@ jobs:
           JWT_SECRET=$(openssl rand -hex 32)
           REFRESH_TOKEN_SECRET=$(openssl rand -hex 32)
           ssh vps "cat > '$DEPLOY_ROOT/shared/.env' << ENVEOF
-NODE_ENV=production
-HOST=127.0.0.1
-PORT=$BACKEND_PORT
-CORS_ORIGIN=https://app.pixtooth.com
+          NODE_ENV=production
+          HOST=127.0.0.1
+          PORT=$BACKEND_PORT
+          CORS_ORIGIN=https://app.pixtooth.com
 
-JWT_SECRET=${JWT_SECRET}
-REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
+          JWT_SECRET=${JWT_SECRET}
+          REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
 
-AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-AWS_REGION=${{ vars.AWS_REGION || 'eu-central-1' }}
-DYNAMODB_TABLE_NAME=${{ vars.DYNAMODB_TABLE_NAME || 'DentalChart' }}
+          AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION=${{ vars.AWS_REGION || 'eu-central-1' }}
+          DYNAMODB_TABLE_NAME=${{ vars.DYNAMODB_TABLE_NAME || 'DentalChart' }}
 
-ENABLE_TELEMETRY=false
-AI_ANALYSIS_ENABLED=false
-ENVEOF"
+          ENABLE_TELEMETRY=false
+          AI_ANALYSIS_ENABLED=false
+          ENVEOF"
 
       - name: Bootstrap VPS and activate release
         run: |
