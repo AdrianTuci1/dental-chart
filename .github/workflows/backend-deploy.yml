@@ -2,15 +2,6 @@ name: 🚀 Deploy Backend to VPS
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        description: Environment
-        required: true
-        default: prod
-        type: choice
-        options:
-          - prod
-          - staging
 
 concurrency:
   group: deploy-backend-production
@@ -44,12 +35,11 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy Backend to VPS
     needs: validate
-    environment: ${{ inputs.environment }}
     env:
-      DEPLOY_ROOT: ${{ vars.DEPLOY_ROOT || '/root/pixtooth-backend' }}
-      BACKEND_PORT: ${{ vars.BACKEND_PORT || '3100' }}
-      BACKEND_HOST: ${{ vars.BACKEND_HOST || '127.0.0.1' }}
-      API_DOMAIN: ${{ vars.API_DOMAIN || 'api.pixtooth.com' }}
+      DEPLOY_ROOT: /root/pixtooth-backend
+      BACKEND_PORT: '3100'
+      BACKEND_HOST: 127.0.0.1
+      API_DOMAIN: api.pixtooth.com
       RELEASE_ID: ${{ github.run_id }}-${{ github.sha }}
     steps:
       - name: Checkout repository
@@ -90,7 +80,7 @@ jobs:
           ssh vps "cat > '$DEPLOY_ROOT/shared/.env' << ENVEOF
 NODE_ENV=production
 HOST=127.0.0.1
-PORT=${{ env.BACKEND_PORT }}
+PORT=$BACKEND_PORT
 CORS_ORIGIN=https://app.pixtooth.com
 
 JWT_SECRET=${JWT_SECRET}
