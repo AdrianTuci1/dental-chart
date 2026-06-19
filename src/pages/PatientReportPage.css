@@ -8,11 +8,6 @@
     padding-bottom: var(--spacing-12);
 }
 
-.report-page-layout.print-mode {
-    min-height: auto;
-    padding-bottom: 0;
-}
-
 .report-content-container {
     max-width: 800px;
     margin: 0 auto;
@@ -53,15 +48,31 @@
 
 @media print {
     @page {
-        size: auto;
-        margin: 12mm;
+        size: A4 portrait;
+        margin: 8mm;
+    }
+
+    .report-page-layout,
+    .report-page-layout * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
     }
 
     body {
         background: white;
+        margin: 0;
     }
 
     .report-page-layout {
+        --background-primary: #ffffff;
+        --background-secondary: #ffffff;
+        --background-tertiary: #f3f4f6;
+        --text-primary: #000000;
+        --text-secondary: #111827;
+        --text-tertiary: #4b5563;
+        --border-color: #d1d5db;
+        --border-color-light: #e5e7eb;
+        --tooth-renderer-scale: 0.82;
         background: white;
         padding-bottom: 0;
     }
@@ -69,12 +80,164 @@
     .report-content-container {
         max-width: none;
         padding: 0;
+        background: #ffffff;
     }
 
     .report-chart-container,
     .chart-view-wrapper,
+    .chart-legend,
+    .report-pdf-jaw-pair,
     .treatment-item-card {
         break-inside: avoid;
+    }
+
+    .report-chart-container {
+        margin-bottom: 0;
+    }
+
+    .report-section {
+        margin-bottom: var(--spacing-6);
+    }
+
+    .section-heading {
+        margin-bottom: var(--spacing-3);
+    }
+
+    .treatment-plan-list {
+        gap: 4px;
+    }
+
+    .treatment-item-card {
+        height: 2.2rem;
+        background: #ffffff;
+        border: 1px solid rgba(0, 0, 0, 0.14);
+    }
+
+    .treatment-details {
+        padding: 0 10px;
+    }
+
+    .treatment-desc,
+    .treatment-date,
+    .tooth-number {
+        color: #000000 !important;
+    }
+
+    .treatment-date {
+        font-size: 0.7rem;
+    }
+
+    .chart-view-wrapper {
+        margin-bottom: var(--spacing-3);
+        padding: 4px;
+        background: #ffffff;
+        border: none;
+        border-radius: 0;
+    }
+
+    .report-pdf-jaw-pair {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        break-before: page;
+        break-inside: avoid-page;
+        page-break-before: always;
+        page-break-inside: avoid;
+    }
+
+    .chart-legend {
+        gap: var(--spacing-4);
+        margin-bottom: var(--spacing-3);
+        padding: var(--spacing-2);
+        background: #ffffff;
+        border: none;
+        border-radius: 0;
+    }
+
+    .legend-item {
+        margin-bottom: 4px;
+    }
+
+    .report-visualizer-full .jaw-box .jaw .tooth {
+        width: 37px;
+        gap: 3px;
+    }
+
+    .report-visualizer-single .jaw-box .jaw .tooth {
+        width: 28px;
+        gap: 2px;
+    }
+
+    .report-visualizer-full .visuals-container,
+    .report-visualizer-single .visuals-container {
+        gap: 8px;
+    }
+
+    .report-visualizer-full .view-buccal,
+    .report-visualizer-full .view-lingual {
+        height: 104px;
+    }
+
+    .report-visualizer-single .view-buccal,
+    .report-visualizer-single .view-lingual {
+        height: 74px;
+    }
+
+    .report-visualizer-full .view-occlusal {
+        height: 36px;
+    }
+
+    .report-visualizer-single .view-occlusal {
+        height: 24px;
+    }
+
+    .report-visualizer-full .jaw-box .jaw .tooth .number,
+    .report-visualizer-single .jaw-box .jaw .tooth .number {
+        width: 16px;
+        height: 16px;
+        font-size: 8px;
+        line-height: 8px;
+        padding: 4px;
+    }
+
+    .report-pdf-jaw-pair .chart-view-wrapper {
+        margin-bottom: 0;
+        padding: 3px;
+    }
+
+    .report-pdf-jaw-pair .jaw-view-title {
+        margin-bottom: 2px;
+        padding-bottom: 2px;
+        font-size: 0.75rem;
+    }
+
+    .report-visualizer .view-stack,
+    .report-visualizer .wave-interactive-wrapper,
+    .report-visualizer .wave-content {
+        width: calc(100% + 2px);
+        margin-left: -1px;
+        overflow: visible;
+    }
+
+    .report-visualizer .wave-canvas {
+        left: -1px;
+        width: calc(100% + 2px);
+    }
+
+    .extraction-frame-overlay {
+        background-color: transparent;
+        border-color: #dc2626;
+    }
+
+    .extraction-icon {
+        background-color: #dc2626 !important;
+        color: #ffffff !important;
+        border: 1px solid #991b1b;
+    }
+
+    .extraction-icon svg {
+        color: #ffffff !important;
+        stroke: currentColor;
     }
 }
 
@@ -124,7 +287,10 @@
 }
 
 .info-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    align-items: start;
+    column-gap: var(--spacing-8);
     padding: var(--spacing-2) 0;
     /* Reduced padding */
     border-bottom: 1px solid var(--border-color-light);
@@ -135,20 +301,19 @@
 }
 
 .info-label {
-    width: 200px;
-    /* Fixed width for labels */
     color: var(--text-secondary);
     font-size: 0.9375rem;
     /* Smaller font */
     font-weight: 500;
+    text-align: left;
 }
 
 .info-value {
-    flex: 1;
     color: var(--text-primary);
     font-weight: 700;
     font-size: 0.9375rem;
     /* Smaller font */
+    text-align: left;
 }
 
 /* Section Common Styles */
@@ -284,6 +449,68 @@
     display: flex;
     justify-content: center;
     width: 100%;
+}
+
+.report-visualizer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    overflow: visible;
+}
+
+.report-visualizer .chart-overview-container {
+    min-width: 0;
+    overflow: visible;
+}
+
+.report-visualizer .jaw {
+    justify-content: center;
+}
+
+.report-pdf-jaw-pair {
+    display: contents;
+}
+
+.report-visualizer-full .jaw-box .jaw .tooth {
+    width: 44px;
+    gap: 6px;
+}
+
+.report-visualizer-single .jaw-box .jaw .tooth {
+    width: 42px;
+    gap: 6px;
+}
+
+.report-visualizer-full .visuals-container,
+.report-visualizer-single .visuals-container {
+    gap: 16px;
+}
+
+.report-visualizer-full .view-buccal,
+.report-visualizer-full .view-lingual {
+    height: 144px;
+}
+
+.report-visualizer-single .view-buccal,
+.report-visualizer-single .view-lingual {
+    height: 136px;
+}
+
+.report-visualizer-full .view-occlusal {
+    height: 54px;
+}
+
+.report-visualizer-single .view-occlusal {
+    height: 50px;
+}
+
+.report-visualizer-full .jaw-box .jaw .tooth .number,
+.report-visualizer-single .jaw-box .jaw .tooth .number {
+    width: 22px;
+    height: 22px;
+    font-size: 11px;
+    line-height: 14px;
+    padding: 4px;
 }
 
 /* Jaw Views Separation */
@@ -436,7 +663,7 @@
     }
 
     .info-label {
-        width: 140px;
+        min-width: 0;
     }
 
     .treatment-details {

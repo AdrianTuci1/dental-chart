@@ -75,7 +75,7 @@ const ToothRenderer = ({
     // Build container transform (incorporating the CSS scale)
     const isDeciduous = tNum >= 51 && tNum <= 85;
     const baseScale = isDeciduous ? 1.35 * 0.85 : 1.35; // Base scale from CSS, reduced for baby teeth
-    let containerTransformParts = [`scale(${baseScale})`];
+    let containerTransformParts = [`scale(calc(${baseScale} * var(--tooth-renderer-scale, 1)))`];
     if (shouldRotateImage) containerTransformParts.push('rotate(180deg)');
     if (shouldMirrorImage) containerTransformParts.push('scaleX(-1)');
     const containerTransform = containerTransformParts.join(' ');

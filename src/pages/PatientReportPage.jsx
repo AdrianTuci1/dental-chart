@@ -272,15 +272,17 @@ const PatientReportPage = () => {
                 <div className="report-section mt-8">
                     {/* Chart Views */}
                     <div className="report-chart-container">
-                        <div className="chart-view-wrapper">
+                        <div className="chart-view-wrapper full-jaw-view-wrapper">
                             <h3 className="jaw-view-title">FULL JAW VIEW</h3>
-                            <NormalView
-                                resolvedTeeth={resolvedTeeth || {}}
-                                onToothClick={() => { }}
-                                selectedTeeth={new Set()}
-                                activeTooth={null}
-                                showWaves={true}
-                            />
+                            <div className="report-visualizer report-visualizer-full">
+                                <NormalView
+                                    resolvedTeeth={resolvedTeeth || {}}
+                                    onToothClick={() => { }}
+                                    selectedTeeth={new Set()}
+                                    activeTooth={null}
+                                    showWaves={true}
+                                />
+                            </div>
                         </div>
 
                         {/* Custom Legend */}
@@ -396,29 +398,31 @@ const PatientReportPage = () => {
                             </div>
                         </div>
 
-                        {/* Upper Jaw */}
-                        <div className="chart-view-wrapper jaw-section-wrapper">
-                            <h3 className="jaw-view-title">UPPER JAW</h3>
-                            <div className="jaw-view-container">
-                                <UpperJawView
-                                    resolvedTeeth={resolvedTeeth || {}}
-                                    onToothClick={() => { }}
-                                    selectedTeeth={new Set()}
-                                    activeTooth={null}
-                                />
+                        <div className="report-pdf-jaw-pair">
+                            {/* Upper Jaw */}
+                            <div className="chart-view-wrapper jaw-section-wrapper">
+                                <h3 className="jaw-view-title">UPPER JAW</h3>
+                                <div className="jaw-view-container report-visualizer report-visualizer-single">
+                                    <UpperJawView
+                                        resolvedTeeth={resolvedTeeth || {}}
+                                        onToothClick={() => { }}
+                                        selectedTeeth={new Set()}
+                                        activeTooth={null}
+                                    />
+                                </div>
                             </div>
-                        </div>
 
-                        {/* Lower Jaw */}
-                        <div className="chart-view-wrapper jaw-section-wrapper">
-                            <h3 className="jaw-view-title">LOWER JAW</h3>
-                            <div className="jaw-view-container">
-                                <LowerJawView
-                                    resolvedTeeth={resolvedTeeth || {}}
-                                    onToothClick={() => { }}
-                                    selectedTeeth={new Set()}
-                                    activeTooth={null}
-                                />
+                            {/* Lower Jaw */}
+                            <div className="chart-view-wrapper jaw-section-wrapper">
+                                <h3 className="jaw-view-title">LOWER JAW</h3>
+                                <div className="jaw-view-container report-visualizer report-visualizer-single">
+                                    <LowerJawView
+                                        resolvedTeeth={resolvedTeeth || {}}
+                                        onToothClick={() => { }}
+                                        selectedTeeth={new Set()}
+                                        activeTooth={null}
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
