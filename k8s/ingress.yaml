@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dental-chart-backend
+  namespace: dental-chart
+  labels:
+    app.kubernetes.io/name: dental-chart
+    app.kubernetes.io/component: backend
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - api.pixtooth.com
+      secretName: api-pixtooth-tls
+  rules:
+    - host: api.pixtooth.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: dental-chart-backend
+                port:
+                  number: 80
