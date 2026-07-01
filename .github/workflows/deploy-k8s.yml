@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: AdrianTuci1/dental-chart-backend
+  IMAGE_NAME: adriantuci1/dental-chart-backend
 
 jobs:
   build-and-push:
