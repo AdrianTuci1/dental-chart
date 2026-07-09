@@ -161,14 +161,18 @@ def run_prediction(img_array):
     return _run_prediction_core(np.asarray(img_array))
 
 
+from fastapi import Request
+
+
 @app.function(image=dental_image, volumes={"/data": volume}, gpu="T4")
 @modal.fastapi_endpoint(method="POST")
-def api_predict(image_data: bytes):
+async def api_predict(request: Request):
     """
     API route: send image as binary body and receive JSON.
     """
     import cv2
     import numpy as np
+    image_data = await request.body()
     nparr = np.frombuffer(image_data, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
     return _run_prediction_core(img)
