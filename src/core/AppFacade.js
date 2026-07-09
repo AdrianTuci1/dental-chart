@@ -448,7 +448,7 @@ export const AppFacade = {
         loadDetections: async () => {
             try {
                 const raw = await aiService.getDetections();
-                const detections = AIAdapter.toDomain(raw.detections);
+                const detections = AIAdapter.toDomain(raw.teeth || raw.detections);
                 useAppStore.getState().setDetections(detections);
                 return detections;
             } catch (error) {

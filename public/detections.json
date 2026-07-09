@@ -1,8 +1,8 @@
 {
-  "detections": [
+  "teeth": [
     {
-      "label": "Crown",
-      "confidence": 0.9352161288261414,
+      "fdi": "16",
+      "confidence_fdi": 0.9352161288261414,
       "bbox": [
         1018.1798324584961,
         480.84653320312503,
@@ -258,11 +258,16 @@
           1345.784423828125,
           344.0
         ]
-      ]
+      ],
+      "status": {
+        "status_id": 3,
+        "status_name": "Tooth with crown",
+        "confidence": 0.85
+      }
     },
     {
-      "label": "Implant",
-      "confidence": 0.9053723216056824,
+      "fdi": "15",
+      "confidence_fdi": 0.9053723216056824,
       "bbox": [
         688.746795463562,
         380.80576171875003,
@@ -366,11 +371,16 @@
           1256.49072265625,
           334.3999938964844
         ]
-      ]
+      ],
+      "status": {
+        "status_id": 3,
+        "status_name": "Tooth with crown",
+        "confidence": 0.82
+      }
     },
     {
-      "label": "Implant",
-      "confidence": 0.8651635646820068,
+      "fdi": "14",
+      "confidence_fdi": 0.8651635646820068,
       "bbox": [
         762.8577544689178,
         376.00087890625,
@@ -590,11 +600,16 @@
           813.2109375,
           379.20001220703125
         ]
-      ]
+      ],
+      "status": {
+        "status_id": 3,
+        "status_name": "Tooth with crown",
+        "confidence": 0.82
+      }
     },
     {
-      "label": "Crown",
-      "confidence": 0.8365828394889832,
+      "fdi": "13",
+      "confidence_fdi": 0.8365828394889832,
       "bbox": [
         943.6838657855988,
         468.40605468750005,
@@ -1002,11 +1017,16 @@
           1511.61572265625,
           560.0
         ]
-      ]
+      ],
+      "status": {
+        "status_id": 3,
+        "status_name": "Tooth with crown",
+        "confidence": 0.85
+      }
     },
     {
-      "label": "Crown",
-      "confidence": 0.8306983709335327,
+      "fdi": "12",
+      "confidence_fdi": 0.8306983709335327,
       "bbox": [
         735.6910645484924,
         474.42783203125003,
@@ -1182,11 +1202,16 @@
           1199.0875244140625,
           456.0
         ]
-      ]
+      ],
+      "status": {
+        "status_id": 3,
+        "status_name": "Tooth with crown",
+        "confidence": 0.85
+      }
     },
     {
-      "label": "Crown",
-      "confidence": 0.8279140591621399,
+      "fdi": "11",
+      "confidence_fdi": 0.8279140591621399,
       "bbox": [
         1150.6516668319703,
         487.05722656250003,
@@ -1246,11 +1271,16 @@
           1320.27197265625,
           600.0
         ]
-      ]
+      ],
+      "status": {
+        "status_id": 3,
+        "status_name": "Tooth with crown",
+        "confidence": 0.85
+      }
     },
     {
-      "label": "Crown",
-      "confidence": 0.8278382420539856,
+      "fdi": "21",
+      "confidence_fdi": 0.8278382420539856,
       "bbox": [
         683.192407798767,
         469.50849609375,
@@ -1386,11 +1416,16 @@
           714.3500366210938,
           382.3999938964844
         ]
-      ]
+      ],
+      "status": {
+        "status_id": 3,
+        "status_name": "Tooth with crown",
+        "confidence": 0.85
+      }
     },
     {
-      "label": "Implant",
-      "confidence": 0.8234824538230896,
+      "fdi": "22",
+      "confidence_fdi": 0.8234824538230896,
       "bbox": [
         1318.8784119606019,
         341.05859375,
@@ -1558,11 +1593,16 @@
           1090.659423828125,
           449.6000061035156
         ]
-      ]
+      ],
+      "status": {
+        "status_id": 3,
+        "status_name": "Tooth with crown",
+        "confidence": 0.82
+      }
     },
     {
-      "label": "Implant",
-      "confidence": 0.8161608576774597,
+      "fdi": "23",
+      "confidence_fdi": 0.8161608576774597,
       "bbox": [
         1221.7023209571837,
         331.030908203125,
@@ -1722,11 +1762,16 @@
           979.042236328125,
           332.8000183105469
         ]
-      ]
+      ],
+      "status": {
+        "status_id": 3,
+        "status_name": "Tooth with crown",
+        "confidence": 0.82
+      }
     },
     {
-      "label": "Filling",
-      "confidence": 0.8059008121490479,
+      "fdi": "24",
+      "confidence_fdi": 0.8059008121490479,
       "bbox": [
         518.1946760416031,
         598.9040039062501,
@@ -2026,11 +2071,16 @@
           532.5734252929688,
           588.7999877929688
         ]
-      ]
+      ],
+      "status": {
+        "status_id": 1,
+        "status_name": "Tooth with fillings",
+        "confidence": 0.8
+      }
     },
     {
-      "label": "Filling",
-      "confidence": 0.7795464396476746,
+      "fdi": "25",
+      "confidence_fdi": 0.7795464396476746,
       "bbox": [
         686.8102730751037,
         617.721435546875,
@@ -2358,11 +2408,16 @@
           1202.276611328125,
           449.6000061035156
         ]
-      ]
+      ],
+      "status": {
+        "status_id": 1,
+        "status_name": "Tooth with fillings",
+        "confidence": 0.8
+      }
     },
     {
-      "label": "Implant",
-      "confidence": 0.7637734413146973,
+      "fdi": "26",
+      "confidence_fdi": 0.7637734413146973,
       "bbox": [
         943.2236278533935,
         328.713525390625,
@@ -2542,11 +2597,16 @@
           988.609375,
           371.20001220703125
         ]
-      ]
+      ],
+      "status": {
+        "status_id": 3,
+        "status_name": "Tooth with crown",
+        "confidence": 0.82
+      }
     },
     {
-      "label": "Filling",
-      "confidence": 0.7423352599143982,
+      "fdi": "27",
+      "confidence_fdi": 0.7423352599143982,
       "bbox": [
         1523.4253167152403,
         454.785302734375,
@@ -2662,7 +2722,12 @@
           991.7984619140625,
           427.20001220703125
         ]
-      ]
+      ],
+      "status": {
+        "status_id": 1,
+        "status_name": "Tooth with fillings",
+        "confidence": 0.8
+      }
     }
   ],
   "count": 13

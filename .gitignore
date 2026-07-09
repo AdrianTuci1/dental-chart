@@ -29,3 +29,11 @@ dist-ssr
 modal-pipeline/dataset/test/
 modal-pipeline/dataset/train/
 modal-pipeline/dataset/valid/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Modal secrets
+modalcreds.env

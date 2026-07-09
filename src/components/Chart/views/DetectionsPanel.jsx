@@ -14,9 +14,16 @@ const DetectionsPanel = ({ detections = [], onDelete }) => {
                 {detections.map((item, index) => (
                     <div key={item.id || index} className="detection-item">
                         <div className={`detection-tooth-number ${item.color}`}>
-                            {item.tooth}
+                            {item.tooth ?? '?'}
                         </div>
-                        <div className="detection-description">{item.type}</div>
+                        <div className="detection-description">
+                            <div className="detection-type">{item.type}</div>
+                            {item.confidence > 0 && (
+                                <div className="detection-confidence">
+                                    {Math.round(item.confidence * 100)}% confidence
+                                </div>
+                            )}
+                        </div>
                         <button
                             className="detection-delete-btn"
                             onClick={() => onDelete && onDelete(item.id)}
@@ -45,12 +52,12 @@ const DetectionsPanel = ({ detections = [], onDelete }) => {
             <div className={`detections-legend-grid ${isLegendOpen ? 'visible' : ''}`}>
                 <div className="legend-item"><span className="legend-dot red"></span>Caries</div>
                 <div className="legend-item"><span className="legend-dot blue"></span>Filling</div>
-                <div className="legend-item"><span className="legend-dot orange"></span>Periapical radiolucency</div>
+                <div className="legend-item"><span className="legend-dot orange"></span>Root-canal filling</div>
                 <div className="legend-item"><span className="legend-dot purple"></span>Implant</div>
                 <div className="legend-item"><span className="legend-dot cyan"></span>Bridge</div>
-                <div className="legend-item"><span className="legend-dot light-blue"></span>Root-canal filling</div>
+                <div className="legend-item"><span className="legend-dot light-blue"></span>Residual root</div>
                 <div className="legend-item"><span className="legend-dot dark-blue"></span>Crown</div>
-                <div className="legend-item"><span className="legend-dot green"></span>Mandibular canal</div>
+                <div className="legend-item"><span className="legend-dot green"></span>Normal</div>
             </div>
         </div>
     );

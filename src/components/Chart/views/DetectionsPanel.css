@@ -157,6 +157,17 @@
     flex: 1;
 }
 
+.detection-type {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.detection-confidence {
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    margin-top: 2px;
+}
+
 .detection-delete-btn {
     background: none;
     border: none;
