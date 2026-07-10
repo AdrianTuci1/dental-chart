@@ -152,6 +152,7 @@ The pipeline now uses two specialized models:
 - **Dataset**: Kaggle `zwbzwb12341234/a-dual-labeled-dataset` (Labelme JSON annotations; images in `images1/`).
 - **Status label source**: the `group_id` field in each Labelme polygon (`null` = normal = 0).
 - **Training**: runs on **Modal** GPUs (`L40S` by default). Dataset and trained models are persisted in a Modal volume; nothing is kept locally.
+- **Inference**: the deployed endpoint runs on a **T4** GPU (cheaper and sufficient for one-off predictions).
 
 ### Pipeline Commands
 
