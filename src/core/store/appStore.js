@@ -3,7 +3,6 @@ import { createPatientSlice } from './slices/patientSlice';
 import { createChartSlice } from './slices/chartSlice';
 import { createMedicSlice } from './slices/medicSlice';
 import { createScanSlice } from './slices/scanSlice';
-import { MOCK_DETECTIONS } from '../../utils/mockData';
 import { ScanModel } from '../models/ScanModel';
 
 const createSessionResetState = () => ({
@@ -23,7 +22,7 @@ const createSessionResetState = () => ({
     showPerio: true,
     showDental: true,
     scanImage: '/chart2.png',
-    detections: [...MOCK_DETECTIONS],
+    detections: [],
     isProcessing: false,
     progress: 0,
     overlayOpacity: 95,
