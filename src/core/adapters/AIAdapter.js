@@ -55,9 +55,16 @@ export const AIAdapter = {
                     contour: det.contour || []
                 };
             })
-            .filter(Boolean);
+            .filter(Boolean)
+            .filter((det) => !isNormalStatus(det.label));
     }
 };
+
+function isNormalStatus(statusName) {
+    if (!statusName) return false;
+    const lower = String(statusName).toLowerCase();
+    return lower.includes('without anomalies');
+}
 
 function getCategoryFromStatus(statusName) {
     if (!statusName) return 'other';
