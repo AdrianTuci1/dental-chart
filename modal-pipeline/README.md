@@ -35,18 +35,6 @@ For one-time environment setup, see [`SETUP.md`](SETUP.md).
 
 ## 🚀 Commands
 
-### Dataset preparation
-Download the Kaggle dataset into the persistent Modal volume and convert Labelme annotations to YOLO segmentation + status crops.
-
-```bash
-modal run modal-pipeline/models/data_preparation.py
-```
-
-Force re-download:
-```bash
-modal run modal-pipeline/models/data_preparation.py --force-download true
-```
-
 ### FDI training (segmentation + numbering)
 ```bash
 modal run modal-pipeline/models/train.py

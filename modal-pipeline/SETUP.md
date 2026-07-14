@@ -47,6 +47,22 @@ The pipeline code lives in `modal-pipeline/models/`:
 - `train_status.py` – trains ResNet18 for clinical status classification
 - `inference.py` – runs inference with the trained models and heuristic correction
 
-## 5. Next steps
+## 5. Prepare the dataset
 
-After setup is complete, follow the commands in [`README.md`](README.md) to prepare the dataset, train the models and run inference.
+Download the Kaggle dataset into the persistent Modal volume and convert the Labelme annotations into the YOLO segmentation format and the masked-crop classification format.
+
+```bash
+modal run modal-pipeline/models/data_preparation.py
+```
+
+Force a full re-download:
+
+```bash
+modal run modal-pipeline/models/data_preparation.py --force-download true
+```
+
+This step creates `/data/dataset/yolo` and `/data/dataset/status` in the persistent `dental-data-storage` volume.
+
+## 6. Next steps
+
+After setup and dataset preparation are complete, follow the commands in [`README.md`](README.md) to train the models and run inference.
