@@ -106,17 +106,25 @@ const ScanView = ({ resolvedTeeth, onToothClick, selectedTeeth, activeTooth }) =
 
     const getLabelColor = (label) => {
         const colors = {
-            'Filling': '#4DEEEA',     // Cyan
+            'Filling': '#4DEEEA',           // Cyan
             'Fillings': '#4DEEEA',
-            'Caries': '#FF3D00',      // Red
+            'Tooth with fillings': '#4DEEEA',
+            'Caries': '#FF3D00',            // Red
             'Cavity': '#FF3D00',
-            'Crown': '#FFD700',       // Gold
-            'Implant': '#7449FF',     // Purple
-            'Missing teeth': '#94A3B8', // Grey/Slate
+            'Tooth with caries': '#FF3D00',
+            'Crown': '#FFD700',             // Gold
+            'Tooth with crown': '#FFD700',
+            'Implant': '#7449FF',           // Purple
+            'Missing teeth': '#94A3B8',     // Grey/Slate
+            'Residual root': '#94A3B8',
             'Root Canal Treatment': '#FF8A00', // Orange
-            'impacted tooth': '#E8175D', // Crimson
-            'Root Piece': '#363636',  // Dark Grey
-            'Detection': '#4ADE80'    // Green (fallback)
+            'Root-canal filling': '#FF8A00',
+            'Tooth with RCT': '#FF8A00',
+            'Root-canal + Crown': '#FF8A00',
+            'impacted tooth': '#E8175D',    // Crimson
+            'Root Piece': '#363636',        // Dark Grey
+            'Tooth without anomalies': '#4ADE80', // Green for healthy
+            'Detection': '#4ADE80'          // Green (fallback)
         };
         // Standardize labels if they are capitalization-sensitive
         return colors[label] || colors['Detection'];

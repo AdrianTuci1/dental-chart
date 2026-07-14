@@ -2,67 +2,67 @@ import cv2
 import numpy as np
 
 # ==============================================================================
-# PREPROCESARE IMAGINI DENTARE
+# DENTAL IMAGE PREPROCESSING
 # ==============================================================================
-# Implementăm tehnicile menționate în lucrarea de cercetare:
-# 1. Ajustarea luminozității
-# 2. Eliminarea zgomotului (Median Blur)
-# 3. Contrast local (CLAHE)
-# 4. Normalizare
+# Implements the techniques mentioned in the research paper:
+# 1. Brightness adjustment
+# 2. Noise removal (Median Blur)
+# 3. Local contrast (CLAHE)
+# 4. Normalization
 
 def preprocess_for_inference(image, target_size=(640, 640)):
     """
-    Redimensionează imaginea la target_size (strivire la pătrat) 
-    și aplică îmbunătățirile de contrast.
+    Resize the image to target_size (squash to square)
+    and apply contrast enhancement.
     """
     # 1. Resize (squash)
     img_640 = cv2.resize(image, target_size, interpolation=cv2.INTER_AREA)
     
-    # 2. Convertim în grayscale pentru enhancement
+    # 2. Convert to grayscale for enhancement
     if len(img_640.shape) == 3:
         gray = cv2.cvtColor(img_640, cv2.COLOR_BGR2GRAY)
     else:
         gray = img_640
 
-    # 3. Aplicăm transformările (Brightness, Median Blur, CLAHE)
+    # 3. Apply transformations (Brightness, Median Blur, CLAHE)
     brightened = cv2.convertScaleAbs(gray, alpha=1.5, beta=15)
     denoised = cv2.medianBlur(brightened, 3)
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(3, 3))
     enhanced = clahe.apply(denoised)
 
-    # Reconvertim în 3 canale pentru YOLO
+    # Reconvert to 3 channels for YOLO
     result = cv2.cvtColor(enhanced, cv2.COLOR_GRAY2BGR)
     
     return result
 
 def apply_dental_enhancement(image):
     """
-    Aplică transformările STRICTE din lucrarea de cercetare (Tabelul I):
+    Apply the STRICT transformations from the research paper (Table I):
     1. Brightness Adjustment: I' = 1.5 * I + 15
     2. Median Blur: k=3
     3. CLAHE: clipLimit=2.0, tileGridSize=(3,3)
     """
-    # Convertim în grayscale
+    # Convert to grayscale
     if len(image.shape) == 3:
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     else:
         gray = image
 
-    # 1. Ajustare Luminozitate (alpha=1.5, beta=15)
+    # 1. Brightness adjustment (alpha=1.5, beta=15)
     brightened = cv2.convertScaleAbs(gray, alpha=1.5, beta=15)
 
-    # 2. Eliminare zgomot (Median Blur k=3)
+    # 2. Noise removal (Median Blur k=3)
     denoised = cv2.medianBlur(brightened, 3)
 
     # 3. CLAHE
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(3, 3))
     enhanced = clahe.apply(denoised)
 
-    # Reconvertim în 3 canale pentru YOLO
+    # Reconvert to 3 channels for YOLO
     result = cv2.cvtColor(enhanced, cv2.COLOR_GRAY2BGR)
     
     return result
 
 def normalize_image(image):
-    """Normalizează valorile pixelilor în intervalul [0, 1]"""
+    """Normalize pixel values to [0, 1]."""
     return image.astype(np.float32) / 255.0

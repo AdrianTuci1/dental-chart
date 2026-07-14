@@ -135,15 +135,43 @@ Frontend Store       →    PatientAdapter.toApi()       →    Backend DB
 The application includes an automated dental X-ray analysis pipeline hosted on **Modal**.
 
 ### Architecture
-- **Inference**: YOLOv8 (Detection) + FastSAM (Segmentation)
-- **Model**: Custom trained for 31 dental categories (Caries, Filling, Crown, Implant, etc.)
-- **Preprocessing**: Automatic 640x640 squashing for model compatibility.
-- **📈 Training Report**: Detailed metrics, methodology, and hyperparameters can be found in [**modal-pipeline/TRAINING_REPORT.md**](./modal-pipeline/TRAINING_REPORT.md).
+The pipeline now uses two specialized models:
+
+1. **YOLO11-seg** – segments every tooth in the panoramic X-ray and assigns the **FDI (ISO 3950)** number.
+   - 33 classes: `11–18`, `21–28`, `31–38`, `41–48`, `91`.
+2. **ResNet18** – classifies the clinical status of each tooth from a masked crop of the segmented tooth.
+   - 7 classes:
+     - 0 = Tooth without anomalies
+     - 1 = Tooth with fillings
+     - 2 = Tooth with RCT
+     - 3 = Tooth with crown
+     - 4 = Tooth with caries
+     - 5 = Residual root
+     - 6 = Tooth with RCT and crown
+
+- **Dataset**: Kaggle `zwbzwb12341234/a-dual-labeled-dataset` (Labelme JSON annotations; images in `images1/`).
+- **Status label source**: the `group_id` field in each Labelme polygon (`null` = normal = 0).
+- **Training**: runs on **Modal** GPUs (`L40S` by default). Dataset and trained models are persisted in a Modal volume; nothing is kept locally.
+- **Inference**: the deployed endpoint runs on a **T4** GPU (cheaper and sufficient for one-off predictions).
+
+### Pipeline Commands
+
+All commands are run from the `modal-pipeline/models/` directory or via `modal run modal-pipeline/models/<script>.py`.
+
+| Step | Command |
+|------|---------|
+| Dataset preparation | `modal run modal-pipeline/models/data_preparation.py` |
+| FDI segmentation training | `modal run modal-pipeline/models/train.py` |
+| Status classifier training | `modal run modal-pipeline/models/train_status.py` |
+| Resume status training | `modal run modal-pipeline/models/train_status.py --resume true` |
+| Deploy inference endpoint | `modal deploy modal-pipeline/models/inference.py` |
+
+The inference endpoint exposes a `POST` route that accepts the raw X-ray image bytes and returns a JSON with each detected tooth (`fdi`, `bbox`, `contour`, `status`).
 
 ### Local Fallback (Mock Mode)
 When the cloud AI service is inactive or `AI_ANALYSIS_ENABLED=false` in `.env`, the backend automatically serves:
 - **Image**: `/public/chart2.png` (Panoramic sample)
-- **Detections**: `/public/detections.json` (Pre-calculated high-accuracy results)
+- **Detections**: `/public/detections.json` (Pre-calculated results in the new `teeth` + `status` format)
 
 ---
 
