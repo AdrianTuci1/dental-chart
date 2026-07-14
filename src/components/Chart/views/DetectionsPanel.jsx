@@ -57,7 +57,6 @@ const DetectionsPanel = ({ detections = [], onDelete }) => {
                 <div className="legend-item"><span className="legend-dot cyan"></span>Bridge</div>
                 <div className="legend-item"><span className="legend-dot light-blue"></span>Residual root</div>
                 <div className="legend-item"><span className="legend-dot dark-blue"></span>Crown</div>
-                <div className="legend-item"><span className="legend-dot green"></span>Normal</div>
             </div>
         </div>
     );

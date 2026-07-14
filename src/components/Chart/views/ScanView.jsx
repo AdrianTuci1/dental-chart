@@ -7,6 +7,7 @@ import IndustrialSlider from '../../UI/IndustrialSlider';
 import { useAppStore } from '../../../core/store/appStore';
 
 import { AppFacade } from '../../../core/AppFacade';
+import { smoothContourToPath } from '../../../utils/contourUtils';
 import './ScanView.css';
 
 const ScanView = ({ resolvedTeeth, onToothClick, selectedTeeth, activeTooth }) => {
@@ -295,17 +296,17 @@ const ScanView = ({ resolvedTeeth, onToothClick, selectedTeeth, activeTooth }) =
                                                 >
                                                     {detections.map((det, idx) => {
                                                         if (!det.contour) return null;
-                                                        const points = det.contour.map(p => `${p[0]},${p[1]}`).join(' ');
                                                         const color = getLabelColor(det.label);
 
                                                         return (
                                                             <g key={det.id || idx} className="detection-group">
-                                                                <polygon
-                                                                    points={points}
+                                                                <path
+                                                                    d={smoothContourToPath(det.contour)}
                                                                     fill={color}
                                                                     fillOpacity="0.4"
                                                                     stroke={color}
                                                                     strokeWidth="2"
+                                                                    strokeLinejoin="round"
                                                                     className="detection-polygon"
                                                                 />
                                                             </g>
