@@ -6,9 +6,9 @@ This pipeline trains and runs inference for identifying every tooth in panoramic
 
 ## 📁 Architecture (3 steps)
 
-1. **YOLO11-seg** – segments each tooth and assigns the FDI number (33 classes: 11–48, 91).
-2. **Heuristic post-processing** – corrects FDI numbering errors (duplicate detections, missing-teeth sequence gaps, neighbour inconsistencies).
-3. **ResNet18** – classifies the status of each tooth from a masked crop (7 classes):
+1. **YOLO11-seg** – receives the panoramic image and performs instance segmentation on every tooth. For each tooth it produces a pixel-level mask, a bounding box and an FDI number (33 classes: 11–48, 91).
+2. **Heuristic post-processing** – inspects the spatial layout of all detected teeth, removes duplicate predictions and corrects FDI numbering errors using the expected FDI sequence (18→11, 21→28 for the upper jaw; 41→48, 38→31 for the lower jaw).
+3. **ResNet18** – receives a masked 224×224 crop of each detected tooth and classifies its clinical status (7 classes):
    - 0 = Tooth without anomalies
    - 1 = Tooth with fillings
    - 2 = Tooth with RCT
@@ -19,18 +19,19 @@ This pipeline trains and runs inference for identifying every tooth in panoramic
 
 ![Model architecture](assets/model.jpg)
 
-## 📦 Setup
+## How it works
 
-### 1. Install Modal CLI
-```bash
-pipx install modal
-pipx ensurepath
-```
+A panoramic X-ray is first resized to 640×640 and fed into **YOLO11-seg**. The model scans the image and returns a set of segmentation masks, one per tooth. Each mask is used to extract two things: an exact tooth contour and a square crop that contains only the tooth (background pixels outside the mask are blacked out). The YOLO head also assigns a raw FDI label and a confidence score to each detection.
 
-### 2. Create Kaggle secret
-```bash
-modal secret create kaggle-creds KAGGLE_USERNAME=<username> KAGGLE_KEY=<key>
-```
+Before the FDI labels are finalised, the **heuristic post-processor** runs three steps:
+
+1. **Overlap suppression** – if the same physical tooth is predicted twice with different FDI labels, the lower-confidence duplicate is removed.
+2. **Jaw splitting** – detections are split into upper and lower jaw by median y-coordinate.
+3. **Sequence correction** – each jaw is sorted left-to-right by x-coordinate and aligned with the expected FDI sequence. Low-confidence predictions that break the sequence are reassigned, while gaps are allowed for missing teeth.
+
+After the FDI numbers are corrected, each masked tooth crop is passed to **ResNet18**, which classifies the clinical status. The final output contains, for every tooth, the FDI number, bounding box, contour, status and the associated confidence scores.
+
+For one-time environment setup, see [`SETUP.md`](SETUP.md).
 
 ## 🚀 Commands
 
