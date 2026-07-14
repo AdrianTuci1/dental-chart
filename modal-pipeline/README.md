@@ -2,7 +2,9 @@
 
 This pipeline trains and runs inference for identifying every tooth in panoramic dental X-rays, numbering them with FDI (ISO) notation, and classifying their clinical status using the Modal cloud platform.
 
-## 📁 Architecture (2 models)
+![Pipeline overview](assets/overview.jpg)
+
+## 📁 Architecture (3 steps)
 
 1. **YOLO11-seg** – segments each tooth and assigns the FDI number (33 classes: 11–48, 91).
 2. **Heuristic post-processing** – corrects FDI numbering errors (duplicate detections, missing-teeth sequence gaps, neighbour inconsistencies).
@@ -14,6 +16,8 @@ This pipeline trains and runs inference for identifying every tooth in panoramic
    - 4 = Tooth with caries
    - 5 = Residual root
    - 6 = Tooth with RCT and crown
+
+![Model architecture](assets/model.jpg)
 
 ## 📦 Setup
 
@@ -96,6 +100,8 @@ The heuristic performs three steps before status classification:
 2. **Jaw splitting** – divides detections into upper and lower jaw by median y-coordinate.
 3. **Sequence correction** – sorts each jaw by x-coordinate, aligns it with the expected FDI sequence (allowing gaps for missing teeth), and reassigns low-confidence labels that break the sequence.
 
+![Heuristic algorithm](assets/heuristic-algorithm.jpg)
+
 Example output:
 ```json
 {
@@ -117,6 +123,10 @@ Example output:
 ```
 
 When the heuristic changes a label, the response also includes `fdi_original` and `corrected_by_heuristic: true`.
+
+## Example result
+
+![Example prediction output](assets/ending.jpg)
 
 ## ⚙️ Dataset notes
 
