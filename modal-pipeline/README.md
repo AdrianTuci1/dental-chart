@@ -5,7 +5,8 @@ This pipeline trains and runs inference for identifying every tooth in panoramic
 ## 📁 Architecture (2 models)
 
 1. **YOLO11-seg** – segments each tooth and assigns the FDI number (33 classes: 11–48, 91).
-2. **ResNet18** – classifies the status of each tooth from a masked crop (7 classes):
+2. **Heuristic post-processing** – corrects FDI numbering errors (duplicate detections, missing-teeth sequence gaps, neighbour inconsistencies).
+3. **ResNet18** – classifies the status of each tooth from a masked crop (7 classes):
    - 0 = Tooth without anomalies
    - 1 = Tooth with fillings
    - 2 = Tooth with RCT
@@ -83,9 +84,17 @@ modal run list
 You can also use the Modal web dashboard to watch logs and metrics.
 
 ### Inference
+
 ```bash
 modal run modal-pipeline/models/inference.py
 ```
+
+By default, inference runs the FDI numbering heuristic (`use_heuristic=True`). It can be disabled by passing `use_heuristic=False` to `_run_prediction_core` if you need raw YOLO output.
+
+The heuristic performs three steps before status classification:
+1. **Overlap suppression** – removes duplicate predictions for the same physical tooth, keeping the higher-confidence FDI label.
+2. **Jaw splitting** – divides detections into upper and lower jaw by median y-coordinate.
+3. **Sequence correction** – sorts each jaw by x-coordinate, aligns it with the expected FDI sequence (allowing gaps for missing teeth), and reassigns low-confidence labels that break the sequence.
 
 Example output:
 ```json
@@ -106,6 +115,8 @@ Example output:
   "count": 28
 }
 ```
+
+When the heuristic changes a label, the response also includes `fdi_original` and `corrected_by_heuristic: true`.
 
 ## ⚙️ Dataset notes
 
