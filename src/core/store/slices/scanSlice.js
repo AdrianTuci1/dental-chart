@@ -1,10 +1,9 @@
 import { produce } from 'immer';
 import { ScanModel } from '../../models/ScanModel';
-import { MOCK_DETECTIONS } from '../../../utils/mockData';
 
 export const createScanSlice = (set, get) => ({
     scanImage: '/chart2.png',
-    detections: MOCK_DETECTIONS,
+    detections: [],
     isProcessing: false,
     progress: 0,
     overlayOpacity: 95,
