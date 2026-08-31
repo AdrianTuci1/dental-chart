@@ -56,6 +56,12 @@ exports.register = async (req, res) => {
             token,
             refreshToken,
         });
+
+        // Welcome mail runs after the response so a slow or broken provider cannot
+        // delay or fail the signup itself.
+        Promise.resolve(medicService.sendWelcomeEmail(publicMedic)).catch((error) => {
+            console.error('[AuthController Register] Welcome email error:', error.message);
+        });
     } catch (err) {
         console.error('[AuthController Register Error]', err);
         res.status(err.statusCode || 500).json({ error: err.message });

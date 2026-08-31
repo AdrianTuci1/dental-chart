@@ -92,6 +92,14 @@ exports.inviteMedic = async (req, res) => {
         const requesterMedicId = extractMedicIdFromRequest(req);
         const invitation = await clinicService.inviteMedic(id, req.body, requesterMedicId);
         res.status(201).json(invitation);
+
+        if (invitation?.id) {
+            Promise.resolve(clinicService.sendInvitationEmail({
+                clinicId: id,
+                invitationId: invitation.id,
+                inviterMedicId: requesterMedicId,
+            })).catch((err) => console.error('[ClinicController inviteMedic] Email error:', err.message));
+        }
     } catch (err) {
         res.status(err.statusCode || 500).json({ error: err.message });
     }

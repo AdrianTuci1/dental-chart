@@ -395,14 +395,47 @@ class MedicService {
             passwordResetExpiresAt: expiresAt,
         });
 
-        await this.emailService.sendPasswordResetEmail({
+        const delivery = await this.emailService.sendPasswordResetEmail({
             to: email,
             resetUrl,
             code: verificationCode,
             expiresInMinutes: 15,
+            userId: medic.id,
         });
 
-        return { accepted: true };
+        if (!delivery.delivered) {
+            await this.recordEmailFailure(medic.id, delivery);
+        }
+
+        return { accepted: true, emailDelivered: delivery.delivered };
+    }
+
+    async sendWelcomeEmail(medic) {
+        const delivery = await this.emailService.sendWelcomeEmail({
+            to: medic.email,
+            name: medic.name,
+            userId: medic.id,
+        });
+
+        if (!delivery.delivered) {
+            await this.recordEmailFailure(medic.id, delivery);
+        }
+
+        return delivery;
+    }
+
+    /**
+     * Email delivery is best effort: a provider outage must not break signup or a reset
+     * request, but it has to leave a trace attached to the affected account.
+     */
+    async recordEmailFailure(userId, delivery = {}) {
+        try {
+            const UserAnalyticsService = require('./UserAnalyticsService');
+            const analyticsService = new UserAnalyticsService();
+            await analyticsService.trackEmailDeliveryFailure(userId, delivery);
+        } catch (error) {
+            console.error('[MedicService] Failed to record email delivery failure:', error.message);
+        }
     }
 
     async resetPassword({ email, token, code, newPassword }) {

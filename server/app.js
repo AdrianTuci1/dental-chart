@@ -5,6 +5,8 @@ require('dotenv').config();
 
 const helmet = require('helmet');
 
+const EmailService = require('./src/services/EmailService');
+
 const app = express();
 const PORT = process.env.PORT || 3100;
 const HOST = process.env.HOST;
@@ -91,7 +93,13 @@ app.get('/docs/openapi.yaml', (req, res) => {
 
 // Health Check Route
 app.get('/health', (req, res) => {
-    res.status(200).json({ status: 'OK', message: 'Dental Chart Server is running' });
+    const { configured, provider } = EmailService.describeProvider();
+
+    res.status(200).json({
+        status: 'OK',
+        message: 'Dental Chart Server is running',
+        email: { configured, provider },
+    });
 });
 
 // Start Server only if not imported as a module (e.g for testing)
@@ -99,6 +107,13 @@ if (require.main === module) {
     const onListen = () => {
         const address = HOST || '0.0.0.0';
         console.log(`Server is running on ${address}:${PORT}`);
+
+        const emailProvider = EmailService.describeProvider();
+        if (emailProvider.configured) {
+            console.log(`[EmailService] outbound email provider: ${emailProvider.provider}`);
+        } else {
+            console.warn(`[EmailService] WARNING: outbound email is disabled - ${emailProvider.detail}`);
+        }
     };
 
     if (HOST) {

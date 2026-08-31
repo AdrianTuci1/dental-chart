@@ -1,5 +1,6 @@
 const ClinicRepository = require('../models/repositories/ClinicRepository');
 const MedicRepository = require('../models/repositories/MedicRepository');
+const EmailService = require('./EmailService');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 const { createHttpError } = require('../utils/httpError');
@@ -8,6 +9,7 @@ class ClinicService {
     constructor() {
         this.clinicRepository = new ClinicRepository();
         this.medicRepository = new MedicRepository();
+        this.emailService = new EmailService();
     }
 
     async createClinic(clinicData) {
@@ -331,6 +333,42 @@ class ClinicService {
         };
 
         return this.clinicRepository.createInvitation(clinicId, invitation);
+    }
+
+    /**
+     * Sends the invitation mail off the request path: the inviter already got their
+     * response, and a provider outage is recorded instead of surfaced.
+     */
+    async sendInvitationEmail({ clinicId, invitationId, inviterMedicId }) {
+        const [clinic, invitation, inviter] = await Promise.all([
+            this.clinicRepository.getClinicById(clinicId),
+            this.clinicRepository.getInvitation(clinicId, invitationId),
+            inviterMedicId ? this.medicRepository.getMedicById(inviterMedicId) : Promise.resolve(null),
+        ]);
+
+        if (!clinic || !invitation) {
+            console.error('[ClinicService] invitation email skipped', JSON.stringify({ clinicId, invitationId, reason: 'invitation not found' }));
+            return { delivered: false, reason: 'invitation_not_found' };
+        }
+
+        const delivery = await this.emailService.sendWorkspaceInviteEmail({
+            to: invitation.invitedEmail,
+            workspaceName: clinic.name,
+            inviterName: inviter?.name,
+            inviteCode: invitation.id,
+            userId: inviter?.id || null,
+        });
+
+        if (!delivery.delivered && inviter?.id) {
+            try {
+                const UserAnalyticsService = require('./UserAnalyticsService');
+                await new UserAnalyticsService().trackEmailDeliveryFailure(inviter.id, delivery);
+            } catch (error) {
+                console.error('[ClinicService] Failed to record invite email failure:', error.message);
+            }
+        }
+
+        return delivery;
     }
 
     async acceptInvitation(clinicId, inviteId, medicId) {
