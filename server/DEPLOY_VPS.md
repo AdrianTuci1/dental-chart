@@ -128,6 +128,10 @@ PM2 runs `instances: 'max'` in cluster mode, which means one Node process per CP
 Refresh sessions live in DynamoDB, so any worker can serve any user; do not rely on
 process-local state when adding new features.
 
+Session rows expire through a DynamoDB TTL attribute, so enable TTL on the table once -
+`server/aws-dynamodb-setup.md` has the command. Without it the API still refuses stale
+sessions, it just never deletes their rows.
+
 ## 6. Run Backend With PM2
 
 Install PM2 once:
