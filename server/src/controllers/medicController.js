@@ -28,7 +28,8 @@ exports.getMedic = async (req, res) => {
 exports.getMedicPatients = async (req, res) => {
     try {
         const { id } = req.params;
-        const patients = await medicService.getMedicPatients(id);
+        const clinicId = req.query.clinicId || null;
+        const patients = await medicService.getMedicPatients(id, clinicId);
         res.json(patients);
     } catch (err) {
         res.status(err.statusCode || 500).json({ error: err.message });

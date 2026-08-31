@@ -103,13 +103,17 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
             if (!token) {
                 throw new Error('Unauthorized');
             }
+            const { getWorkspaceProfileFields } = await import('./mockWorkspaces');
             return {
                 ...user0profile,
+                ...getWorkspaceProfileFields(user0profile),
                 token,
             };
         }
         if (endpoint.startsWith('/medics/')) {
-            const parts = endpoint.split('/');
+            const [medicsPath, medicsQuery] = endpoint.split('?');
+            const requestedClinicId = medicsQuery ? new URLSearchParams(medicsQuery).get('clinicId') : null;
+            const parts = medicsPath.split('/');
             const medicId = parts[2];
             if (parts.length === 3) {
                 if (customConfig.method === 'DELETE') {
@@ -128,8 +132,9 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
                 return user0profile;
             }
             if (parts[3] === 'patients') {
+                const { filterMockPatients } = await import('./mockWorkspaces');
                 const medic = MOCK_HIERARCHY_DATA.find(m => m.id === medicId) || MOCK_HIERARCHY_DATA[0];
-                return medic ? medic.patients : [];
+                return medic ? filterMockPatients(user0profile, medic.patients, requestedClinicId) : [];
             }
             if (parts[3] === 'api-key' && parts[4] === 'rotate' && customConfig.method === 'POST') {
                 return {
@@ -142,24 +147,22 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
                 };
             }
         }
+        if (endpoint === '/clinics' && customConfig.method === 'POST') {
+            const { createMockWorkspace } = await import('./mockWorkspaces');
+            return createMockWorkspace(user0profile, requestBody);
+        }
         if (endpoint.startsWith('/clinics/') && customConfig.method === 'PUT') {
-            const parts = endpoint.split('/');
-            const clinicId = parts[2];
-            return {
-                id: clinicId,
-                displayId: `CLN-${clinicId.slice(-4).toUpperCase()}`,
-                ...requestBody,
-            };
+            const { updateMockWorkspace } = await import('./mockWorkspaces');
+            const clinicId = endpoint.split('/')[2];
+            return updateMockWorkspace(user0profile, clinicId, requestBody);
         }
         if (endpoint === '/clinics/invitations/pending') {
             return [];
         }
         if (endpoint.startsWith('/clinics/') && endpoint.includes('/invitations') && customConfig.method === 'POST') {
-            return {
-                id: Date.now().toString(),
-                status: 'pending',
-                ...requestBody,
-            };
+            const { inviteMockMember } = await import('./mockWorkspaces');
+            const clinicId = endpoint.split('/')[2];
+            return inviteMockMember(user0profile, clinicId, requestBody);
         }
         if (endpoint.startsWith('/clinics/') && endpoint.includes('/members/') && customConfig.method === 'DELETE') {
             return { success: true };
@@ -168,7 +171,9 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
             return { success: true };
         }
         if (endpoint.startsWith('/clinics/') && customConfig.method === 'DELETE') {
-            return { deleted: true };
+            const { deleteMockWorkspace } = await import('./mockWorkspaces');
+            const clinicId = endpoint.split('/')[2];
+            return deleteMockWorkspace(user0profile, clinicId);
         }
         if (endpoint.startsWith('/patients/')) {
             const parts = endpoint.split('/');

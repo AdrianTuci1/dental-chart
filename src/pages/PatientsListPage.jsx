@@ -3,14 +3,28 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAppStore } from '../core/store/appStore';
 import { authService } from '../api';
 import { AppFacade } from '../core/AppFacade';
-import { Search, Plus, User, Settings, Loader2, Trash2, UserPen, Pencil, MoreVertical } from 'lucide-react';
+import { clearClientSession } from '../core/session/sessionActions';
+import { Search, Plus, Loader2, UserPen, Pencil, Trash2 } from 'lucide-react';
 import SettingsModal from '../components/UI/SettingsModal';
 import PatientModal from '../components/UI/PatientModal';
+import WorkspaceSwitcher from '../components/UI/WorkspaceSwitcher';
+import AccountMenu from '../components/UI/AccountMenu';
 import './PatientsListPage.css';
 
 const PatientsListPage = () => {
     const navigate = useNavigate();
-    const { patients, setPatients, searchQuery, setSearchQuery, selectPatient, medicProfile, setMedicProfile } = useAppStore();
+    const {
+        patients,
+        setPatients,
+        searchQuery,
+        setSearchQuery,
+        selectPatient,
+        medicProfile,
+        setMedicProfile,
+        activeClinicId,
+        setActiveClinicId,
+        syncActiveClinicWithProfile,
+    } = useAppStore();
     const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
     const [isAddPatientOpen, setIsAddPatientOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -21,7 +35,7 @@ const PatientsListPage = () => {
     const fetchPatients = async () => {
         if (!medicProfile?.id) return;
         try {
-            await AppFacade.patient.loadAll(medicProfile.id);
+            await AppFacade.patient.loadAll(medicProfile.id, activeClinicId);
         } catch (error) {
             console.error("Failed to refresh patients", error);
         }
@@ -33,20 +47,29 @@ const PatientsListPage = () => {
         return currentProfile;
     };
 
+    const handleSignOut = async () => {
+        await clearClientSession();
+        navigate('/');
+    };
+
     useEffect(() => {
         const initDashboard = async () => {
+            // Nothing to do once the session is gone (sign-out unmounts this page).
+            if (!medicProfile && !localStorage.getItem('token')) {
+                setIsLoading(false);
+                return;
+            }
+
             setIsLoading(true);
             try {
-                // 1. Fetch Medic Profile
+                // 1. Fetch Medic Profile (the login response carries no workspace list)
                 let currentProfile = medicProfile;
-                if (!currentProfile) {
+                if (!currentProfile || !Array.isArray(currentProfile.clinics)) {
                     currentProfile = await refreshMedicProfile();
                 }
 
-                if (currentProfile && currentProfile.id) {
-                    // 2. Fetch patients for THIS medic via Facade
-                    await AppFacade.patient.loadAll(currentProfile.id);
-                }
+                // 2. Point the app at the workspace this account works in
+                syncActiveClinicWithProfile(currentProfile);
             } catch (error) {
                 console.error("Failed to load dashboard data", error);
                 // If it's an auth error, redirect to login
@@ -59,7 +82,24 @@ const PatientsListPage = () => {
         };
 
         initDashboard();
-    }, [medicProfile, setMedicProfile, setPatients, navigate]);
+    }, [medicProfile, setMedicProfile, setPatients, navigate, syncActiveClinicWithProfile]);
+
+    useEffect(() => {
+        if (!medicProfile?.id) return;
+
+        const loadWorkspacePatients = async () => {
+            setIsLoading(true);
+            try {
+                await AppFacade.patient.loadAll(medicProfile.id, activeClinicId);
+            } catch (error) {
+                console.error("Failed to load workspace patients", error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        loadWorkspacePatients();
+    }, [medicProfile?.id, activeClinicId]);
 
     useEffect(() => {
         const handleClickOutside = () => setActiveMenuPatientId(null);
@@ -114,18 +154,25 @@ const PatientsListPage = () => {
         <div className="patients-page-container">
             <div className="sticky-header">
                 <div className="sticky-header-content">
-                    <h1 className="sticky-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <img src="/logo.png" alt="logo" style={{ width: '30px', height: '30px' }} />
-                        Patients</h1>
-                    <div className="user-profile">
-                        <span className="user-name">{medicProfile?.name || 'Loading...'}</span>
-                        <button className="settings-btn" onClick={() => {
+                    <div className="sticky-header-left">
+                        <h1 className="sticky-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <img src="/logo.png" alt="logo" style={{ width: '30px', height: '30px' }} />
+                            Patients</h1>
+                        <WorkspaceSwitcher
+                            profile={medicProfile}
+                            activeClinicId={activeClinicId}
+                            onSelectWorkspace={setActiveClinicId}
+                            onProfileRefresh={refreshMedicProfile}
+                        />
+                    </div>
+                    <AccountMenu
+                        profile={medicProfile}
+                        onOpenSettings={() => {
                             AppFacade.analytics.settingsOpened(medicProfile?.id || null);
                             setIsSettingsOpen(true);
-                        }}>
-                            <Settings size={20} />
-                        </button>
-                    </div>
+                        }}
+                        onSignOut={handleSignOut}
+                    />
                 </div>
             </div>
 
@@ -240,7 +287,9 @@ const PatientsListPage = () => {
 
                 {!isLoading && filteredPatients.length === 0 && (
                     <div className="no-results">
-                        No patients found matching your search.
+                        {patients.length === 0
+                            ? 'No patients in this workspace yet. Use "Add Patient" to create the first one.'
+                            : 'No patients found matching your search.'}
                     </div>
                 )}
             </div>

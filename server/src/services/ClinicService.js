@@ -26,10 +26,11 @@ class ClinicService {
 
         const id = clinicData.id || uuidv4();
         const dataToSave = {
+            ...clinicData,
             id,
             displayId: clinicData.displayId || this.buildClinicDisplayId(clinicData.name),
             type: clinicData.type || 'organization',
-            ...clinicData,
+            isDefault: clinicData.isDefault === true,
         };
 
         await this.clinicRepository.createClinic(dataToSave);
@@ -43,6 +44,66 @@ class ClinicService {
         });
 
         return this.getClinic(id, owner.id);
+    }
+
+    /**
+     * Public entry point for creating an additional workspace. Only the caller can
+     * become the owner and the new clinic is never the default one.
+     */
+    async createSharedClinic({ name, ownerMedicId, ...rest }) {
+        const trimmedName = typeof name === 'string' ? name.trim() : '';
+        if (!trimmedName) {
+            throw createHttpError('Clinic name is required', 400);
+        }
+
+        return this.createClinic({
+            ...rest,
+            name: trimmedName,
+            ownerMedicId,
+            type: 'organization',
+            isDefault: false,
+        });
+    }
+
+    async getClinicById(id) {
+        if (!id) {
+            return null;
+        }
+        return this.clinicRepository.getClinicById(id);
+    }
+
+    async markAsDefaultWorkspace(clinicId) {
+        const clinic = await this.clinicRepository.getClinicById(clinicId);
+        if (!clinic || clinic.isDefault === true) {
+            return clinic || null;
+        }
+
+        return this.clinicRepository.updateClinic(clinicId, {
+            ...clinic,
+            isDefault: true,
+            type: clinic.type || 'personal',
+        });
+    }
+
+    /**
+     * The default workspace is created with the account and is tied to its life:
+     * it is the medic's personal clinic and cannot be shared or removed on its own.
+     */
+    async isDefaultWorkspaceClinic(clinic) {
+        if (!clinic) {
+            return false;
+        }
+
+        if (clinic.isDefault === true || clinic.type === 'personal') {
+            return true;
+        }
+
+        if (!clinic.ownerMedicId) {
+            return false;
+        }
+
+        const owner = await this.medicRepository.getMedicById(clinic.ownerMedicId);
+        return Boolean(owner?.defaultClinicId) && String(owner.defaultClinicId) === String(clinic.id);
     }
 
     async getClinic(id, requesterMedicId = null) {
@@ -226,6 +287,10 @@ class ClinicService {
         const clinic = await this.clinicRepository.getClinicById(clinicId);
         if (!clinic) {
             throw createHttpError('Clinic not found', 404);
+        }
+
+        if (await this.isDefaultWorkspaceClinic(clinic)) {
+            throw createHttpError('Collaborators can only be invited to a shared workspace', 403);
         }
 
         if (requesterMedicId) {
@@ -436,6 +501,10 @@ class ClinicService {
 
         if (!['owner', 'admin'].includes(membership.role)) {
             throw createHttpError('Only owners or admins can delete a clinic', 403);
+        }
+
+        if (await this.isDefaultWorkspaceClinic(clinic)) {
+            throw createHttpError('The default workspace can only be removed together with the account', 409);
         }
 
         const PatientService = require('./PatientService');

@@ -12,6 +12,9 @@ const HistoryService = require('./HistoryService');
 const TreatmentPlanService = require('./TreatmentPlanService');
 const ClinicService = require('./ClinicService');
 
+// Bumped whenever the default-workspace migration needs to run again for a medic.
+const WORKSPACE_MIGRATION_VERSION = 1;
+
 class MedicService {
     constructor() {
         this.medicRepository = new MedicRepository();
@@ -50,6 +53,7 @@ class MedicService {
             name: medicData.clinicName || `${medicData.name}'s Clinic`,
             ownerMedicId: newMedic.id,
             type: 'personal',
+            isDefault: true,
         });
 
         const createdMedic = await this.medicRepository.updateMedic(newMedic.id, {
@@ -111,8 +115,63 @@ class MedicService {
         return await this.medicRepository.getMedicById(id);
     }
 
+    /**
+     * Guarantees that the account owns exactly one default workspace and that patients
+     * created before workspaces existed are attached to it. Runs for accounts created
+     * before this structure existed and is stamped so it only costs one read afterwards.
+     */
+    async ensureDefaultWorkspace(medicId) {
+        if (!medicId) {
+            throw createHttpError('Medic ID is required', 400);
+        }
+
+        const medic = await this.getMedic(medicId);
+        if (!medic) {
+            return null;
+        }
+
+        if (
+            medic.defaultClinicId
+            && medic.workspaceMigrationVersion === WORKSPACE_MIGRATION_VERSION
+        ) {
+            return medic;
+        }
+
+        let defaultClinic = await this.clinicService.getClinicById(medic.defaultClinicId);
+
+        if (!defaultClinic) {
+            // Older accounts may already own a personal clinic that was never linked back.
+            const ownedClinics = await this.clinicService.listOwnedClinics(medicId);
+            defaultClinic = ownedClinics.find((clinic) => clinic.type === 'personal')
+                || ownedClinics[0]
+                || null;
+        }
+
+        if (!defaultClinic) {
+            defaultClinic = await this.clinicService.createClinic({
+                name: medic.name ? `${medic.name}'s Clinic` : 'My Clinic',
+                ownerMedicId: medicId,
+                type: 'personal',
+                isDefault: true,
+            });
+        } else {
+            const flagged = await this.clinicService.markAsDefaultWorkspace(defaultClinic.id);
+            defaultClinic = flagged || defaultClinic;
+        }
+
+        await this.medicRepository.updateMedic(medicId, {
+            ...medic,
+            defaultClinicId: defaultClinic.id,
+            workspaceMigrationVersion: WORKSPACE_MIGRATION_VERSION,
+        });
+
+        await this.patientService.assignPatientsWithoutClinic(medicId, defaultClinic.id);
+
+        return this.getMedic(medicId);
+    }
+
     async getMedicProfile(id) {
-        const medic = await this.getMedic(id);
+        const medic = await this.ensureDefaultWorkspace(id);
         if (!medic) {
             return null;
         }
@@ -199,7 +258,11 @@ class MedicService {
         return migratedMedic;
     }
 
-    async getMedicPatients(medicId) {
+    async getMedicPatients(medicId, clinicId = null) {
+        if (clinicId) {
+            return this.patientService.getPatientsByClinic(medicId, clinicId);
+        }
+
         return await this.patientService.getPatientsByMedicId(medicId);
     }
 
@@ -417,3 +480,4 @@ class MedicService {
 }
 
 module.exports = MedicService;
+module.exports.WORKSPACE_MIGRATION_VERSION = WORKSPACE_MIGRATION_VERSION;
