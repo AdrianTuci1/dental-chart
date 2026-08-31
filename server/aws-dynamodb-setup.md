@@ -47,7 +47,7 @@ Prin folosirea structurii hibride cu `PATIENT#<id>`, un query unic poate prelua 
 
 ---
 
-## TTL pentru sesiuni (obligatoriu după prima implementare de auth)
+## TTL pentru sesiuni (de activat o singură dată pe tabelă)
 
 Fiecare sesiune activă scrie o linie `REFRESHTOKEN#...` cu un atribut `ttl` (secunde epoch).
 Atributul se scrie oricum, dar DynamoDB șterge efectiv liniile expirate doar dacă TTL-ul este
