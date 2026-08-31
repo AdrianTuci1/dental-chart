@@ -3,6 +3,7 @@ import { createPatientSlice } from './slices/patientSlice';
 import { createChartSlice } from './slices/chartSlice';
 import { createMedicSlice } from './slices/medicSlice';
 import { createScanSlice } from './slices/scanSlice';
+import { createWorkspaceSlice, clearStoredActiveClinicId } from './slices/workspaceSlice';
 import { ScanModel } from '../models/ScanModel';
 
 const createSessionResetState = () => ({
@@ -11,6 +12,7 @@ const createSessionResetState = () => ({
     searchQuery: '',
     isSyncing: false,
     medicProfile: null,
+    activeClinicId: null,
     teeth: {},
     resolvedTeeth: {},
     previewTeeth: {},
@@ -45,5 +47,9 @@ export const useAppStore = create((set, get) => ({
     ...createChartSlice(set, get),
     ...createMedicSlice(set, get),
     ...createScanSlice(set, get),
-    resetSession: () => set(createSessionResetState()),
+    ...createWorkspaceSlice(set, get),
+    resetSession: () => {
+        clearStoredActiveClinicId();
+        set(createSessionResetState());
+    },
 }));

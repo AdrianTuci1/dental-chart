@@ -2,6 +2,11 @@ import apiClient from './apiClient';
 
 const getPendingInvitations = async () => apiClient('/clinics/invitations/pending');
 
+const createClinic = async (payload) => apiClient('/clinics', {
+    method: 'POST',
+    body: payload,
+});
+
 const updateClinic = async (clinicId, payload) => apiClient(`/clinics/${clinicId}`, {
     method: 'PUT',
     body: payload,
@@ -32,6 +37,7 @@ const deleteClinic = async (clinicId) => apiClient(`/clinics/${clinicId}`, {
 
 export const clinicService = {
     getPendingInvitations,
+    createClinic,
     updateClinic,
     inviteMedic,
     acceptInvitation,

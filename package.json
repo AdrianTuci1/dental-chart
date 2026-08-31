@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:demo": "VITE_DEV_MODE=true vite",
     "build": "vite build",
     "test": "npx vitest run",
     "test:frontend": "npx vitest run",

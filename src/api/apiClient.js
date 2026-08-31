@@ -9,13 +9,24 @@ const MOCK_TOKEN = 'mock-session-token';
 let isRefreshing = false;
 let refreshSubscribers = [];
 
-function subscribeTokenRefresh(callback) {
-    refreshSubscribers.push(callback);
+function subscribeTokenRefresh(onSuccess, onFailure) {
+    refreshSubscribers.push({ onSuccess, onFailure });
+}
+
+function takeSubscribers() {
+    const pending = refreshSubscribers;
+    refreshSubscribers = [];
+    return pending;
 }
 
 function onTokenRefreshed(newToken) {
-    refreshSubscribers.forEach((cb) => cb(newToken));
-    refreshSubscribers = [];
+    takeSubscribers().forEach(({ onSuccess }) => onSuccess(newToken));
+}
+
+// Requests that queued behind the refresh must fail too, otherwise their promises
+// would never settle and the page would stay stuck in a loading state.
+function onTokenRefreshFailed(error) {
+    takeSubscribers().forEach(({ onFailure }) => onFailure(error));
 }
 
 function getRefreshToken() {
@@ -34,16 +45,28 @@ function clearTokens() {
 
 async function doRefreshToken() {
     const refreshToken = getRefreshToken();
-    if (!refreshToken) throw new Error('No refresh token');
+    if (!refreshToken) {
+        throw Object.assign(new Error('No refresh token'), { endsSession: true });
+    }
 
-    const response = await fetch(`${BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-    });
+    let response;
+    try {
+        response = await fetch(`${BASE_URL}/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken }),
+        });
+    } catch {
+        // The request never reached the API. The tokens are still valid, so the
+        // session must survive and the caller can simply retry.
+        throw Object.assign(new Error('Refresh failed'), { retryable: true });
+    }
 
     if (!response.ok) {
-        throw new Error('Refresh failed');
+        // Only the API can end a session: 401/403 means the refresh token is expired,
+        // revoked or reused. A 5xx stays retryable instead of logging everyone out.
+        const endsSession = response.status === 401 || response.status === 403;
+        throw Object.assign(new Error('Refresh failed'), { status: response.status, endsSession });
     }
 
     const data = await response.json();
@@ -84,6 +107,19 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
                 refreshToken: 'mock-refresh-token',
             };
         }
+        if (endpoint === '/auth/google' && customConfig.method === 'POST') {
+            if (!requestBody?.idToken) {
+                throw new Error('Google did not return a credential');
+            }
+
+            return {
+                id: user0profile.id,
+                name: user0profile.name,
+                email: user0profile.email,
+                token: MOCK_TOKEN,
+                refreshToken: 'mock-refresh-token',
+            };
+        }
         if (endpoint === '/auth/register' && customConfig.method === 'POST') {
             return {
                 id: `medic-${Date.now().toString(36)}`,
@@ -103,13 +139,17 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
             if (!token) {
                 throw new Error('Unauthorized');
             }
+            const { getWorkspaceProfileFields } = await import('./mockWorkspaces');
             return {
                 ...user0profile,
+                ...getWorkspaceProfileFields(user0profile),
                 token,
             };
         }
         if (endpoint.startsWith('/medics/')) {
-            const parts = endpoint.split('/');
+            const [medicsPath, medicsQuery] = endpoint.split('?');
+            const requestedClinicId = medicsQuery ? new URLSearchParams(medicsQuery).get('clinicId') : null;
+            const parts = medicsPath.split('/');
             const medicId = parts[2];
             if (parts.length === 3) {
                 if (customConfig.method === 'DELETE') {
@@ -128,8 +168,9 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
                 return user0profile;
             }
             if (parts[3] === 'patients') {
+                const { filterMockPatients } = await import('./mockWorkspaces');
                 const medic = MOCK_HIERARCHY_DATA.find(m => m.id === medicId) || MOCK_HIERARCHY_DATA[0];
-                return medic ? medic.patients : [];
+                return medic ? filterMockPatients(user0profile, medic.patients, requestedClinicId) : [];
             }
             if (parts[3] === 'api-key' && parts[4] === 'rotate' && customConfig.method === 'POST') {
                 return {
@@ -142,24 +183,22 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
                 };
             }
         }
+        if (endpoint === '/clinics' && customConfig.method === 'POST') {
+            const { createMockWorkspace } = await import('./mockWorkspaces');
+            return createMockWorkspace(user0profile, requestBody);
+        }
         if (endpoint.startsWith('/clinics/') && customConfig.method === 'PUT') {
-            const parts = endpoint.split('/');
-            const clinicId = parts[2];
-            return {
-                id: clinicId,
-                displayId: `CLN-${clinicId.slice(-4).toUpperCase()}`,
-                ...requestBody,
-            };
+            const { updateMockWorkspace } = await import('./mockWorkspaces');
+            const clinicId = endpoint.split('/')[2];
+            return updateMockWorkspace(user0profile, clinicId, requestBody);
         }
         if (endpoint === '/clinics/invitations/pending') {
             return [];
         }
         if (endpoint.startsWith('/clinics/') && endpoint.includes('/invitations') && customConfig.method === 'POST') {
-            return {
-                id: Date.now().toString(),
-                status: 'pending',
-                ...requestBody,
-            };
+            const { inviteMockMember } = await import('./mockWorkspaces');
+            const clinicId = endpoint.split('/')[2];
+            return inviteMockMember(user0profile, clinicId, requestBody);
         }
         if (endpoint.startsWith('/clinics/') && endpoint.includes('/members/') && customConfig.method === 'DELETE') {
             return { success: true };
@@ -168,7 +207,9 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
             return { success: true };
         }
         if (endpoint.startsWith('/clinics/') && customConfig.method === 'DELETE') {
-            return { deleted: true };
+            const { deleteMockWorkspace } = await import('./mockWorkspaces');
+            const clinicId = endpoint.split('/')[2];
+            return deleteMockWorkspace(user0profile, clinicId);
         }
         if (endpoint.startsWith('/patients/')) {
             const parts = endpoint.split('/');
@@ -248,15 +289,21 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
                     return await makeRequest(newToken);
                 } catch (refreshErr) {
                     isRefreshing = false;
-                    clearTokens();
-                    window.location.href = '/';
+                    onTokenRefreshFailed(refreshErr);
+                    if (refreshErr.endsSession) {
+                        clearTokens();
+                        window.location.href = '/';
+                    }
                     throw refreshErr;
                 }
             } else {
                 return new Promise((resolve, reject) => {
-                    subscribeTokenRefresh((newToken) => {
-                        makeRequest(newToken).then(resolve).catch(reject);
-                    });
+                    subscribeTokenRefresh(
+                        (newToken) => {
+                            makeRequest(newToken).then(resolve).catch(reject);
+                        },
+                        reject,
+                    );
                 });
             }
         }

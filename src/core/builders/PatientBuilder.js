@@ -9,6 +9,7 @@ export class PatientBuilder {
         this.patientData = {
             id: null,
             medicId: null,
+            clinicId: null,
             name: '',
             email: '',
             phone: '',
@@ -32,6 +33,11 @@ export class PatientBuilder {
 
     withMedicId(medicId) {
         this.patientData.medicId = medicId;
+        return this;
+    }
+
+    withClinicId(clinicId) {
+        this.patientData.clinicId = clinicId;
         return this;
     }
 

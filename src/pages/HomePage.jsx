@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import useAuthStore from '../store/authStore';
 import { User, Lock } from 'lucide-react';
 import { AppFacade } from '../core/AppFacade';
+import GoogleSignInButton from '../components/UI/GoogleSignInButton';
 
 import './HomePage.css';
 
@@ -12,9 +13,39 @@ const HomePage = () => {
     const login = useAuthStore((state) => state.login);
     const successMessage = location.state?.message;
     const isMock = import.meta.env.VITE_DEV_MODE === 'true' || !import.meta.env.VITE_API_URL;
+    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
     const [email, setEmail] = useState(isMock ? 'demo@example.com' : '');
     const [password, setPassword] = useState(isMock ? 'password' : '');
     const [error, setError] = useState('');
+
+    // Both the password and the Google path end in the same response shape, so the
+    // session is established in one place and cannot drift between them.
+    const establishSession = async (response) => {
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('refreshToken', response.refreshToken);
+        const userData = { id: response.id, name: response.name, email: response.email };
+        login(userData);
+        AppFacade.analytics.setUser({ ...userData, subscriptionPlan: response.subscriptionPlan });
+        AppFacade.analytics.loginCompleted({ id: response.id, subscriptionPlan: response.subscriptionPlan });
+
+        // Set medicProfile in appStore so PatientsListPage has it immediately
+        const { useAppStore } = await import('../core/store/appStore');
+        useAppStore.getState().setMedicProfile({ ...userData, subscriptionPlan: response.subscriptionPlan });
+
+        navigate('/patients');
+    };
+
+    const handleGoogleCredential = async (idToken) => {
+        setError('');
+
+        try {
+            const { authService } = await import('../api');
+            const response = await authService.loginWithGoogle(idToken);
+            await establishSession(response);
+        } catch (err) {
+            setError(err.message || 'Google sign-in failed.');
+        }
+    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -45,20 +76,9 @@ const HomePage = () => {
         try {
             const { authService } = await import('../api');
             const response = await authService.login({ email, password });
-            
+
             // authService.login returns { id, name, email, token, refreshToken }
-            localStorage.setItem('token', response.token);
-            localStorage.setItem('refreshToken', response.refreshToken);
-            const userData = { id: response.id, name: response.name, email: response.email };
-            login(userData);
-            AppFacade.analytics.setUser({ ...userData, subscriptionPlan: response.subscriptionPlan });
-            AppFacade.analytics.loginCompleted({ id: response.id, subscriptionPlan: response.subscriptionPlan });
-
-            // Set medicProfile in appStore so PatientsListPage has it immediately
-            const { useAppStore } = await import('../core/store/appStore');
-            useAppStore.getState().setMedicProfile({ ...userData, subscriptionPlan: response.subscriptionPlan });
-
-            navigate('/patients');
+            await establishSession(response);
         } catch (err) {
             setError(err.message || 'Login failed. Please check your credentials.');
         }
@@ -125,6 +145,12 @@ const HomePage = () => {
                     </button>
                 </form>
 
+                <GoogleSignInButton
+                    clientId={googleClientId}
+                    isMockMode={isMock}
+                    onCredential={handleGoogleCredential}
+                />
+
                 <div className="signup-link-container">
                     Don't have an account?
                     <span
@@ -137,7 +163,7 @@ const HomePage = () => {
 
                 {isMock && (
                     <div className="demo-text">
-                        <p>Demo Mode: Click "Sign In" to continue</p>
+                        <p>Demo Mode: any credentials work — use "Sign In" or "Continue with Google"</p>
                     </div>
                 )}
             </div>

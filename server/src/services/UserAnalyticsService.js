@@ -42,6 +42,25 @@ class UserAnalyticsService {
         return this.repository.updateUserProfile(userId, { metadata });
     }
 
+    /**
+     * Records a failed email delivery on the user's telemetry profile, so an
+     * undelivered password reset or invite can be found without digging through logs.
+     */
+    async trackEmailDeliveryFailure(userId, { template = 'custom', provider = 'none', reason = 'unknown', detail = '' } = {}) {
+        if (process.env.ENABLE_TELEMETRY === 'false') return;
+
+        return this.repository.updateUserProfile(userId, {
+            increments: { emailFailureCount: 1 },
+            metadata: {
+                lastEmailFailureAt: new Date().toISOString(),
+                lastEmailFailureTemplate: template,
+                lastEmailFailureProvider: provider,
+                lastEmailFailureReason: reason,
+                lastEmailFailureDetail: String(detail).slice(0, 300),
+            },
+        });
+    }
+
     async getUserAnalytics(userId) {
         const data = await this.repository.getUserProfile(userId);
         if (!data) return null;

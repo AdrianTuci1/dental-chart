@@ -14,6 +14,13 @@ const register = async (userData) => {
     });
 };
 
+const loginWithGoogle = async (idToken) => {
+    return apiClient('/auth/google', {
+        method: 'POST',
+        body: { idToken },
+    });
+};
+
 const logout = async () => {
     const { clearTokens } = await import('./apiClient');
     const refreshToken = localStorage.getItem('refreshToken');
@@ -57,6 +64,7 @@ const changePassword = async (payload) => {
 
 export const authService = {
     login,
+    loginWithGoogle,
     register,
     logout,
     getCurrentUser,

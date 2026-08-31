@@ -139,6 +139,15 @@ export const AppFacade = {
     },
 
     clinic: {
+        create: async (payload) => {
+            try {
+                return await clinicService.createClinic(payload);
+            } catch (error) {
+                console.error('[AppFacade] Failed to create workspace', error);
+                throw error;
+            }
+        },
+
         getPendingInvitations: async () => {
             try {
                 return await clinicService.getPendingInvitations();
@@ -205,11 +214,11 @@ export const AppFacade = {
 
     patient: {
         /**
-         * Load all patients for a medic.
+         * Load all patients for a medic, optionally scoped to one workspace.
          */
-        loadAll: async (medicId) => {
+        loadAll: async (medicId, clinicId = null) => {
             try {
-                const apiPatients = await patientService.getPatients(medicId);
+                const apiPatients = await patientService.getPatients(medicId, clinicId);
                 const domainPatients = apiPatients.map((patient) => PatientAdapter.toDomain(patient));
                 getStoreState().setPatients(domainPatients);
                 return domainPatients;
@@ -269,6 +278,8 @@ export const AppFacade = {
                 const payload = {
                     ...patientData,
                     medicId,
+                    // New patients belong to the workspace the medic is currently in.
+                    clinicId: patientData.clinicId || getStoreState().activeClinicId || undefined,
                     lastExamDate: 'N/A',
                     treatmentPlan: { items: [] },
                     history: { completedItems: [] },

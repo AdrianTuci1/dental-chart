@@ -105,6 +105,10 @@ PORT=3100
 HOST=127.0.0.1
 NODE_ENV=production
 CORS_ORIGIN=https://app.pixtooth.com
+JWT_SECRET=replac…e-me
+REFRESH_TOKEN_SECRET=replac…n-real
+REFRESH_TOKEN_EXPIRES_IN=365d
+REFRESH_TOKEN_REUSE_GRACE_MS=10000
 ```
 
 Important rules:
@@ -114,6 +118,19 @@ Important rules:
 - allow only your frontend domain in CORS
 
 If your server uses database credentials, JWT secrets, S3 keys, or mail credentials, add them there too.
+
+Outbound email needs its own configuration, otherwise password resets are silently dropped.
+Pick one transport with `EMAIL_PROVIDER` (`resend`, `cloudflare` or `gmail`) and set its
+variables plus `EMAIL_FROM` - see `server/.env.example`. The startup log and `GET /health`
+report whether email is usable, so you can confirm it after a deploy.
+
+PM2 runs `instances: 'max'` in cluster mode, which means one Node process per CPU core.
+Refresh sessions live in DynamoDB, so any worker can serve any user; do not rely on
+process-local state when adding new features.
+
+Session rows expire through a DynamoDB TTL attribute, so enable TTL on the table once -
+`server/aws-dynamodb-setup.md` has the command. Without it the API still refuses stale
+sessions, it just never deletes their rows.
 
 ## 6. Run Backend With PM2
 

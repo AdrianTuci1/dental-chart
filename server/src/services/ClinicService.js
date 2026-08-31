@@ -1,5 +1,6 @@
 const ClinicRepository = require('../models/repositories/ClinicRepository');
 const MedicRepository = require('../models/repositories/MedicRepository');
+const EmailService = require('./EmailService');
 const { v4: uuidv4 } = require('uuid');
 const crypto = require('crypto');
 const { createHttpError } = require('../utils/httpError');
@@ -8,6 +9,7 @@ class ClinicService {
     constructor() {
         this.clinicRepository = new ClinicRepository();
         this.medicRepository = new MedicRepository();
+        this.emailService = new EmailService();
     }
 
     async createClinic(clinicData) {
@@ -26,10 +28,11 @@ class ClinicService {
 
         const id = clinicData.id || uuidv4();
         const dataToSave = {
+            ...clinicData,
             id,
             displayId: clinicData.displayId || this.buildClinicDisplayId(clinicData.name),
             type: clinicData.type || 'organization',
-            ...clinicData,
+            isDefault: clinicData.isDefault === true,
         };
 
         await this.clinicRepository.createClinic(dataToSave);
@@ -43,6 +46,66 @@ class ClinicService {
         });
 
         return this.getClinic(id, owner.id);
+    }
+
+    /**
+     * Public entry point for creating an additional workspace. Only the caller can
+     * become the owner and the new clinic is never the default one.
+     */
+    async createSharedClinic({ name, ownerMedicId, ...rest }) {
+        const trimmedName = typeof name === 'string' ? name.trim() : '';
+        if (!trimmedName) {
+            throw createHttpError('Clinic name is required', 400);
+        }
+
+        return this.createClinic({
+            ...rest,
+            name: trimmedName,
+            ownerMedicId,
+            type: 'organization',
+            isDefault: false,
+        });
+    }
+
+    async getClinicById(id) {
+        if (!id) {
+            return null;
+        }
+        return this.clinicRepository.getClinicById(id);
+    }
+
+    async markAsDefaultWorkspace(clinicId) {
+        const clinic = await this.clinicRepository.getClinicById(clinicId);
+        if (!clinic || clinic.isDefault === true) {
+            return clinic || null;
+        }
+
+        return this.clinicRepository.updateClinic(clinicId, {
+            ...clinic,
+            isDefault: true,
+            type: clinic.type || 'personal',
+        });
+    }
+
+    /**
+     * The default workspace is created with the account and is tied to its life:
+     * it is the medic's personal clinic and cannot be shared or removed on its own.
+     */
+    async isDefaultWorkspaceClinic(clinic) {
+        if (!clinic) {
+            return false;
+        }
+
+        if (clinic.isDefault === true || clinic.type === 'personal') {
+            return true;
+        }
+
+        if (!clinic.ownerMedicId) {
+            return false;
+        }
+
+        const owner = await this.medicRepository.getMedicById(clinic.ownerMedicId);
+        return Boolean(owner?.defaultClinicId) && String(owner.defaultClinicId) === String(clinic.id);
     }
 
     async getClinic(id, requesterMedicId = null) {
@@ -228,6 +291,10 @@ class ClinicService {
             throw createHttpError('Clinic not found', 404);
         }
 
+        if (await this.isDefaultWorkspaceClinic(clinic)) {
+            throw createHttpError('Collaborators can only be invited to a shared workspace', 403);
+        }
+
         if (requesterMedicId) {
             const membership = await this.clinicRepository.getClinicMember(clinicId, requesterMedicId);
             if (!membership || membership.status !== 'active') {
@@ -266,6 +333,42 @@ class ClinicService {
         };
 
         return this.clinicRepository.createInvitation(clinicId, invitation);
+    }
+
+    /**
+     * Sends the invitation mail off the request path: the inviter already got their
+     * response, and a provider outage is recorded instead of surfaced.
+     */
+    async sendInvitationEmail({ clinicId, invitationId, inviterMedicId }) {
+        const [clinic, invitation, inviter] = await Promise.all([
+            this.clinicRepository.getClinicById(clinicId),
+            this.clinicRepository.getInvitation(clinicId, invitationId),
+            inviterMedicId ? this.medicRepository.getMedicById(inviterMedicId) : Promise.resolve(null),
+        ]);
+
+        if (!clinic || !invitation) {
+            console.error('[ClinicService] invitation email skipped', JSON.stringify({ clinicId, invitationId, reason: 'invitation not found' }));
+            return { delivered: false, reason: 'invitation_not_found' };
+        }
+
+        const delivery = await this.emailService.sendWorkspaceInviteEmail({
+            to: invitation.invitedEmail,
+            workspaceName: clinic.name,
+            inviterName: inviter?.name,
+            inviteCode: invitation.id,
+            userId: inviter?.id || null,
+        });
+
+        if (!delivery.delivered && inviter?.id) {
+            try {
+                const UserAnalyticsService = require('./UserAnalyticsService');
+                await new UserAnalyticsService().trackEmailDeliveryFailure(inviter.id, delivery);
+            } catch (error) {
+                console.error('[ClinicService] Failed to record invite email failure:', error.message);
+            }
+        }
+
+        return delivery;
     }
 
     async acceptInvitation(clinicId, inviteId, medicId) {
@@ -436,6 +539,10 @@ class ClinicService {
 
         if (!['owner', 'admin'].includes(membership.role)) {
             throw createHttpError('Only owners or admins can delete a clinic', 403);
+        }
+
+        if (await this.isDefaultWorkspaceClinic(clinic)) {
+            throw createHttpError('The default workspace can only be removed together with the account', 409);
         }
 
         const PatientService = require('./PatientService');

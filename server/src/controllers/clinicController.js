@@ -5,8 +5,24 @@ const clinicService = new ClinicService();
 
 exports.createClinic = async (req, res) => {
     try {
-        const clinicData = req.body;
-        const newClinic = await clinicService.createClinic(clinicData);
+        const requesterMedicId = extractMedicIdFromRequest(req);
+        if (!requesterMedicId) {
+            return res.status(401).json({ error: 'Invalid or expired token' });
+        }
+
+        // These keys are server-owned: a caller can only ever create an additional
+        // shared workspace that it owns itself.
+        const protectedKeys = new Set(['ownerMedicId', 'type', 'isDefault', 'id', 'displayId', 'PK', 'SK']);
+        const { name, ...submittedFields } = req.body || {};
+        const clinicFields = Object.fromEntries(
+            Object.entries(submittedFields).filter(([key]) => !protectedKeys.has(key))
+        );
+
+        const newClinic = await clinicService.createSharedClinic({
+            ...clinicFields,
+            name,
+            ownerMedicId: requesterMedicId,
+        });
         res.status(201).json(newClinic);
     } catch (err) {
         res.status(err.statusCode || 500).json({ error: err.message });
@@ -76,6 +92,14 @@ exports.inviteMedic = async (req, res) => {
         const requesterMedicId = extractMedicIdFromRequest(req);
         const invitation = await clinicService.inviteMedic(id, req.body, requesterMedicId);
         res.status(201).json(invitation);
+
+        if (invitation?.id) {
+            Promise.resolve(clinicService.sendInvitationEmail({
+                clinicId: id,
+                invitationId: invitation.id,
+                inviterMedicId: requesterMedicId,
+            })).catch((err) => console.error('[ClinicController inviteMedic] Email error:', err.message));
+        }
     } catch (err) {
         res.status(err.statusCode || 500).json({ error: err.message });
     }

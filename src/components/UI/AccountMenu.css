@@ -1,0 +1,96 @@
+.account-menu {
+    position: relative;
+}
+
+.account-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.account-trigger:hover,
+.account-trigger.active {
+    background-color: var(--background-tertiary);
+    color: var(--text-primary);
+}
+
+.account-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 120;
+    min-width: 220px;
+    padding: var(--spacing-2) 0;
+    overflow: hidden;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    animation: account-fade-in 0.2s ease-out;
+    transform-origin: top right;
+}
+
+@keyframes account-fade-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.account-dropdown-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0.5rem 1rem 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.account-dropdown-header strong {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.account-dropdown-header span {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.account-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    text-align: left;
+    color: var(--text-primary);
+    transition: background-color 0.1s;
+}
+
+.account-dropdown-item:hover {
+    background-color: var(--background-tertiary);
+}
+
+.account-dropdown-item svg {
+    color: var(--text-tertiary);
+}
+
+.account-dropdown-item.sign-out {
+    color: var(--color-error);
+    border-top: 1px solid var(--border-color);
+}
+
+.account-dropdown-item.sign-out svg {
+    color: var(--color-error);
+}
+
+.account-dropdown-item.sign-out:hover {
+    background-color: rgba(239, 68, 68, 0.05);
+}

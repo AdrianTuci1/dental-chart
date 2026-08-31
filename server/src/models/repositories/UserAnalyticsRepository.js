@@ -64,7 +64,18 @@ class UserAnalyticsRepository extends BaseRepository {
             });
         }
 
-        // 2.1 Set generic metadata
+        // 2.1 Increment named counters
+        if (updates.increments) {
+            Object.entries(updates.increments).forEach(([key, amount]) => {
+                const attrName = `#inc_${key}`;
+                expressionAttributeNames[attrName] = key;
+                expressionAttributeValues[`:inc_${key}_zero`] = 0;
+                expressionAttributeValues[`:inc_${key}_delta`] = amount;
+                setParts.push(`${attrName} = if_not_exists(${attrName}, :inc_${key}_zero) + :inc_${key}_delta`);
+            });
+        }
+
+        // 2.2 Set generic metadata
         if (updates.metadata) {
             Object.entries(updates.metadata).forEach(([key, value]) => {
                 const attrName = `#meta_${key}`;

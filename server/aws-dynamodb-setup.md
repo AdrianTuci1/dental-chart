@@ -18,7 +18,7 @@ Backend-ul aplicatiei Dental Chart foloseste o structura de tip **Single-Table D
 
 ## Variabile de Mediu `.env`
 
-Pentru ca serverul de Node.js să se poată conecta la tabela ta de DynamoDB, fișierul `.env` din folderul `/server` trebuie să conțină credențiale valide de la un utilizator IAM ce are drepturi complete de citire/scriere (`dynamodb:PutItem`, `dynamodb:GetItem`, `dynamodb:Query`, `dynamodb:UpdateItem`, `dynamodb:DeleteItem`) pe această tabelă.
+Pentru ca serverul de Node.js să se poată conecta la tabela ta de DynamoDB, fișierul `.env` din folderul `/server` trebuie să conțină credențiale valide de la un utilizator IAM ce are drepturi complete de citire/scriere (`dynamodb:PutItem`, `dynamodb:GetItem`, `dynamodb:Query`, `dynamodb:Scan`, `dynamodb:UpdateItem`, `dynamodb:DeleteItem`) pe această tabelă. `Scan` este necesar pentru operațiile rare de revocare a tuturor sesiunilor unui cont.
 
 Exemplu `.env`:
 ```env
@@ -40,5 +40,28 @@ Modulul `BaseRepository` și repo-urile derivate folosesc aceste structuri pentr
 | **Patient Data** | `PATIENT#<id>`                 | `METADATA#`                             |
 | **History**      | `PATIENT#<id>`                 | `HISTORY#<date>#<id>`                   |
 | **TreatmentPlan**| `PATIENT#<id>`                 | `PLAN#<plan_id>`                        |
+| **Sesiune (refresh token)** | `REFRESHTOKEN#<hmac>`     | `METADATA#`                             |
+| **Revocare sesiune**        | `REFRESHTOKEN#FAMILY#<id>`| `REVOKED#`                              |
 
 Prin folosirea structurii hibride cu `PATIENT#<id>`, un query unic poate prelua cu ușurință toate detaliile metadata ale pacientului DAR și planurile de tratament și istoricul asociate.
+
+---
+
+## TTL pentru sesiuni (de activat o singură dată pe tabelă)
+
+Fiecare sesiune activă scrie o linie `REFRESHTOKEN#...` cu un atribut `ttl` (secunde epoch).
+Atributul se scrie oricum, dar DynamoDB șterge efectiv liniile expirate doar dacă TTL-ul este
+activat pe tabelă:
+
+```bash
+aws dynamodb update-time-to-live \
+  --table-name DentalChart \
+  --time-to-live-specification "Enabled=true, AttributeName=ttl" \
+  --region eu-central-1
+```
+
+Sau din consolă: **DynamoDB → DentalChart → Additional information → TTL → Edit → Enable → `ttl`**.
+
+Sesiunile expirate sunt oricum refuzate de cod (verifică atributul `expiresAt`); TTL-ul doar
+împiedică acumularea de linii moarte în tabelă.
+
