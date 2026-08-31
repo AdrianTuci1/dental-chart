@@ -1,12 +1,15 @@
 const MedicService = require('../services/MedicService');
+const SessionService = require('../services/SessionService');
+const GoogleAuthService = require('../services/GoogleAuthService');
 const bcrypt = require('bcryptjs');
-const { signAuthToken, generateRefreshToken, verifyRefreshToken, revokeRefreshToken, extractMedicIdFromRequest } = require('../utils/auth');
+const { signAuthToken, extractMedicIdFromRequest } = require('../utils/auth');
 const medicService = new MedicService();
+const sessionService = new SessionService();
+const googleAuthService = new GoogleAuthService();
 
 /**
  * Auth Controller
- * Handles registration (medic account creation) and login.
- * For now uses simple token placeholder — real JWT integration later.
+ * Handles registration (medic account creation), login and the refresh session.
  */
 
 exports.register = async (req, res) => {
@@ -27,7 +30,7 @@ exports.register = async (req, res) => {
         const newMedic = await medicService.createMedic({ name, email, passwordHash });
 
         const token = signAuthToken(newMedic);
-        const refreshToken = generateRefreshToken(newMedic.id);
+        const session = await sessionService.issue(newMedic.id);
         const publicMedic = medicService.toPublicMedic(newMedic);
 
         const UserAnalyticsService = require('../services/UserAnalyticsService');
@@ -54,7 +57,7 @@ exports.register = async (req, res) => {
             email: publicMedic.email,
             subscriptionPlan: publicMedic.subscriptionPlan,
             token,
-            refreshToken,
+            refreshToken: session.token,
         });
 
         // Welcome mail runs after the response so a slow or broken provider cannot
@@ -92,7 +95,7 @@ exports.login = async (req, res) => {
         }
 
         const token = signAuthToken(medic);
-        const refreshToken = generateRefreshToken(medic.id);
+        const session = await sessionService.issue(medic.id);
         const publicMedic = medicService.toPublicMedic(medic);
 
         const UserAnalyticsService = require('../services/UserAnalyticsService');
@@ -109,10 +112,56 @@ exports.login = async (req, res) => {
             email: publicMedic.email,
             subscriptionPlan: publicMedic.subscriptionPlan,
             token,
-            refreshToken,
+            refreshToken: session.token,
         });
     } catch (err) {
         console.error('[AuthController Login Error]', err);
+        res.status(err.statusCode || 500).json({ error: err.message });
+    }
+};
+
+/**
+ * Sign-in with a Google Identity Services ID token from the browser. Existing accounts
+ * are matched by verified email, so the same person keeps their data and can still use
+ * their password.
+ */
+exports.googleLogin = async (req, res) => {
+    try {
+        const { idToken } = req.body;
+        const claims = await googleAuthService.verifyIdToken(idToken);
+        const { medic, isNewlyCreated } = await medicService.findOrCreateGoogleAccount(claims);
+
+        const token = signAuthToken(medic);
+        const session = await sessionService.issue(medic.id);
+        const publicMedic = medicService.toPublicMedic(medic);
+
+        const UserAnalyticsService = require('../services/UserAnalyticsService');
+        const analyticsService = new UserAnalyticsService();
+        try {
+            await analyticsService.trackLogin(publicMedic.id);
+            if (isNewlyCreated) {
+                await analyticsService.trackOnboarding(publicMedic.id, 'registered_google');
+            }
+        } catch (analyticsError) {
+            console.error('[Analytics] Failed to track Google login:', analyticsError);
+        }
+
+        res.status(isNewlyCreated ? 201 : 200).json({
+            id: publicMedic.id,
+            name: publicMedic.name,
+            email: publicMedic.email,
+            subscriptionPlan: publicMedic.subscriptionPlan,
+            token,
+            refreshToken: session.token,
+        });
+
+        if (isNewlyCreated) {
+            Promise.resolve(medicService.sendWelcomeEmail(publicMedic)).catch((error) => {
+                console.error('[AuthController googleLogin] Welcome email error:', error.message);
+            });
+        }
+    } catch (err) {
+        console.error('[AuthController googleLogin Error]', err);
         res.status(err.statusCode || 500).json({ error: err.message });
     }
 };
@@ -184,24 +233,19 @@ exports.refresh = async (req, res) => {
             return res.status(401).json({ error: 'Refresh token required' });
         }
 
-        const medicId = verifyRefreshToken(refreshToken);
-        if (!medicId) {
-            return res.status(401).json({ error: 'Invalid or expired refresh token' });
+        const rotated = await sessionService.rotate(refreshToken);
+        if (!rotated.valid) {
+            return res.status(401).json({ error: 'Invalid or expired refresh token', reason: rotated.reason });
         }
 
-        const medic = await medicService.getMedicProfile(medicId);
+        const medic = await medicService.getMedicProfile(rotated.medicId);
         if (!medic) {
             return res.status(401).json({ error: 'User not found' });
         }
 
-        // Rotate refresh token: revoke old, generate new
-        revokeRefreshToken(refreshToken);
-        const newRefreshToken = generateRefreshToken(medicId);
-        const newToken = signAuthToken(medic);
-
         res.json({
-            token: newToken,
-            refreshToken: newRefreshToken,
+            token: signAuthToken(medic),
+            refreshToken: rotated.token,
         });
     } catch (err) {
         console.error('[AuthController refresh Error]', err);
@@ -213,7 +257,7 @@ exports.logout = async (req, res) => {
     try {
         const { refreshToken } = req.body;
         if (refreshToken) {
-            revokeRefreshToken(refreshToken);
+            await sessionService.revoke(refreshToken);
         }
         res.json({ success: true });
     } catch (err) {

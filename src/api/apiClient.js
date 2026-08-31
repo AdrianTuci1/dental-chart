@@ -9,13 +9,24 @@ const MOCK_TOKEN = 'mock-session-token';
 let isRefreshing = false;
 let refreshSubscribers = [];
 
-function subscribeTokenRefresh(callback) {
-    refreshSubscribers.push(callback);
+function subscribeTokenRefresh(onSuccess, onFailure) {
+    refreshSubscribers.push({ onSuccess, onFailure });
+}
+
+function takeSubscribers() {
+    const pending = refreshSubscribers;
+    refreshSubscribers = [];
+    return pending;
 }
 
 function onTokenRefreshed(newToken) {
-    refreshSubscribers.forEach((cb) => cb(newToken));
-    refreshSubscribers = [];
+    takeSubscribers().forEach(({ onSuccess }) => onSuccess(newToken));
+}
+
+// Requests that queued behind the refresh must fail too, otherwise their promises
+// would never settle and the page would stay stuck in a loading state.
+function onTokenRefreshFailed(error) {
+    takeSubscribers().forEach(({ onFailure }) => onFailure(error));
 }
 
 function getRefreshToken() {
@@ -34,16 +45,28 @@ function clearTokens() {
 
 async function doRefreshToken() {
     const refreshToken = getRefreshToken();
-    if (!refreshToken) throw new Error('No refresh token');
+    if (!refreshToken) {
+        throw Object.assign(new Error('No refresh token'), { endsSession: true });
+    }
 
-    const response = await fetch(`${BASE_URL}/auth/refresh`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refreshToken }),
-    });
+    let response;
+    try {
+        response = await fetch(`${BASE_URL}/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken }),
+        });
+    } catch {
+        // The request never reached the API. The tokens are still valid, so the
+        // session must survive and the caller can simply retry.
+        throw Object.assign(new Error('Refresh failed'), { retryable: true });
+    }
 
     if (!response.ok) {
-        throw new Error('Refresh failed');
+        // Only the API can end a session: 401/403 means the refresh token is expired,
+        // revoked or reused. A 5xx stays retryable instead of logging everyone out.
+        const endsSession = response.status === 401 || response.status === 403;
+        throw Object.assign(new Error('Refresh failed'), { status: response.status, endsSession });
     }
 
     const data = await response.json();
@@ -80,6 +103,19 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
                 id: user0profile.id,
                 name: requestBody?.email ? requestBody.email.split('@')[0] : user0profile.name,
                 email: requestBody?.email || user0profile.email,
+                token: MOCK_TOKEN,
+                refreshToken: 'mock-refresh-token',
+            };
+        }
+        if (endpoint === '/auth/google' && customConfig.method === 'POST') {
+            if (!requestBody?.idToken) {
+                throw new Error('Google did not return a credential');
+            }
+
+            return {
+                id: user0profile.id,
+                name: user0profile.name,
+                email: user0profile.email,
                 token: MOCK_TOKEN,
                 refreshToken: 'mock-refresh-token',
             };
@@ -253,15 +289,21 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
                     return await makeRequest(newToken);
                 } catch (refreshErr) {
                     isRefreshing = false;
-                    clearTokens();
-                    window.location.href = '/';
+                    onTokenRefreshFailed(refreshErr);
+                    if (refreshErr.endsSession) {
+                        clearTokens();
+                        window.location.href = '/';
+                    }
                     throw refreshErr;
                 }
             } else {
                 return new Promise((resolve, reject) => {
-                    subscribeTokenRefresh((newToken) => {
-                        makeRequest(newToken).then(resolve).catch(reject);
-                    });
+                    subscribeTokenRefresh(
+                        (newToken) => {
+                            makeRequest(newToken).then(resolve).catch(reject);
+                        },
+                        reject,
+                    );
                 });
             }
         }

@@ -11,6 +11,7 @@ const publicAuthRateLimit = createRateLimit({
 
 router.post('/register', publicAuthRateLimit, authController.register);
 router.post('/login', publicAuthRateLimit, authController.login);
+router.post('/google', publicAuthRateLimit, authController.googleLogin);
 router.post('/forgot-password', publicAuthRateLimit, authController.forgotPassword);
 router.post('/reset-password', publicAuthRateLimit, authController.resetPassword);
 router.post('/refresh', publicAuthRateLimit, authController.refresh);

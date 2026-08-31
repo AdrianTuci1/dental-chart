@@ -5,6 +5,7 @@ const { MOCK_PATIENTS_TEMPLATES } = require('../utils/mockData');
 const { createApiKeyRecord, hashApiKey, maskApiKey } = require('../utils/apiKeys');
 const { createHttpError } = require('../utils/httpError');
 const EmailService = require('./EmailService');
+const SessionService = require('./SessionService');
 
 // Import other services to seed data
 const PatientService = require('./PatientService');
@@ -23,6 +24,7 @@ class MedicService {
         this.treatmentPlanService = new TreatmentPlanService();
         this.clinicService = new ClinicService();
         this.emailService = new EmailService();
+        this.sessionService = new SessionService();
     }
 
     async createMedic(medicData) {
@@ -321,6 +323,7 @@ class MedicService {
             await this.clinicService.removeMedicFromClinic(clinic.id, medicId);
         }
 
+        await this.sessionService.revokeAllForMedic(medicId);
         await this.medicRepository.deleteMedic(medicId);
         return { deleted: true, medicId };
     }
@@ -428,6 +431,54 @@ class MedicService {
      * Email delivery is best effort: a provider outage must not break signup or a reset
      * request, but it has to leave a trace attached to the affected account.
      */
+    /**
+     * Google sign-in reuses the existing account when the (verified) email already
+     * belongs to one, so the person keeps the same data and can still log in with a
+     * password. `googleId` is stored on the record; lookups stay email-based because
+     * non-whitelisted attributes are not filterable in DynamoDB.
+     */
+    async findOrCreateGoogleAccount({ id, email, emailVerified, name }) {
+        if (!email) {
+            throw createHttpError('Google account has no email', 400);
+        }
+
+        if (!emailVerified) {
+            throw createHttpError('Google account email is not verified', 403);
+        }
+
+        const existing = await this.getMedicByEmail(email);
+
+        if (existing) {
+            if (existing.googleId && existing.googleId !== id) {
+                throw createHttpError('This email is already linked to a different Google account', 409);
+            }
+
+            if (!existing.googleId) {
+                const linked = await this.medicRepository.updateMedic(existing.id, {
+                    ...existing,
+                    googleId: id,
+                    googleEmailVerified: true,
+                    authProviders: [...new Set([...(existing.authProviders || ['password']), 'google'])],
+                });
+
+                return { medic: linked || existing, isNewlyCreated: false };
+            }
+
+            return { medic: existing, isNewlyCreated: false };
+        }
+
+        const created = await this.createMedic({
+            name: name || email.split('@')[0],
+            email,
+            passwordHash: null,
+            googleId: id,
+            googleEmailVerified: true,
+            authProviders: ['google'],
+        });
+
+        return { medic: created, isNewlyCreated: true };
+    }
+
     async recordEmailFailure(userId, delivery = {}) {
         try {
             const UserAnalyticsService = require('./UserAnalyticsService');
@@ -474,6 +525,13 @@ class MedicService {
             passwordResetCodeHash: null,
             passwordResetExpiresAt: null,
         });
+
+        // A password reset is recovery: whoever held an older session must lose it.
+        try {
+            await this.sessionService.revokeAllForMedic(medic.id);
+        } catch (error) {
+            console.error('[MedicService] Password reset succeeded but sessions could not be revoked:', error.message);
+        }
 
         return { reset: true };
     }

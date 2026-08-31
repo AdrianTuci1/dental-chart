@@ -266,10 +266,12 @@ describe('Default workspace lifetime', () => {
             transferOwnership: jest.fn(),
         };
         service.patientService = { deletePatientsByOwnerMedicId: jest.fn().mockResolvedValue(undefined) };
+        service.sessionService = { revokeAllForMedic: jest.fn().mockResolvedValue(1) };
 
         await service.deleteMedicAndPatients('m-1');
 
         expect(service.clinicService.removeMedicFromClinic).toHaveBeenCalledWith('c-default', 'm-1');
+        expect(service.sessionService.revokeAllForMedic).toHaveBeenCalledWith('m-1');
         expect(service.medicRepository.deleteMedic).toHaveBeenCalledWith('m-1');
     });
 

@@ -12,3 +12,16 @@ data:
   AI_ANALYSIS_ENABLED: "false"
   AWS_REGION: "eu-central-1"
   DYNAMODB_TABLE_NAME: "DentalChart"
+  # Sessions stay valid for a year of inactivity and slide on every refresh, so anyone
+  # who opens the app at least once a year is never asked to log in again.
+  REFRESH_TOKEN_EXPIRES_IN: "365d"
+  # Replaying a just-rotated refresh token within this window (two open tabs) keeps
+  # the session alive; beyond it the whole session family is revoked as a leak.
+  REFRESH_TOKEN_REUSE_GRACE_MS: "10000"
+  # Set to the OAuth 2.0 Web client id to enable "Continue with Google".
+  # GOOGLE_CLIENT_ID: "xxxxxxxx.apps.googleusercontent.com"
+  # Email transport: resend | cloudflare | gmail (see server/.env.example)
+  # EMAIL_PROVIDER: "cloudflare"
+  # EMAIL_FROM: "Pixtooth <no-reply@pixtooth.com>"
+  # CLOUDFLARE_ACCOUNT_ID: ""
+  # CLOUDFLARE_EMAIL_API_TOKEN: ""
