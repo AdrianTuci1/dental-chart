@@ -163,7 +163,7 @@ const HomePage = () => {
 
                 {isMock && (
                     <div className="demo-text">
-                        <p>Demo Mode: Click "Sign In" to continue</p>
+                        <p>Demo Mode: any credentials work — use "Sign In" or "Continue with Google"</p>
                     </div>
                 )}
             </div>

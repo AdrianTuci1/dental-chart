@@ -54,14 +54,3 @@
     background: var(--background-elevated);
     border-color: var(--border-color-lighter);
 }
-
-.social-auth-dev-tag {
-    font-size: 0.65rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    padding: 2px 6px;
-    border-radius: 999px;
-    background: var(--color-primary);
-    color: white;
-}

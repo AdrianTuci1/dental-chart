@@ -186,6 +186,102 @@ export const MOCK_HIERARCHY_DATA = [
     }
 ];
 
+/**
+ * Demo rows for `npm run dev:demo`. They are clones of the two fixtures above with
+ * the fields the patients list renders varied on purpose, so the whole design can be
+ * reviewed without a backend: never examined, empty plan, missing contacts, a child
+ * (age in months) and a recent exam.
+ */
+const demoPatient = (base, overrides) => {
+    const clone = structuredClone(base);
+    return { ...clone, ...overrides(clone) };
+};
+
+const isoDaysAgo = (days) => new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+
+{
+    const [adult, child] = MOCK_HIERARCHY_DATA[0].patients;
+
+    MOCK_HIERARCHY_DATA[0].patients.push(
+        demoPatient(adult, () => ({
+            id: 'patient-3',
+            name: 'Cristina Marinescu-Dumitrescu',
+            dateOfBirth: '1975-11-03',
+            gender: Gender.FEMALE,
+            email: '',
+            phone: '0722114455',
+            lastExamDate: 'N/A',
+            treatmentPlan: { items: [] },
+            history: { completedItems: [] },
+            chart: { id: 'chart-3', lastUpdated: null, teeth: generateDentitionByAge('1975-11-03') },
+        })),
+        demoPatient(adult, (source) => ({
+            id: 'patient-4',
+            name: 'Andrei Popovici',
+            dateOfBirth: '1992-03-28',
+            gender: Gender.MALE,
+            email: 'andrei.popovici@example.com',
+            phone: '0731559922',
+            lastExamDate: isoDaysAgo(3),
+            treatmentPlan: {
+                items: source.treatmentPlan.items.slice(0, 6).map((item, index) => ({
+                    ...item,
+                    id: `tp-p4-${index}`,
+                    status: index < 4 ? 'planned' : 'monitoring',
+                })),
+            },
+            history: { completedItems: [] },
+            chart: { id: 'chart-4', lastUpdated: isoDaysAgo(3), teeth: generateDentitionByAge('1992-03-28') },
+        })),
+        demoPatient(child, () => ({
+            id: 'patient-5',
+            name: 'Sofia Ionescu',
+            dateOfBirth: isoDaysAgo(430),
+            gender: Gender.FEMALE,
+            email: '',
+            phone: '',
+            lastExamDate: isoDaysAgo(28),
+            treatmentPlan: {
+                items: [{ id: 'tp-p5-1', tooth: 64, type: 'decay', procedure: 'Caries Treatment', zones: [ToothZone.OCCLUSAL], status: 'monitoring' }],
+            },
+            history: { completedItems: [] },
+            chart: { id: 'chart-5', lastUpdated: isoDaysAgo(28), teeth: generateDentitionByAge(isoDaysAgo(430)) },
+        })),
+        demoPatient(adult, () => ({
+            id: 'patient-6',
+            name: 'Vasile Dumitrescu-Voiculescu',
+            dateOfBirth: '1968-07-19',
+            gender: Gender.MALE,
+            email: 'vasile.dumitrescu@example.com',
+            phone: '0758220114',
+            lastExamDate: '2023-09-12',
+            treatmentPlan: {
+                items: [{ id: 'tp-p6-1', tooth: 46, type: 'endodontic', procedure: 'Cold: Positive, Percussion: Normal', status: 'monitoring' }],
+            },
+            history: { completedItems: [] },
+            chart: { id: 'chart-6', lastUpdated: '2023-09-12', teeth: generateDentitionByAge('1968-07-19') },
+        })),
+        demoPatient(adult, (source) => ({
+            id: 'patient-7',
+            name: 'Elena Georgescu',
+            dateOfBirth: '1988-01-05',
+            gender: Gender.FEMALE,
+            email: 'elena.georgescu@example.com',
+            phone: '',
+            lastExamDate: isoDaysAgo(9),
+            treatmentPlan: {
+                items: source.treatmentPlan.items.slice(0, 2).map((item, index) => ({
+                    ...item,
+                    id: `tp-p7-${index}`,
+                    status: 'planned',
+                })),
+            },
+            history: { completedItems: [] },
+            chart: { id: 'chart-7', lastUpdated: isoDaysAgo(9), teeth: generateDentitionByAge('1988-01-05') },
+        }))
+    );
+}
+
 export const user0profile = {
     id: 'medic-1',
     name: 'Daniel Smith',
