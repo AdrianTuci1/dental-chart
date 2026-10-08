@@ -1,0 +1,165 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: >-
+  Pixtooth in one artifact: the built frontend (dist/) and the API (server/) travel
+  together in a single Lambda package, served through one API Gateway HTTP API on a
+  custom domain. No EC2, no Nginx, no PM2.
+
+Parameters:
+  Stage:
+    Type: String
+    Default: $default
+    Description: API Gateway stage name. '$default' keeps URLs free of a stage prefix.
+  ApiDomainName:
+    Type: String
+    Description: Public hostname the API answers on, for example api.pixtooth.com.
+  ApiCertificateArn:
+    Type: String
+    Description: >-
+      ACM certificate ARN for ApiDomainName, issued in this stack's region. Request it
+      in the ACM console and validate it with the CNAME records Cloudflare shows.
+  DynamoTableName:
+    Type: String
+    Description: DynamoDB table holding every workspace, patient and session.
+  JwtSecret:
+    Type: String
+    NoEcho: true
+  RefreshTokenSecret:
+    Type: String
+    NoEcho: true
+  CorsOrigin:
+    Type: String
+    Default: https://app.pixtooth.com
+    Description: Comma separated list of browser origins allowed to call the API.
+  GoogleClientId:
+    Type: String
+    Default: ''
+    Description: Leave empty to disable Google sign-in.
+  EmailProvider:
+    Type: String
+    Default: resend
+    Description: resend | cloudflare | gmail
+  EmailFrom:
+    Type: String
+    Default: ''
+  ResendApiKey:
+    Type: String
+    Default: ''
+    NoEcho: true
+  CloudflareAccountId:
+    Type: String
+    Default: ''
+  CloudflareEmailApiToken:
+    Type: String
+    Default: ''
+    NoEcho: true
+  PasswordResetUrl:
+    Type: String
+    Default: https://app.pixtooth.com/reset-password
+  TelemetryExportSecret:
+    Type: String
+    Default: ''
+    NoEcho: true
+  ModalInferenceUrl:
+    Type: String
+    Default: ''
+  AiAnalysisEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+  EnableTelemetry:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['true', 'false']
+
+Globals:
+  Function:
+    Runtime: nodejs22.x
+    Architectures: [arm64]
+    MemorySize: 1024
+    Timeout: 28
+
+Resources:
+  App:
+    Type: AWS::Serverless::Function
+    Properties:
+      # Holds dist/ next to server/, exactly like the repository layout, so the paths in
+      # app.js need no adjustment inside the package.
+      CodeUri: build/
+      Handler: server/lambda.handler
+      Description: Pixtooth API and static frontend
+      Environment:
+        Variables:
+          NODE_ENV: production
+          DYNAMODB_TABLE_NAME: !Ref DynamoTableName
+          JWT_SECRET: !Ref JwtSecret
+          REFRESH_TOKEN_SECRET: !Ref RefreshTokenSecret
+          CORS_ORIGIN: !Ref CorsOrigin
+          GOOGLE_CLIENT_ID: !Ref GoogleClientId
+          EMAIL_PROVIDER: !Ref EmailProvider
+          EMAIL_FROM: !Ref EmailFrom
+          RESEND_API_KEY: !Ref ResendApiKey
+          CLOUDFLARE_ACCOUNT_ID: !Ref CloudflareAccountId
+          CLOUDFLARE_EMAIL_API_TOKEN: !Ref CloudflareEmailApiToken
+          PASSWORD_RESET_URL: !Ref PasswordResetUrl
+          TELEMETRY_EXPORT_SECRET: !Ref TelemetryExportSecret
+          MODAL_INFERENCE_URL: !Ref ModalInferenceUrl
+          AI_ANALYSIS_ENABLED: !Ref AiAnalysisEnabled
+          ENABLE_TELEMETRY: !Ref EnableTelemetry
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoTableName
+      Events:
+        Root:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /
+            Method: ANY
+        Proxy:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /{proxy+}
+            Method: ANY
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref Stage
+      Description: Pixtooth API and frontend
+
+  # Declared separately from the API so the CNAME target can be printed as an output
+  # and pointed at from Cloudflare.
+  ApiDomain:
+    Type: AWS::ApiGatewayV2::DomainName
+    Properties:
+      DomainName: !Ref ApiDomainName
+      DomainNameConfigurations:
+        - CertificateArn: !Ref ApiCertificateArn
+          EndpointType: REGIONAL
+          SecurityPolicy: TLS_1_2
+
+  ApiMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      ApiId: !Ref HttpApi
+      DomainName: !Ref ApiDomainName
+      Stage: !Ref Stage
+
+  AppLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${App}
+      RetentionInDays: 30
+
+Outputs:
+  ApiUrl:
+    Description: Origin URL of the API (the custom domain is the public one).
+    Value: !Sub https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com
+  CustomDomainTarget:
+    Description: Value for a CNAME record on the API hostname. Keep it proxied in Cloudflare.
+    Value: !GetAtt ApiDomain.RegionalDomainName
+  FunctionName:
+    Value: !Ref App

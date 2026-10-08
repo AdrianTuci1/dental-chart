@@ -1,5 +1,9 @@
 # CI/CD and Deploy Notes
 
+This document describes the VPS flow: Nginx plus PM2 on a machine you own, frontend on
+Cloudflare Pages. For the two serverless targets that need no machine at all, see
+[serverless-deployment.md](./serverless-deployment.md).
+
 This repository now has separate validation and deployment flows for frontend and backend.
 
 ## What is covered

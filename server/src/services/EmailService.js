@@ -1,16 +1,29 @@
-const { google } = require('googleapis');
+const { selectTransport } = require('./email');
 
+const LOG_PREFIX = '[EmailService]';
+const isProduction = () => process.env.NODE_ENV === 'production';
+
+/**
+ * Templates plus provider-agnostic delivery. The transport is chosen by EMAIL_PROVIDER
+ * (see src/services/email/index.js), so switching Resend <-> Cloudflare <-> Gmail is a
+ * configuration change only.
+ */
 class EmailService {
-    constructor() {
-        this.fromEmail = process.env.GMAIL_FROM_EMAIL || 'no-reply@pixtooth.com';
-        this.gmailUser = process.env.GMAIL_USER || this.fromEmail;
-        this.clientId = process.env.GMAIL_CLIENT_ID;
-        this.clientSecret = process.env.GMAIL_CLIENT_SECRET;
-        this.refreshToken = process.env.GMAIL_REFRESH_TOKEN;
-        this.redirectUri = process.env.GMAIL_REDIRECT_URI || 'https://developers.google.com/oauthplayground';
+    static configWarningShown = null;
+
+    /**
+     * Resolves the configured transport without sending anything. Used at boot so a
+     * deployment that cannot deliver mail says so in its startup log.
+     */
+    static describeProvider(env = process.env) {
+        const { transport, reason, detail } = selectTransport(env);
+
+        return transport
+            ? { configured: true, provider: transport.name, detail: null }
+            : { configured: false, provider: 'none', reason, detail };
     }
 
-    async sendPasswordResetEmail({ to, resetUrl, code, expiresInMinutes = 15 }) {
+    async sendPasswordResetEmail({ to, resetUrl, code, expiresInMinutes = 15, userId = null }) {
         const subject = 'Reset your Pixtooth password';
         const text = [
             'You requested a password reset for your Pixtooth account.',
@@ -38,72 +51,131 @@ class EmailService {
             </div>
         `;
 
-        return this.sendEmail({ to, subject, text, html });
+        return this.sendEmail({ to, subject, text, html, template: 'password_reset', userId });
     }
 
-    async sendEmail({ to, subject, text, html }) {
-        if (!this.clientId || !this.clientSecret || !this.refreshToken || !this.gmailUser) {
-            console.log('[EmailService] Gmail credentials missing. Email not sent.');
-            console.log(`[EmailService] To: ${to}`);
-            console.log(`[EmailService] Subject: ${subject}`);
-            console.log(text);
-            return { delivered: false, provider: 'mock' };
-        }
-
-        const oauth2Client = new google.auth.OAuth2(
-            this.clientId,
-            this.clientSecret,
-            this.redirectUri
-        );
-        oauth2Client.setCredentials({ refresh_token: this.refreshToken });
-
-        const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
-
-        const rawMessage = this.buildRawMessage({
-            from: this.fromEmail,
-            to,
-            subject,
-            text,
-            html,
-        });
-
-        await gmail.users.messages.send({
-            userId: this.gmailUser,
-            requestBody: {
-                raw: rawMessage,
-            },
-        });
-
-        return { delivered: true, provider: 'gmail' };
-    }
-
-    buildRawMessage({ from, to, subject, text, html }) {
-        const boundary = `pixtooth-${Date.now()}`;
-        const mimeMessage = [
-            `From: ${from}`,
-            `To: ${to}`,
-            'Content-Type: multipart/alternative; boundary="' + boundary + '"',
-            'MIME-Version: 1.0',
-            `Subject: ${subject}`,
+    async sendWelcomeEmail({ to, name, userId = null }) {
+        const subject = 'Welcome to Pixtooth';
+        const greeting = name ? `Hi ${name},` : 'Hi,';
+        const text = [
+            `${greeting} your Pixtooth account is ready.`,
             '',
-            `--${boundary}`,
-            'Content-Type: text/plain; charset="UTF-8"',
+            'You can now chart teeth, keep patient records and invite your team into a shared workspace.',
+            'Open the app: https://app.pixtooth.com',
             '',
-            text,
-            '',
-            `--${boundary}`,
-            'Content-Type: text/html; charset="UTF-8"',
-            '',
-            html,
-            '',
-            `--${boundary}--`,
+            'If you did not create this account, you can reset the password from the sign-in page.',
         ].join('\n');
 
-        return Buffer.from(mimeMessage)
-            .toString('base64')
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=+$/g, '');
+        const html = `
+            <div style="font-family: Arial, sans-serif; color: #111827; line-height: 1.5;">
+                <h2>Welcome to Pixtooth</h2>
+                <p>${greeting} your Pixtooth account is ready.</p>
+                <p>You can now chart teeth, keep patient records and invite your team into a shared workspace.</p>
+                <p>
+                    <a href="https://app.pixtooth.com" style="display:inline-block;padding:12px 18px;background:#7c3aed;color:#ffffff;text-decoration:none;border-radius:8px;">
+                        Open Pixtooth
+                    </a>
+                </p>
+                <p>If you did not create this account, you can reset the password from the sign-in page.</p>
+            </div>
+        `;
+
+        return this.sendEmail({ to, subject, text, html, template: 'welcome', userId });
+    }
+
+    async sendWorkspaceInviteEmail({ to, workspaceName, inviterName, inviteCode, userId = null }) {
+        const subject = `${inviterName || 'A colleague'} invited you to ${workspaceName}`;
+        const text = [
+            `${inviterName || 'Someone'} invited you to the "${workspaceName}" workspace on Pixtooth.`,
+            '',
+            `Accept the invitation with this code: ${inviteCode}`,
+            'Sign in or create an account at https://app.pixtooth.com to join.',
+        ].join('\n');
+
+        const html = `
+            <div style="font-family: Arial, sans-serif; color: #111827; line-height: 1.5;">
+                <h2>${workspaceName}</h2>
+                <p>${inviterName || 'Someone'} invited you to the "${workspaceName}" workspace on Pixtooth.</p>
+                <p>Accept the invitation with this code:</p>
+                <p style="font-size:28px;font-weight:700;letter-spacing:6px;">${inviteCode}</p>
+                <p>
+                    <a href="https://app.pixtooth.com" style="display:inline-block;padding:12px 18px;background:#7c3aed;color:#ffffff;text-decoration:none;border-radius:8px;">
+                        Open Pixtooth
+                    </a>
+                </p>
+            </div>
+        `;
+
+        return this.sendEmail({ to, subject, text, html, template: 'workspace_invite', userId });
+    }
+
+    async sendEmail({ to, subject, text, html, template = 'custom', userId = null }) {
+        if (!to) {
+            return this.reportFailure({ provider: 'none', template, userId, reason: 'invalid_recipient', detail: 'to is required' });
+        }
+
+        const { transport, reason, detail } = selectTransport(process.env);
+
+        if (!transport) {
+            this.warnConfigProblem(reason, detail);
+
+            if (!isProduction()) {
+                // Local convenience: the reset code stays readable in the dev console.
+                console.log(`${LOG_PREFIX} dev fallback body`, { to, subject, text });
+            }
+
+            return this.reportFailure({ provider: 'none', template, userId, to, reason, detail });
+        }
+
+        const from = transport.resolveFrom(process.env);
+
+        try {
+            const meta = await transport.send({ from, to, subject, text, html, env: process.env });
+
+            console.log(`${LOG_PREFIX} delivered`, JSON.stringify({
+                template,
+                provider: transport.name,
+                to,
+                queued: Boolean(meta && meta.queued),
+            }));
+
+            return { delivered: true, provider: transport.name, template };
+        } catch (error) {
+            return this.reportFailure({
+                provider: transport.name,
+                template,
+                userId,
+                to,
+                reason: error.reason || 'provider_error',
+                detail: error.message,
+            });
+        }
+    }
+
+    /**
+     * Delivery problems never throw: the caller decides what the user sees, while the
+     * structured log line and the returned reason make a silent failure impossible.
+     */
+    reportFailure({ provider, template, userId, to = null, reason, detail }) {
+        console.error(`${LOG_PREFIX} delivery_failed`, JSON.stringify({
+            template,
+            provider,
+            reason,
+            detail,
+            to,
+            userId,
+        }));
+
+        return { delivered: false, provider, template, reason, detail };
+    }
+
+    warnConfigProblem(reason, detail) {
+        if (EmailService.configWarningShown === reason) {
+            return;
+        }
+
+        EmailService.configWarningShown = reason;
+        console.warn(`${LOG_PREFIX} email is not usable (${detail}). Every send will fail until this is fixed.`);
     }
 }
 

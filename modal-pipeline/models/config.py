@@ -41,7 +41,7 @@ kaggle_secret = modal.Secret.from_name("kaggle-creds", required_keys=["KAGGLE_US
 DATA_DIR = "/data"
 DATASET_PATH = "/data/dataset"
 YOLO_DATASET_PATH = "/data/dataset/yolo"
-STATUS_DATASET_PATH = "/data/dataset/status"
+STATUS_DATASET_PATH = "/data/dataset/anomaly_status"
 MODELS_DIR = "/data/models"
 
 # FDI numbering classes supported by the dataset (33 classes)
@@ -54,13 +54,43 @@ FDI_LABELS = [
 ]
 FDI_TO_IDX = {label: idx for idx, label in enumerate(FDI_LABELS)}
 
-# Clinical status classes (7 classes)
+# Source anomaly-detection dataset (raw YOLO format from Kaggle)
+ANOMALY_RAW_DATASET_PATH = "/data/dataset/anomaly_raw/YOLO/YOLO"
+
+# Classes from the raw anomaly dataset that relate to teeth (22 classes selected from 31)
+ANOMALY_TOOTH_CLASS_IDS = [
+    0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 14, 15, 16, 18, 19, 22, 23, 24, 25, 29, 30
+]
+
+# Mapping from the raw anomaly class index to the consecutive classifier index
+ANOMALY_ORIGINAL_TO_CLASSIFIER = {
+    0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 6: 5, 7: 6, 8: 7, 9: 8, 10: 9,
+    11: 10, 14: 11, 15: 12, 16: 13, 18: 14, 19: 15, 22: 16, 23: 17,
+    24: 18, 25: 19, 29: 20, 30: 21,
+}
+
+# Clinical status / anomaly classification labels (22 classes)
 STATUS_LABELS = {
-    0: "Tooth without anomalies",
-    1: "Tooth with fillings",
-    2: "Tooth with RCT",
-    3: "Tooth with crown",
-    4: "Tooth with caries",
-    5: "Residual root",
-    6: "Tooth with RCT and crown",
+    0: "Caries",
+    1: "Crown",
+    2: "Filling",
+    3: "Implant",
+    4: "Malaligned",
+    5: "Missing teeth",
+    6: "Periapical lesion",
+    7: "Retained root",
+    8: "Root Canal Treatment",
+    9: "Root Piece",
+    10: "Impacted tooth",
+    11: "Fracture teeth",
+    12: "Permanent Teeth",
+    13: "Supra Eruption",
+    14: "Abutment",
+    15: "Attrition",
+    16: "Metal band",
+    17: "Orthodontic brackets",
+    18: "Permanent retainer",
+    19: "Post-core",
+    20: "Root resorption",
+    21: "Primary teeth",
 }

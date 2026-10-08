@@ -111,6 +111,30 @@ class MedicRepository extends BaseRepository {
         return response.Items && response.Items.length > 0 ? response.Items[0] : null;
     }
 
+    async listMedics() {
+        const items = [];
+        let exclusiveStartKey;
+
+        do {
+            const command = new ScanCommand({
+                TableName: this.tableName,
+                FilterExpression: 'SK = :sk AND begins_with(PK, :medicPrefix)',
+                ExpressionAttributeValues: {
+                    ':sk': 'METADATA#',
+                    ':medicPrefix': 'MEDIC#',
+                },
+                ExclusiveStartKey: exclusiveStartKey,
+            });
+
+            // eslint-disable-next-line no-await-in-loop
+            const response = await this.send(command);
+            items.push(...(response.Items || []));
+            exclusiveStartKey = response.LastEvaluatedKey;
+        } while (exclusiveStartKey);
+
+        return items;
+    }
+
     async deleteMedic(id) {
         const command = new DeleteCommand({
             TableName: this.tableName,

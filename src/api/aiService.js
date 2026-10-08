@@ -1,3 +1,5 @@
+import { staticPath } from '../utils/assetPaths';
+
 /**
  * AI Service handles communication with Modal AI endpoints 
  * and local inference result management.
@@ -8,7 +10,7 @@ export const aiService = {
      */
     getDetections: async () => {
         try {
-            const response = await fetch('/detections.json');
+            const response = await fetch(staticPath('detections.json'));
             if (!response.ok) throw new Error('Detections file not found');
             return await response.json();
         } catch (error) {

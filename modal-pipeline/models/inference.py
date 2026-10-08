@@ -368,7 +368,7 @@ def save_detections():
     print("Running inference on Modal for chart2.png...")
     result = predict_cli.remote("/data/chart2.png")
 
-    output_path = "public/detections.json"
+    output_path = "public/static/detections.json"
     with open(output_path, "w") as f:
         json.dump(result, f, indent=2)
 

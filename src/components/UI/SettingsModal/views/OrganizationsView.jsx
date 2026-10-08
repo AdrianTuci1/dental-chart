@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2, Plus } from 'lucide-react';
 import { AppFacade } from '../../../../core/AppFacade';
 import { getDisplayValue } from '../../profileUtils';
+import { isDefaultWorkspace } from '../../../../core/workspaces/workspaceHelpers';
 
 const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
     const clinics = userProfile?.clinics || [];
@@ -11,6 +12,8 @@ const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
     const [inviteState, setInviteState] = useState({});
     const [clinicNameState, setClinicNameState] = useState({});
     const [transferTargets, setTransferTargets] = useState({});
+    const [newWorkspaceName, setNewWorkspaceName] = useState('');
+    const [isCreatingWorkspace, setIsCreatingWorkspace] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
@@ -72,17 +75,39 @@ const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
         }
     };
 
+    const handleCreateWorkspace = async () => {
+        const trimmedName = newWorkspaceName.trim();
+        if (!trimmedName) {
+            setError('Workspace name is required.');
+            return;
+        }
+
+        resetFeedback();
+        setIsCreatingWorkspace(true);
+
+        try {
+            const created = await AppFacade.clinic.create({ name: trimmedName });
+            setNewWorkspaceName('');
+            await refreshProfile();
+            setSuccess(`Workspace "${created?.name || trimmedName}" created.`);
+        } catch (actionError) {
+            setError(actionError?.message || 'Could not create the workspace.');
+        } finally {
+            setIsCreatingWorkspace(false);
+        }
+    };
+
     const handleRename = async (clinic) => {
         const nextName = clinicNameState[clinic.id];
         if (!nextName?.trim()) {
-            setError('Organization name is required.');
+            setError('Workspace name is required.');
             return;
         }
 
         await withClinicAction(
             clinic.id,
             () => AppFacade.clinic.rename(clinic.id, { name: nextName.trim() }),
-            'Organization updated.'
+            'Workspace updated.'
         );
     };
 
@@ -144,22 +169,22 @@ const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
                 await AppFacade.clinic.delete(clinic.id);
                 setSelectedClinicId(null);
             },
-            'Organization deleted.'
+            'Workspace deleted.'
         );
     };
 
-    const renderOrganizationsList = () => (
+    const renderWorkspacesList = () => (
         <div className="modal-settings-groups">
             <div className="modal-settings-group">
-                <h4>ORGANIZATIONS</h4>
+                <h4>WORKSPACES</h4>
                 <div className="pro-settings-stack">
                     {error ? <p className="settings-inline-error">{error}</p> : null}
                     {success ? <p className="settings-inline-success">{success}</p> : null}
                     {clinics.length === 0 ? (
                         <div className="pro-settings-item vertical">
                             <div className="pro-settings-text">
-                                <label>No organizations yet</label>
-                                <p>You are not an active member in any clinic yet.</p>
+                                <label>No workspaces yet</label>
+                                <p>Your account should have a default workspace. Create a shared one below to invite collaborators.</p>
                             </div>
                         </div>
                     ) : null}
@@ -177,9 +202,43 @@ const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
                                 <strong>{getDisplayValue(clinic.name)}</strong>
                                 <span>{clinic.displayId || 'no value'}</span>
                             </div>
-                            <span className="settings-inline-badge">{clinic.membership?.role || 'member'}</span>
+                            <span className="settings-inline-badge">
+                                {isDefaultWorkspace(clinic, userProfile) ? 'default' : clinic.membership?.role || 'member'}
+                            </span>
                         </button>
                     ))}
+                    <div className="pro-settings-item vertical">
+                        <div className="organization-action-block">
+                            <label>New Workspace</label>
+                            <div className="api-key-box">
+                                <input
+                                    type="text"
+                                    className="api-key-input"
+                                    placeholder="Shared practice name"
+                                    value={newWorkspaceName}
+                                    onChange={(event) => setNewWorkspaceName(event.target.value)}
+                                    onKeyDown={(event) => {
+                                        if (event.key === 'Enter') {
+                                            event.preventDefault();
+                                            handleCreateWorkspace();
+                                        }
+                                    }}
+                                />
+                                <button
+                                    className="pro-btn-secondary pro-btn-icon"
+                                    type="button"
+                                    disabled={isCreatingWorkspace}
+                                    onClick={handleCreateWorkspace}
+                                >
+                                    {isCreatingWorkspace ? <Loader2 size={15} className="settings-spinner" /> : <Plus size={15} />}
+                                    <span>{isCreatingWorkspace ? 'Creating' : 'Create Workspace'}</span>
+                                </button>
+                            </div>
+                            <p className="settings-hint">
+                                Collaborators can only be invited to a shared workspace, never to your default one.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -190,7 +249,7 @@ const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
                         <div className="pro-settings-item vertical">
                             <div className="pro-settings-text">
                                 <label>No pending invitations</label>
-                                <p>When another clinic invites this account, the invite will appear here.</p>
+                                <p>When another workspace invites this account, the invite will appear here.</p>
                             </div>
                         </div>
                     ) : null}
@@ -220,9 +279,10 @@ const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
         </div>
     );
 
-    const renderClinicDetail = (clinic) => {
+    const renderWorkspaceDetail = (clinic) => {
         const canManage = ['owner', 'admin'].includes(clinic.membership?.role);
         const isOwner = clinic.membership?.role === 'owner';
+        const isDefault = isDefaultWorkspace(clinic, userProfile);
         const removableMembers = (clinic.members || []).filter((member) => member.role !== 'owner');
 
         return (
@@ -230,12 +290,12 @@ const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
                 <div className="modal-settings-group">
                     <button className="settings-back-btn" type="button" onClick={() => setSelectedClinicId(null)}>
                         <ArrowLeft size={16} />
-                        <span>Back to all organizations</span>
+                        <span>Back to all workspaces</span>
                     </button>
                 </div>
 
                 <div className="modal-settings-group">
-                    <h4>ORGANIZATION DETAILS</h4>
+                    <h4>WORKSPACE DETAILS</h4>
                     <div className="pro-settings-stack">
                         {error ? <p className="settings-inline-error">{error}</p> : null}
                         {success ? <p className="settings-inline-success">{success}</p> : null}
@@ -243,13 +303,13 @@ const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
                             <div className="settings-card-topline">
                                 <div className="pro-settings-text">
                                     <label>{getDisplayValue(clinic.name)}</label>
-                                    <p>{clinic.type === 'personal' ? 'Personal clinic' : 'Shared organization'}.</p>
+                                    <p>{isDefault ? 'Default workspace' : 'Shared workspace'}.</p>
                                 </div>
-                                <span className="settings-inline-badge">{clinic.membership?.role || 'member'}</span>
+                                <span className="settings-inline-badge">{isDefault ? 'default' : clinic.membership?.role || 'member'}</span>
                             </div>
                             <div className="settings-meta-grid">
                                 <div className="settings-meta-cell">
-                                    <span>Organization Key</span>
+                                    <span>Workspace Key</span>
                                     <strong>{clinic.displayId || 'no value'}</strong>
                                 </div>
                                 <div className="settings-meta-cell">
@@ -267,7 +327,7 @@ const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
                         <div className="pro-settings-stack">
                             <div className="pro-settings-item vertical">
                                 <div className="organization-action-block">
-                                    <label>Organization Name</label>
+                                    <label>Workspace Name</label>
                                     <div className="api-key-box">
                                         <input
                                             type="text"
@@ -289,37 +349,49 @@ const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="pro-settings-item vertical">
-                                <div className="organization-action-block">
-                                    <label>Invite Member</label>
-                                    <div className="settings-invite-grid">
-                                        <input
-                                            type="email"
-                                            className="api-key-input"
-                                            placeholder="doctor@example.com"
-                                            value={inviteState[clinic.id]?.invitedEmail || ''}
-                                            onChange={(event) => updateInviteState(clinic.id, { invitedEmail: event.target.value })}
-                                        />
-                                        <select
-                                            className="modal-settings-select"
-                                            value={inviteState[clinic.id]?.role || 'member'}
-                                            onChange={(event) => updateInviteState(clinic.id, { role: event.target.value })}
-                                        >
-                                            <option value="member">Member</option>
-                                            <option value="admin">Admin</option>
-                                        </select>
-                                        <button
-                                            className="pro-btn-secondary"
-                                            type="button"
-                                            disabled={savingClinicId === clinic.id}
-                                            onClick={() => handleInvite(clinic)}
-                                        >
-                                            Invite
-                                        </button>
+                            {isDefault ? (
+                                <div className="pro-settings-item vertical">
+                                    <div className="pro-settings-text">
+                                        <label>Collaborators</label>
+                                        <p>
+                                            Your default workspace is private to your account. Create a shared workspace
+                                            to invite other dentists.
+                                        </p>
                                     </div>
                                 </div>
-                            </div>
-                            {isOwner ? (
+                            ) : (
+                                <div className="pro-settings-item vertical">
+                                    <div className="organization-action-block">
+                                        <label>Invite Member</label>
+                                        <div className="settings-invite-grid">
+                                            <input
+                                                type="email"
+                                                className="api-key-input"
+                                                placeholder="doctor@example.com"
+                                                value={inviteState[clinic.id]?.invitedEmail || ''}
+                                                onChange={(event) => updateInviteState(clinic.id, { invitedEmail: event.target.value })}
+                                            />
+                                            <select
+                                                className="modal-settings-select"
+                                                value={inviteState[clinic.id]?.role || 'member'}
+                                                onChange={(event) => updateInviteState(clinic.id, { role: event.target.value })}
+                                            >
+                                                <option value="member">Member</option>
+                                                <option value="admin">Admin</option>
+                                            </select>
+                                            <button
+                                                className="pro-btn-secondary"
+                                                type="button"
+                                                disabled={savingClinicId === clinic.id}
+                                                onClick={() => handleInvite(clinic)}
+                                            >
+                                                Invite
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            {isOwner && !isDefault ? (
                                 <div className="pro-settings-item vertical">
                                     <div className="organization-action-block">
                                         <label>Transfer Ownership</label>
@@ -352,20 +424,33 @@ const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
                                     </div>
                                 </div>
                             ) : null}
-                            <div className="pro-settings-item">
-                                <div className="pro-settings-text">
-                                    <label>Delete This Organization</label>
-                                    <p>This removes only this clinic and the patients linked to it. It does not delete your user account.</p>
+                            {isDefault ? (
+                                <div className="pro-settings-item vertical">
+                                    <div className="pro-settings-text">
+                                        <label>Delete This Workspace</label>
+                                        <p>
+                                            The default workspace belongs to your account and is removed only when the
+                                            account itself is deleted.
+                                        </p>
+                                    </div>
+                                    <span className="settings-inline-badge">locked</span>
                                 </div>
-                                <button
-                                    className="pro-btn-danger"
-                                    type="button"
-                                    disabled={savingClinicId === clinic.id}
-                                    onClick={() => handleDeleteClinic(clinic)}
-                                >
-                                    Delete Organization
-                                </button>
-                            </div>
+                            ) : (
+                                <div className="pro-settings-item">
+                                    <div className="pro-settings-text">
+                                        <label>Delete This Workspace</label>
+                                        <p>This removes only this workspace and the patients linked to it. It does not delete your user account.</p>
+                                    </div>
+                                    <button
+                                        className="pro-btn-danger"
+                                        type="button"
+                                        disabled={savingClinicId === clinic.id}
+                                        onClick={() => handleDeleteClinic(clinic)}
+                                    >
+                                        Delete Workspace
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </div>
                 ) : null}
@@ -403,7 +488,7 @@ const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
                             <div className="pro-settings-item vertical">
                                 <div className="pro-settings-text">
                                     <label>No pending invites</label>
-                                    <p>All invitations for this organization have been accepted or there are none yet.</p>
+                                    <p>All invitations for this workspace have been accepted or there are none yet.</p>
                                 </div>
                             </div>
                         ) : (
@@ -425,7 +510,7 @@ const OrganizationsView = ({ userProfile, onProfileRefresh }) => {
         );
     };
 
-    return selectedClinic ? renderClinicDetail(selectedClinic) : renderOrganizationsList();
+    return selectedClinic ? renderWorkspaceDetail(selectedClinic) : renderWorkspacesList();
 };
 
 export default OrganizationsView;

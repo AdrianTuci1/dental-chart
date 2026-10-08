@@ -116,6 +116,60 @@ class PatientService {
         return Array.from(patientMap.values());
     }
 
+    async getPatientsByClinic(medicId, clinicId) {
+        if (!medicId || !clinicId) {
+            throw createHttpError('medicId and clinicId are required', 400);
+        }
+
+        const [medic, clinics] = await Promise.all([
+            this.medicRepository.getMedicById(medicId),
+            this.clinicService.listMedicClinics(medicId),
+        ]);
+
+        const clinic = clinics.find((entry) => String(entry.id) === String(clinicId));
+        if (!clinic) {
+            throw createHttpError('Medic does not have access to the selected clinic', 403);
+        }
+
+        const isDefaultWorkspace = String(clinicId) === String(medic?.defaultClinicId);
+
+        const [clinicPatients, ownedPatients] = await Promise.all([
+            this.patientRepository.getPatientsByClinicIds([clinicId]),
+            // Patients that predate workspaces only show up in the default one.
+            isDefaultWorkspace ? this.patientRepository.getPatientsByMedicId(medicId) : Promise.resolve([]),
+        ]);
+
+        const patientMap = new Map();
+        [...clinicPatients, ...ownedPatients.filter((patient) => !patient.clinicId)].forEach((patient) => {
+            patientMap.set(patient.id, patient);
+        });
+
+        return Array.from(patientMap.values());
+    }
+
+    /**
+     * Attaches patients that have no workspace yet to the given one. Used when an
+     * account is migrated to the default-workspace structure.
+     */
+    async assignPatientsWithoutClinic(medicId, clinicId) {
+        if (!medicId || !clinicId) {
+            throw createHttpError('medicId and clinicId are required', 400);
+        }
+
+        const patients = await this.patientRepository.getPatientsByMedicId(medicId);
+        const unassigned = patients.filter((patient) => !patient.clinicId);
+
+        for (const patient of unassigned) {
+            const { history, treatmentPlan, PK, SK, ...metadata } = patient;
+            await this.patientRepository.updatePatient(patient.id, {
+                ...metadata,
+                clinicId,
+            });
+        }
+
+        return unassigned.length;
+    }
+
     async deletePatient(id) {
         if (!id) {
             throw createHttpError('Patient ID is required', 400);

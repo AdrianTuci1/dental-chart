@@ -350,6 +350,26 @@
     cursor: not-allowed;
 }
 
+.pro-btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.settings-hint {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.55);
+}
+
+.settings-spinner {
+    animation: settings-spin 1s linear infinite;
+}
+
+@keyframes settings-spin {
+    to { transform: rotate(360deg); }
+}
+
 .pro-btn-danger {
     background: transparent;
     color: #ff4d4d;

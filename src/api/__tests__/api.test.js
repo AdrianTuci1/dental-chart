@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { authService, medicService, patientService } from '../index';
+import { authService, medicService, patientService, clinicService } from '../index';
 import apiClient from '../apiClient';
 
 // Mock apiClient
@@ -29,6 +29,12 @@ describe('Frontend API Services', () => {
             apiClient.mockResolvedValueOnce([]);
             await patientService.getPatients('medic-1');
             expect(apiClient).toHaveBeenCalledWith('/medics/medic-1/patients');
+        });
+
+        it('getPatients scopes the request to a workspace when one is given', async () => {
+            apiClient.mockResolvedValueOnce([]);
+            await patientService.getPatients('medic-1', 'clinic with spaces');
+            expect(apiClient).toHaveBeenCalledWith('/medics/medic-1/patients?clinicId=clinic%20with%20spaces');
         });
 
         it('getPatientFull calls /patients/:id/chart', async () => {
@@ -64,6 +70,17 @@ describe('Frontend API Services', () => {
             await medicService.rotateApiKey('medic-1');
             expect(apiClient).toHaveBeenCalledWith('/medics/medic-1/api-key/rotate', {
                 method: 'POST',
+            });
+        });
+    });
+
+    describe('clinicService', () => {
+        it('createClinic calls POST /clinics', async () => {
+            apiClient.mockResolvedValueOnce({ id: 'clinic-1', name: 'City Dental' });
+            await clinicService.createClinic({ name: 'City Dental' });
+            expect(apiClient).toHaveBeenCalledWith('/clinics', {
+                method: 'POST',
+                body: { name: 'City Dental' },
             });
         });
     });

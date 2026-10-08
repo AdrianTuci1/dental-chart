@@ -1,0 +1,235 @@
+.workspace-switcher {
+    position: relative;
+    min-width: 0;
+}
+
+.workspace-trigger {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    max-width: 260px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: var(--background-tertiary);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.workspace-trigger:hover,
+.workspace-trigger.active {
+    border-color: var(--color-primary);
+    background-color: var(--background-elevated);
+}
+
+.workspace-trigger-icon {
+    flex-shrink: 0;
+    color: var(--text-secondary);
+}
+
+.workspace-trigger:hover .workspace-trigger-icon,
+.workspace-trigger.active .workspace-trigger-icon {
+    color: var(--color-primary);
+}
+
+.workspace-trigger-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.workspace-trigger-caret {
+    flex-shrink: 0;
+    color: var(--text-tertiary);
+    transition: transform 0.2s ease-out;
+}
+
+.workspace-trigger-caret.open {
+    transform: rotate(180deg);
+}
+
+.workspace-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 120;
+    min-width: 280px;
+    max-width: 340px;
+    padding: var(--spacing-2) 0;
+    background-color: var(--background-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    animation: workspace-fade-in 0.2s ease-out;
+    transform-origin: top left;
+}
+
+@keyframes workspace-fade-in {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.workspace-menu-label {
+    padding: 0.375rem 1rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--text-tertiary);
+}
+
+.workspace-menu-empty {
+    padding: 0.5rem 1rem 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.workspace-menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    width: 100%;
+    padding: 0.625rem 1rem;
+    text-align: left;
+    color: var(--text-primary);
+    transition: background-color 0.1s;
+}
+
+.workspace-menu-item:hover,
+.workspace-menu-item.active {
+    background-color: var(--background-tertiary);
+}
+
+.workspace-menu-copy {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.workspace-menu-copy strong {
+    overflow: hidden;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.workspace-menu-copy span {
+    font-size: 0.75rem;
+    color: var(--text-tertiary);
+}
+
+.workspace-menu-badge {
+    flex-shrink: 0;
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-full);
+    background-color: rgba(124, 58, 237, 0.16);
+    color: var(--color-purple);
+    font-size: 0.6875rem;
+    font-weight: 600;
+}
+
+.workspace-menu-check {
+    flex-shrink: 0;
+    color: var(--color-primary);
+}
+
+.workspace-menu-divider {
+    height: 1px;
+    margin: var(--spacing-2) 0;
+    background-color: var(--border-color);
+}
+
+.workspace-menu-new {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-3);
+    width: 100%;
+    padding: 0.625rem 1rem;
+    font-size: 0.875rem;
+    text-align: left;
+    color: var(--color-primary);
+    transition: background-color 0.1s;
+}
+
+.workspace-menu-new:hover {
+    background-color: var(--background-tertiary);
+}
+
+.workspace-create-form {
+    padding: 0.25rem 1rem 0.5rem;
+}
+
+.workspace-create-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background-color: var(--background-tertiary);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    outline: none;
+}
+
+.workspace-create-input:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary);
+}
+
+.workspace-create-error {
+    margin-top: var(--spacing-2);
+    font-size: 0.75rem;
+    color: var(--color-error);
+}
+
+.workspace-create-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-3);
+}
+
+.workspace-create-cancel {
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    transition: background-color 0.2s;
+}
+
+.workspace-create-cancel:hover {
+    background-color: var(--background-tertiary);
+}
+
+.workspace-create-confirm {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    padding: 0.375rem 0.875rem;
+    border-radius: var(--radius-md);
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+.workspace-create-confirm:hover:not(:disabled) {
+    background-color: var(--color-primary-dark);
+}
+
+.workspace-create-confirm:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.workspace-create-spinner {
+    animation: workspace-spin 1s linear infinite;
+}
+
+@keyframes workspace-spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}

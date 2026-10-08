@@ -18,6 +18,7 @@ export class PatientAdapter {
         const builder = new PatientBuilder()
             .withId(apiResponse.patient_id || apiResponse.id) // Normalizing ID field names
             .withMedicId(apiResponse.medicId || apiResponse.medic_id)
+            .withClinicId(apiResponse.clinicId || apiResponse.clinic_id)
             .withName(apiResponse.full_name || apiResponse.fullName || apiResponse.name)
             .withEmail(apiResponse.email)
             .withPhone(apiResponse.phone)
@@ -47,6 +48,8 @@ export class PatientAdapter {
         return {
             id: domainObject.id,
             medicId: domainObject.medicId,
+            // Only sent when known: the backend keeps the stored workspace on updates.
+            ...(domainObject.clinicId ? { clinicId: domainObject.clinicId } : {}),
             name: domainObject.name || domainObject.fullName,
             email: domainObject.email,
             phone: domainObject.phone,

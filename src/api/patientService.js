@@ -1,7 +1,8 @@
 import apiClient from './apiClient';
 
-const getPatients = async (medicId) => {
-    return apiClient(`/medics/${medicId}/patients`);
+const getPatients = async (medicId, clinicId = null) => {
+    const query = clinicId ? `?clinicId=${encodeURIComponent(clinicId)}` : '';
+    return apiClient(`/medics/${medicId}/patients${query}`);
 };
 
 const getPatient = async (id) => {

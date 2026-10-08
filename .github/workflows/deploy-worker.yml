@@ -1,0 +1,114 @@
+name: ☁️ Deploy to Cloudflare Workers
+
+# One Worker serves the built frontend through its assets binding and the API through
+# the shared route table. See docs/serverless-deployment.md.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and bundle without uploading
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-worker-production
+  cancel-in-progress: false
+
+env:
+  API_DOMAIN: ${{ vars.API_DOMAIN || 'api.pixtooth.com' }}
+  APP_ORIGIN: https://${{ vars.APP_DOMAIN || 'app.pixtooth.com' }}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    name: Validate
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Run frontend tests
+        run: npx vitest run
+
+      - name: Install backend dependencies
+        run: npm ci --prefix server
+
+      - name: Run backend tests
+        run: npm test --prefix server -- --runInBand
+
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy Worker
+    needs: validate
+    environment: production
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm ci --prefix server
+
+      # The deploy script reads this file and pushes every value it finds as a Worker
+      # secret, which keeps the Worker's configuration equal to the repository secrets.
+      - name: Write deployment variables
+        run: |
+          cat > .env.deploy << ENVEOF
+          AWS_REGION=${{ vars.AWS_REGION || 'eu-central-1' }}
+          DYNAMODB_TABLE_NAME=${{ vars.DYNAMODB_TABLE_NAME || 'DentalChart' }}
+          CORS_ORIGIN=${{ env.APP_ORIGIN }}
+          PASSWORD_RESET_URL=${{ env.APP_ORIGIN }}/reset-password
+
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}
+
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          EMAIL_PROVIDER=${{ vars.EMAIL_PROVIDER || 'resend' }}
+          EMAIL_FROM=${{ vars.EMAIL_FROM }}
+          RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+          CLOUDFLARE_ACCOUNT_ID=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_EMAIL_API_TOKEN=${{ secrets.CLOUDFLARE_EMAIL_API_TOKEN }}
+          MODAL_INFERENCE_URL=${{ vars.MODAL_INFERENCE_URL }}
+          AI_ANALYSIS_ENABLED=${{ vars.AI_ANALYSIS_ENABLED || 'false' }}
+          ENABLE_TELEMETRY=${{ vars.ENABLE_TELEMETRY || 'false' }}
+          TELEMETRY_EXPORT_SECRET=${{ secrets.TELEMETRY_EXPORT_SECRET }}
+          ENVEOF
+
+      - name: Check the signing secrets are set
+        run: |
+          for name in JWT_SECRET REFRESH_TOKEN_SECRET; do
+            if ! grep -q "^$name=.\+" .env.deploy; then
+              echo "::error::Repository secret $name is missing; every deploy would log users out."
+              exit 1
+            fi
+          done
+
+      - name: Deploy
+        run: npm run deploy:worker -- ${{ inputs.dry_run && '--dry-run' || '' }} --sync-secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Report
+        if: always()
+        run: |
+          if [ "${{ job.status }}" == "success" ]; then
+            echo "Worker deployed for https://${{ env.API_DOMAIN }}"
+          else
+            echo "Worker deploy failed"
+          fi

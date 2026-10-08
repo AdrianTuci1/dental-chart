@@ -5,12 +5,16 @@ const { MOCK_PATIENTS_TEMPLATES } = require('../utils/mockData');
 const { createApiKeyRecord, hashApiKey, maskApiKey } = require('../utils/apiKeys');
 const { createHttpError } = require('../utils/httpError');
 const EmailService = require('./EmailService');
+const SessionService = require('./SessionService');
 
 // Import other services to seed data
 const PatientService = require('./PatientService');
 const HistoryService = require('./HistoryService');
 const TreatmentPlanService = require('./TreatmentPlanService');
 const ClinicService = require('./ClinicService');
+
+// Bumped whenever the default-workspace migration needs to run again for a medic.
+const WORKSPACE_MIGRATION_VERSION = 1;
 
 class MedicService {
     constructor() {
@@ -20,6 +24,7 @@ class MedicService {
         this.treatmentPlanService = new TreatmentPlanService();
         this.clinicService = new ClinicService();
         this.emailService = new EmailService();
+        this.sessionService = new SessionService();
     }
 
     async createMedic(medicData) {
@@ -50,6 +55,7 @@ class MedicService {
             name: medicData.clinicName || `${medicData.name}'s Clinic`,
             ownerMedicId: newMedic.id,
             type: 'personal',
+            isDefault: true,
         });
 
         const createdMedic = await this.medicRepository.updateMedic(newMedic.id, {
@@ -111,8 +117,63 @@ class MedicService {
         return await this.medicRepository.getMedicById(id);
     }
 
+    /**
+     * Guarantees that the account owns exactly one default workspace and that patients
+     * created before workspaces existed are attached to it. Runs for accounts created
+     * before this structure existed and is stamped so it only costs one read afterwards.
+     */
+    async ensureDefaultWorkspace(medicId) {
+        if (!medicId) {
+            throw createHttpError('Medic ID is required', 400);
+        }
+
+        const medic = await this.getMedic(medicId);
+        if (!medic) {
+            return null;
+        }
+
+        if (
+            medic.defaultClinicId
+            && medic.workspaceMigrationVersion === WORKSPACE_MIGRATION_VERSION
+        ) {
+            return medic;
+        }
+
+        let defaultClinic = await this.clinicService.getClinicById(medic.defaultClinicId);
+
+        if (!defaultClinic) {
+            // Older accounts may already own a personal clinic that was never linked back.
+            const ownedClinics = await this.clinicService.listOwnedClinics(medicId);
+            defaultClinic = ownedClinics.find((clinic) => clinic.type === 'personal')
+                || ownedClinics[0]
+                || null;
+        }
+
+        if (!defaultClinic) {
+            defaultClinic = await this.clinicService.createClinic({
+                name: medic.name ? `${medic.name}'s Clinic` : 'My Clinic',
+                ownerMedicId: medicId,
+                type: 'personal',
+                isDefault: true,
+            });
+        } else {
+            const flagged = await this.clinicService.markAsDefaultWorkspace(defaultClinic.id);
+            defaultClinic = flagged || defaultClinic;
+        }
+
+        await this.medicRepository.updateMedic(medicId, {
+            ...medic,
+            defaultClinicId: defaultClinic.id,
+            workspaceMigrationVersion: WORKSPACE_MIGRATION_VERSION,
+        });
+
+        await this.patientService.assignPatientsWithoutClinic(medicId, defaultClinic.id);
+
+        return this.getMedic(medicId);
+    }
+
     async getMedicProfile(id) {
-        const medic = await this.getMedic(id);
+        const medic = await this.ensureDefaultWorkspace(id);
         if (!medic) {
             return null;
         }
@@ -199,7 +260,11 @@ class MedicService {
         return migratedMedic;
     }
 
-    async getMedicPatients(medicId) {
+    async getMedicPatients(medicId, clinicId = null) {
+        if (clinicId) {
+            return this.patientService.getPatientsByClinic(medicId, clinicId);
+        }
+
         return await this.patientService.getPatientsByMedicId(medicId);
     }
 
@@ -258,6 +323,7 @@ class MedicService {
             await this.clinicService.removeMedicFromClinic(clinic.id, medicId);
         }
 
+        await this.sessionService.revokeAllForMedic(medicId);
         await this.medicRepository.deleteMedic(medicId);
         return { deleted: true, medicId };
     }
@@ -332,14 +398,95 @@ class MedicService {
             passwordResetExpiresAt: expiresAt,
         });
 
-        await this.emailService.sendPasswordResetEmail({
+        const delivery = await this.emailService.sendPasswordResetEmail({
             to: email,
             resetUrl,
             code: verificationCode,
             expiresInMinutes: 15,
+            userId: medic.id,
         });
 
-        return { accepted: true };
+        if (!delivery.delivered) {
+            await this.recordEmailFailure(medic.id, delivery);
+        }
+
+        return { accepted: true, emailDelivered: delivery.delivered };
+    }
+
+    async sendWelcomeEmail(medic) {
+        const delivery = await this.emailService.sendWelcomeEmail({
+            to: medic.email,
+            name: medic.name,
+            userId: medic.id,
+        });
+
+        if (!delivery.delivered) {
+            await this.recordEmailFailure(medic.id, delivery);
+        }
+
+        return delivery;
+    }
+
+    /**
+     * Email delivery is best effort: a provider outage must not break signup or a reset
+     * request, but it has to leave a trace attached to the affected account.
+     */
+    /**
+     * Google sign-in reuses the existing account when the (verified) email already
+     * belongs to one, so the person keeps the same data and can still log in with a
+     * password. `googleId` is stored on the record; lookups stay email-based because
+     * non-whitelisted attributes are not filterable in DynamoDB.
+     */
+    async findOrCreateGoogleAccount({ id, email, emailVerified, name }) {
+        if (!email) {
+            throw createHttpError('Google account has no email', 400);
+        }
+
+        if (!emailVerified) {
+            throw createHttpError('Google account email is not verified', 403);
+        }
+
+        const existing = await this.getMedicByEmail(email);
+
+        if (existing) {
+            if (existing.googleId && existing.googleId !== id) {
+                throw createHttpError('This email is already linked to a different Google account', 409);
+            }
+
+            if (!existing.googleId) {
+                const linked = await this.medicRepository.updateMedic(existing.id, {
+                    ...existing,
+                    googleId: id,
+                    googleEmailVerified: true,
+                    authProviders: [...new Set([...(existing.authProviders || ['password']), 'google'])],
+                });
+
+                return { medic: linked || existing, isNewlyCreated: false };
+            }
+
+            return { medic: existing, isNewlyCreated: false };
+        }
+
+        const created = await this.createMedic({
+            name: name || email.split('@')[0],
+            email,
+            passwordHash: null,
+            googleId: id,
+            googleEmailVerified: true,
+            authProviders: ['google'],
+        });
+
+        return { medic: created, isNewlyCreated: true };
+    }
+
+    async recordEmailFailure(userId, delivery = {}) {
+        try {
+            const UserAnalyticsService = require('./UserAnalyticsService');
+            const analyticsService = new UserAnalyticsService();
+            await analyticsService.trackEmailDeliveryFailure(userId, delivery);
+        } catch (error) {
+            console.error('[MedicService] Failed to record email delivery failure:', error.message);
+        }
     }
 
     async resetPassword({ email, token, code, newPassword }) {
@@ -379,6 +526,13 @@ class MedicService {
             passwordResetExpiresAt: null,
         });
 
+        // A password reset is recovery: whoever held an older session must lose it.
+        try {
+            await this.sessionService.revokeAllForMedic(medic.id);
+        } catch (error) {
+            console.error('[MedicService] Password reset succeeded but sessions could not be revoked:', error.message);
+        }
+
         return { reset: true };
     }
 
@@ -417,3 +571,4 @@ class MedicService {
 }
 
 module.exports = MedicService;
+module.exports.WORKSPACE_MIGRATION_VERSION = WORKSPACE_MIGRATION_VERSION;

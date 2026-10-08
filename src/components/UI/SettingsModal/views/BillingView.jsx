@@ -15,7 +15,7 @@ const BillingView = ({ userProfile }) => {
                         <p>
                             {isFreePlan
                                 ? 'Free accounts can create up to 5 owned patients.'
-                                : 'Paid accounts can keep creating patients across clinics.'}
+                                : 'Paid accounts can keep creating patients across workspaces.'}
                         </p>
                     </div>
                     <button className="pro-btn-primary" type="button">Manage Plan</button>
@@ -31,8 +31,8 @@ const BillingView = ({ userProfile }) => {
                     </div>
                     <div className="pro-settings-item">
                         <div className="pro-settings-text">
-                            <label>Clinic Collaboration</label>
-                            <p>Members of the same clinic can view the same patient list.</p>
+                            <label>Workspace Collaboration</label>
+                            <p>Members of the same shared workspace can view the same patient list.</p>
                         </div>
                         <span className="settings-inline-badge">Enabled</span>
                     </div>

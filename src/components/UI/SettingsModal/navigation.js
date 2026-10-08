@@ -12,7 +12,7 @@ import {
 
 export const VIEW_CONFIG = {
     profile: { title: 'Account Settings' },
-    organizations: { title: 'Clinics & Access' },
+    organizations: { title: 'Workspaces' },
     billing: { title: 'Subscription' },
     settings: { title: 'General Settings' },
     api: { title: 'API Configuration' },
@@ -24,7 +24,7 @@ export const SIDEBAR_SECTIONS = [
         tag: 'USER SETTINGS',
         items: [
             { id: 'profile', label: 'Account Settings', icon: User },
-            { id: 'organizations', label: 'Clinics & Access', icon: Building2 },
+            { id: 'organizations', label: 'Workspaces', icon: Building2 },
             { id: 'billing', label: 'Subscription', icon: CreditCard },
         ],
     },
