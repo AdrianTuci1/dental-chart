@@ -1,15 +1,15 @@
-const { OAuth2Client } = require('google-auth-library');
+const { createGoogleIdTokenClient } = require('./googleIdTokenVerifier');
 const { createHttpError } = require('../utils/httpError');
 
 /**
  * Verifies Google ID tokens issued to the browser by Google Identity Services.
- * The token is checked against Google's JWKS offline, and only the claims we rely on
+ * The token is checked against Google's JWKS, and only the claims we rely on
  * are handed back to the caller.
  */
 class GoogleAuthService {
     constructor() {
         this.clientId = process.env.GOOGLE_CLIENT_ID;
-        this.client = this.clientId ? new OAuth2Client() : null;
+        this.client = this.clientId ? createGoogleIdTokenClient() : null;
     }
 
     isEnabled() {

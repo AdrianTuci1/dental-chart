@@ -56,7 +56,7 @@ const ResetPasswordPage = () => {
         <div className="signup-page-container">
             <div className="signup-card">
                 <div className="brand-header">
-                    <img src="/logo.png" alt="Pixtooth Logo" className="brand-logo" />
+                    <img src="/static/logo.png" alt="Pixtooth Logo" className="brand-logo" />
                     <span className="brand-name">Pixtooth</span>
                 </div>
 

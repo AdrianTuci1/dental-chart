@@ -1,8 +1,16 @@
 import { AnalyticsAdapter } from '../core/analytics/adapters/AnalyticsAdapter';
 
-const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3001') + '/api';
+// 'self' marks the single-artifact deployments (the bundled Lambda package, the
+// Cloudflare Worker), where the API answers on the same origin as the app. Requests
+// then stay relative, which also keeps them out of CORS.
+const CONFIGURED_API_URL = import.meta.env.VITE_API_URL;
+const API_ORIGIN = CONFIGURED_API_URL === 'self'
+    ? ''
+    : (CONFIGURED_API_URL || 'http://localhost:3001');
 
-const useMock = () => import.meta.env.VITE_DEV_MODE === 'true' || !import.meta.env.VITE_API_URL;
+const BASE_URL = `${API_ORIGIN}/api`;
+
+const useMock = () => import.meta.env.VITE_DEV_MODE === 'true' || !CONFIGURED_API_URL;
 const MOCK_TOKEN = 'mock-session-token';
 
 // --- Token refresh state ---

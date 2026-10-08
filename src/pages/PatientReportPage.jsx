@@ -178,7 +178,7 @@ const PatientReportPage = () => {
                     <h1 className="report-main-title">Patient information</h1>
                     <div className="clinic-logo-placeholder">
                         <div className="logo-icon">
-                            <img src="/logo.png" alt="Logo" style={{ width: '32px', height: '32px' }} />
+                            <img src="/static/logo.png" alt="Logo" style={{ width: '32px', height: '32px' }} />
                         </div>
                         <div className="logo-text">Pixtooth</div>
                     </div>

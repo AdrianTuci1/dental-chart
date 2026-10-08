@@ -441,7 +441,7 @@ const PatientsListPage = () => {
                 <div className="sticky-header-content">
                     <div className="sticky-header-left">
                         <h1 className="sticky-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <img src="/logo.png" alt="logo" style={{ width: '30px', height: '30px' }} />
+                            <img src="/static/logo.png" alt="logo" style={{ width: '30px', height: '30px' }} />
                             Patients</h1>
                         <WorkspaceSwitcher
                             profile={medicProfile}

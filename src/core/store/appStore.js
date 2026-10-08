@@ -5,6 +5,7 @@ import { createMedicSlice } from './slices/medicSlice';
 import { createScanSlice } from './slices/scanSlice';
 import { createWorkspaceSlice, clearStoredActiveClinicId } from './slices/workspaceSlice';
 import { ScanModel } from '../models/ScanModel';
+import { staticPath } from '../../utils/assetPaths';
 
 const createSessionResetState = () => ({
     patients: [],
@@ -23,7 +24,7 @@ const createSessionResetState = () => ({
     showEndo: true,
     showPerio: true,
     showDental: true,
-    scanImage: '/chart2.png',
+    scanImage: staticPath('chart2.png'),
     detections: [],
     isProcessing: false,
     progress: 0,

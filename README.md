@@ -2,7 +2,7 @@
 
 A modern web application for managing dental charts, treatment planning, and oral health monitoring.
 
-![Chart Overview](./public/app-chart.png)
+![Chart Overview](./public/static/app-chart.png)
 
 ## 📋 About
 
@@ -126,7 +126,7 @@ Frontend Store       →    PatientAdapter.toApi()       →    Backend DB
 | `POST` | `/api/patients/:patientId/treatment-plans` | Add treatment plan item |
 | `GET` | `/api/patients/:patientId/treatment-plans` | Get treatment plans |
 | `POST` | `/api/ai/analyze` | Analyze X-ray via Modal (with local fallback) |
-| `GET` | `/public/detections.json` | Static fallback for AI detections |
+| `GET` | `/static/detections.json` | Static fallback for AI detections |
 
 ---
 
@@ -170,8 +170,10 @@ The inference endpoint exposes a `POST` route that accepts the raw X-ray image b
 
 ### Local Fallback (Mock Mode)
 When the cloud AI service is inactive or `AI_ANALYSIS_ENABLED=false` in `.env`, the backend automatically serves:
-- **Image**: `/public/chart2.png` (Panoramic sample)
-- **Detections**: `/public/detections.json` (Pre-calculated results in the new `teeth` + `status` format)
+- **Image**: `/api/ai/assets/chart2.png` (Panoramic sample)
+- **Detections**: `/static/detections.json` (Pre-calculated results in the new `teeth` + `status` format)
+
+Both come from the built static tree `dist/static/`, which is filled from `public/static/`. See [serverless-deployment.md](./docs/serverless-deployment.md#the-asset-split).
 
 ---
 
@@ -299,6 +301,23 @@ npm run dev
 npm install
 npm run dev
 ```
+
+### Deploy
+
+Both targets ship the frontend and the API as one artifact, so there is no server to
+operate. Pick one; `npm run ci` gates either.
+
+```bash
+cp .env.deploy.example .env.deploy && $EDITOR .env.deploy
+
+npm run deploy:lambda              # AWS Lambda behind an API Gateway HTTP API
+npm run deploy:worker              # Cloudflare Worker with an assets binding
+npm run deploy:lambda -- --dry-run # build and validate, ship nothing
+npm run deploy:worker -- --dry-run # bundle to deploy/worker/build/, ship nothing
+```
+
+Full setup, the Cloudflare cache rules, secrets, rollback and known limits:
+[docs/serverless-deployment.md](./docs/serverless-deployment.md).
 
 ---
 

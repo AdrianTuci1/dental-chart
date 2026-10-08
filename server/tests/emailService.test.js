@@ -8,21 +8,6 @@ jest.mock('../src/services/UserAnalyticsService', () => jest.fn(() => ({
     trackEmailDeliveryFailure: mockTrackEmailDeliveryFailure,
 })));
 
-jest.mock('googleapis', () => {
-    const send = jest.fn().mockResolvedValue({});
-
-    return {
-        google: {
-            auth: { OAuth2: jest.fn(() => ({ setCredentials: jest.fn() })) },
-            gmail: jest.fn(() => ({ users: { messages: { send } } })),
-        },
-        __gmailSend: send,
-    };
-});
-
-// eslint-disable-next-line global-require
-const { __gmailSend } = require('googleapis');
-
 const EMAIL_ENV_KEYS = [
     'EMAIL_PROVIDER',
     'EMAIL_FROM',
@@ -128,11 +113,21 @@ describe('provider selection', () => {
             GMAIL_USER: 'no-reply@pixtooth.com',
         });
 
+        fetchMock.mockImplementation(async (url) => (String(url).includes('oauth2.googleapis.com')
+            ? { ok: true, status: 200, json: async () => ({ access_token: 'ya29.token', expires_in: 3600 }) }
+            : { ok: true, status: 200, json: async () => ({ id: 'gmail_1' }) }));
+
         const result = await new EmailService().sendEmail(deliveryArgs());
 
         expect(result).toMatchObject({ delivered: true, provider: 'gmail' });
-        expect(__gmailSend).toHaveBeenCalledTimes(1);
-        expect(fetchMock).not.toHaveBeenCalled();
+
+        const tokenCall = fetchMock.mock.calls.find(([url]) => String(url).includes('oauth2.googleapis.com'));
+        expect(tokenCall).toBeDefined();
+        expect(String(tokenCall[1].body)).toContain('grant_type=refresh_token');
+
+        const sendCall = fetchMock.mock.calls.find(([url]) => String(url).includes('gmail.googleapis.com'));
+        expect(sendCall[0]).toBe('https://gmail.googleapis.com/gmail/v1/users/no-reply%40pixtooth.com/messages/send');
+        expect(sendCall[1].headers.Authorization).toBe('Bearer ya29.token');
     });
 
     it('keeps the same call site when only EMAIL_PROVIDER changes', async () => {

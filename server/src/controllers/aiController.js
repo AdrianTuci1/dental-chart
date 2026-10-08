@@ -1,17 +1,27 @@
 const AIService = require('../services/AIService');
 const UserAnalyticsService = require('../services/UserAnalyticsService');
+const { loadAsset } = require('../services/assetProvider');
 const { extractMedicIdFromRequest } = require('../utils/auth');
 
 const aiService = new AIService();
 const analyticsService = new UserAnalyticsService();
 
-const path = require('path');
-const fs = require('fs');
+// The fallback detections are an asset like any other AI asset, so they come through the
+// same provider and there is one runtime source for them. They used to be bundled from
+// server/public, a copy the Modal pipeline never wrote to, which left the API answering
+// with a frozen result set.
+const FALLBACK_DETECTIONS = 'detections.json';
+
+const loadFallbackDetections = async () => {
+    const asset = await loadAsset(FALLBACK_DETECTIONS);
+
+    return JSON.parse(asset.body.toString('utf8'));
+};
 
 exports.analyzeXray = async (req, res) => {
     // 1. Dacă serviciul este dezactivat, returnăm fallback-ul (MOCK)
     if (process.env.AI_ANALYSIS_ENABLED !== 'true') {
-        return serveFallback(res, 'AI Analysis is currently in MOCK mode.');
+        return await serveFallback(res, 'AI Analysis is currently in MOCK mode.');
     }
 
     try {
@@ -27,49 +37,47 @@ exports.analyzeXray = async (req, res) => {
     } catch (error) {
         console.error('[AI Controller] Error:', error.message);
         // 2. În caz de eroare (service inactive/timeout), dăm fallback ca să nu crape UI-ul
-        return serveFallback(res, 'AI Service error, falling back to mock data.');
+        return await serveFallback(res, 'AI Service error, falling back to mock data.');
     }
 };
 
 /**
  * Helper pentru a servi datele de test salvate local
  */
-function serveFallback(res, reason) {
-    const fallbackPath = path.join(__dirname, '../../public/detections.json');
+async function serveFallback(res, reason) {
+    let detections;
+
     try {
-        const data = fs.readFileSync(fallbackPath, 'utf8');
-        const json = JSON.parse(data);
-        return res.json({
-            ...json,
-            mock_image_url: '/api/ai/assets/chart2.png',
-            meta: {
-                fallback: true,
-                reason: reason,
-                timestamp: new Date().toISOString()
-            }
-        });
-    } catch (err) {
-        return res.status(500).json({ error: 'Failed to load fallback detections' });
+        detections = await loadFallbackDetections();
+    } catch (error) {
+        console.error('[AI Controller] Fallback detections unavailable:', error.message);
+
+        return res.status(503).json({ error: 'AI mock data is unavailable' });
     }
+
+    return res.json({
+        ...detections,
+        mock_image_url: '/api/ai/assets/chart2.png',
+        meta: {
+            fallback: true,
+            reason: reason,
+            timestamp: new Date().toISOString()
+        }
+    });
 }
 
 /**
  * Servește asset-uri specifice modulului AI (imagini de test, măști, etc.)
  * Gated by AI_ANALYSIS_ENABLED
  */
-exports.serveAsset = (req, res) => {
-    const relativePath = Array.isArray(req.params) ? req.params[0] : req.params[0];
-    const publicDir = path.resolve(__dirname, '../../public');
-    const safePath = path.resolve(publicDir, relativePath);
+exports.serveAsset = async (req, res) => {
+    const relativePath = req.params[0];
 
-    // Securitate împotriva Path Traversal
-    if (!safePath.startsWith(publicDir)) {
-        return res.status(403).json({ error: 'Acces interzis' });
+    try {
+        const asset = await loadAsset(relativePath);
+        res.setHeader('Content-Type', asset.contentType);
+        return res.send(asset.body);
+    } catch {
+        return res.status(404).json({ error: 'Asset-ul nu a fost găsit' });
     }
-
-    res.sendFile(safePath, (err) => {
-        if (err) {
-            res.status(404).json({ error: 'Asset-ul nu a fost găsit' });
-        }
-    });
 };

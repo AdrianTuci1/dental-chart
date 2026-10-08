@@ -2,7 +2,6 @@
     "description": "Simplified tooth image configurations using convention-based filenames. Images are resolved dynamically based on tooth number, view, and condition.",
     "convention": {
         "namingPattern": "{toothNumber}_{view}_{condition}.png",
-        "baseDirectory": "/assets/teeth/",
         "views": {
             "outside": "buccal/labial view",
             "top": "incisal/occlusal view",

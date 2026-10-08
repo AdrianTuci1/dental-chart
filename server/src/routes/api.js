@@ -1,20 +1,21 @@
 const express = require('express');
-const authRoutes = require('./modules/authRoutes');
-const analyticsRoutes = require('./modules/analyticsRoutes');
-const clinicRoutes = require('./modules/clinicRoutes');
-const medicRoutes = require('./modules/medicRoutes');
-const patientRoutes = require('./modules/patientRoutes');
-const aiRoutes = require('./modules/aiRoutes');
-const externalContractRoutes = require('./modules/externalContractRoutes');
+const { routes, expressPatternFor } = require('./definitions');
 
 const router = express.Router();
 
-router.use('/auth', authRoutes);
-router.use('/analytics', analyticsRoutes);
-router.use('/clinics', clinicRoutes);
-router.use('/medics', medicRoutes);
-router.use('/patients', patientRoutes);
-router.use('/ai', aiRoutes);
-router.use('/external', externalContractRoutes);
+// The one route that takes a raw image upload. Every other route is parsed by the
+// body parsers mounted in app.js.
+const rawBody = express.raw({ type: 'application/octet-stream', limit: '10mb' });
+
+for (const route of routes) {
+    const handlers = [...route.middleware];
+
+    if (route.rawBody) {
+        handlers.push(rawBody);
+    }
+
+    handlers.push(route.handler);
+    router[route.method](expressPatternFor(route.path), ...handlers);
+}
 
 module.exports = router;

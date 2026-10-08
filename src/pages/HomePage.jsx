@@ -88,7 +88,7 @@ const HomePage = () => {
         <div className="home-page-container">
             <div className="login-card">
                 <div className="brand-header">
-                    <img src="/logo.png" alt="Pixtooth Logo" className="brand-logo" />
+                    <img src="/static/logo.png" alt="Pixtooth Logo" className="brand-logo" />
                     <span className="brand-name">Pixtooth</span>
                 </div>
 

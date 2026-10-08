@@ -1,4 +1,5 @@
 import toothImagesData from '../../data/toothImages.json';
+import { staticPath } from '../assetPaths';
 import { getBaseToothNumber } from './toothNumbering';
 import { getToothType } from './toothConditionMapper';
 
@@ -28,20 +29,19 @@ export const getToothImage = (toothNumber, condition = 'withRoots', view = 'bucc
     }
 
     const pattern = toothImagesData.convention?.namingPattern || '{toothNumber}_{view}_{condition}.png';
-    let baseUrl = toothImagesData.convention?.baseDirectory || '/assets/teeth/';
 
     // If primary tooth (quadrants 5-8), use the deciduous assets folder
     const quadrant = Math.floor(toothNum / 10);
-    if (quadrant >= 5 && quadrant <= 8 && convCondition !== 'missing') {
-        baseUrl = '/assets/decidous/';
-    }
+    const directory = quadrant >= 5 && quadrant <= 8 && convCondition !== 'missing'
+        ? 'decidous'
+        : 'teeth';
 
     const filename = pattern
         .replace('{toothNumber}', baseToothNum)
         .replace('{view}', convView)
         .replace('{condition}', convCondition);
 
-    return `${baseUrl}${filename}`;
+    return staticPath(`${directory}/${filename}`);
 };
 
 /**

@@ -1,8 +1,9 @@
 import { produce } from 'immer';
 import { ScanModel } from '../../models/ScanModel';
+import { staticPath } from '../../../utils/assetPaths';
 
 export const createScanSlice = (set, get) => ({
-    scanImage: '/chart2.png',
+    scanImage: staticPath('chart2.png'),
     detections: [],
     isProcessing: false,
     progress: 0,
