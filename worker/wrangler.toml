@@ -7,6 +7,10 @@
 name = "pixtooth-edge"
 main = "index.js"
 compatibility_date = "2025-10-01"
+# The app has exactly one public address, the app.pixtooth.com custom domain: a second
+# hostname would answer the same requests without the cookie and CORS setup that domain
+# implies, so the workers.dev route stays off on purpose rather than by default.
+workers_dev = false
 # nodejs_compat covers Buffer, node:crypto and friends; the populate flag copies Worker
 # vars and secrets into process.env, which is where the server reads its configuration.
 compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]

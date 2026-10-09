@@ -41,12 +41,21 @@ const contentSecurityPolicy = () => Object.entries(CSP_DIRECTIVES)
 
 const SECURITY_HEADERS = {
     'Content-Security-Policy': contentSecurityPolicy(),
-    'Cross-Origin-Opener-Policy': 'same-origin',
+    // Google Identity Services answers a button click by opening accounts.google.com in a
+    // popup and posting the ID token back to the opener. "same-origin" puts that popup in
+    // its own browsing context group, so window.opener is null in the popup and the token
+    // never arrives. "same-origin-allow-popups" keeps the opener for windows we open and
+    // still keeps every other origin out of our context group.
+    'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
     // The API answers images and JSON that other origins embed, so the default
     // same-origin policy would break the AI sample images on the Pages host.
     'Cross-Origin-Resource-Policy': 'cross-origin',
     'Origin-Agent-Cluster': '?1',
-    'Referrer-Policy': 'no-referrer',
+    // Google Identity Services reads the caller's origin from the Referer header of its
+    // button iframe and rejects the client ID with "The given origin is not allowed" when
+    // it arrives empty, which is what "no-referrer" produced. This value keeps the path
+    // and query string on our own origin and sends nothing but the origin cross-site.
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
     'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
     'X-Content-Type-Options': 'nosniff',
     'X-DNS-Prefetch-Control': 'off',
