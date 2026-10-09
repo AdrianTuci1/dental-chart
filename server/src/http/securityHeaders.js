@@ -14,7 +14,7 @@
 const CSP_DIRECTIVES = {
     'default-src': ["'self'"],
     'base-uri': ["'self'"],
-    'font-src': ["'self'", 'data:', 'https://cdn.jsdelivr.net'],
+    'font-src': ["'self'", 'data:', 'https://cdn.jsdelivr.net', 'https://fonts.gstatic.com'],
     'form-action': ["'self'"],
     'frame-ancestors': ["'self'"],
     // Google Identity Services renders "Continue with Google" in its own iframe and calls
@@ -24,12 +24,14 @@ const CSP_DIRECTIVES = {
     'object-src': ["'none'"],
     'script-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://accounts.google.com'],
     'script-src-attr': ["'none'"],
-    'style-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://accounts.google.com'],
+    // accounts.google.com serves the Google Identity Services button, fonts.googleapis.com
+    // the Inter stylesheet index.html links; both were blocked until this list existed.
+    'style-src': ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net', 'https://accounts.google.com', 'https://fonts.googleapis.com'],
     // No value: the directive either applies or it does not.
     'upgrade-insecure-requests': [],
-    // The retired API origin and the Pages hosts stay allowed until both are gone; the
-    // app answers its own API on its own origin, so nothing here is required for it.
-    'connect-src': ["'self'", 'https://api.pixtooth.com', 'https://*.pages.dev', 'https://cdn.jsdelivr.net', 'https://accounts.google.com'],
+    // The app answers its own API on its own origin, so only the Pages hosts stay allowed
+    // here, left over from the frontend that used to live there.
+    'connect-src': ["'self'", 'https://*.pages.dev', 'https://cdn.jsdelivr.net', 'https://accounts.google.com'],
 };
 
 /** Renders the directive map the way helmet does: `;` between directives, no spaces. */
