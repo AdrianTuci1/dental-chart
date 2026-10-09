@@ -70,9 +70,15 @@ jobs:
         run: |
           cat > .env.deploy << ENVEOF
           AWS_REGION=${{ vars.AWS_REGION || 'eu-central-1' }}
+          AWS_ACCOUNT_ID=${{ vars.AWS_ACCOUNT_ID }}
           DYNAMODB_TABLE_NAME=${{ vars.DYNAMODB_TABLE_NAME || 'DentalChart' }}
           CORS_ORIGIN=${{ env.APP_ORIGIN }}
           PASSWORD_RESET_URL=${{ env.APP_ORIGIN }}/reset-password
+
+          # The identity the Worker runs as: an IAM user scoped to the DynamoDB table.
+          # Deliberately not secrets.AWS_ACCESS_KEY_ID, which deploys the Lambda stack.
+          AWS_ACCESS_KEY_ID=${{ secrets.WORKER_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ secrets.WORKER_AWS_SECRET_ACCESS_KEY }}
 
           JWT_SECRET=${{ secrets.JWT_SECRET }}
           REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}
@@ -89,11 +95,11 @@ jobs:
           TELEMETRY_EXPORT_SECRET=${{ secrets.TELEMETRY_EXPORT_SECRET }}
           ENVEOF
 
-      - name: Check the signing secrets are set
+      - name: Check the required secrets are set
         run: |
-          for name in JWT_SECRET REFRESH_TOKEN_SECRET; do
+          for name in JWT_SECRET REFRESH_TOKEN_SECRET AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY; do
             if ! grep -q "^$name=.\+" .env.deploy; then
-              echo "::error::Repository secret $name is missing; every deploy would log users out."
+              echo "::error::$name is missing; the Worker would deploy and then fail on the routes that need it."
               exit 1
             fi
           done

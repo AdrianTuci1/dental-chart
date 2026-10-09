@@ -267,6 +267,12 @@ aws cloudformation rollback-stack --stack-name pixtooth
   before upload.
 - **`AWS_REGION` must match the region the DynamoDB table lives in**, in `.env.deploy`
   and again in the Lambda stack or the Worker secrets.
+- **`AWS_ACCOUNT_ID` and the `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` pair are read
+  by the Worker only.** Lambda reaches DynamoDB through the role `template.yaml` attaches,
+  so nothing in its configuration names the account or carries a key. A Worker has no role
+  to attach, which makes the account the value its DynamoDB policy is written against and
+  the key pair the identity it runs as. Keep that identity separate from the one the
+  Lambda deploy uses.
 - **Cold starts.** A Lambda that has been idle pays a few hundred milliseconds on the
   first request. A Worker isolate is usually already warm.
 - **`server/public/` no longer exists.** The API serves its assets from `dist/static`, so
