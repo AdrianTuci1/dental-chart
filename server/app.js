@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
 
 const helmet = require('helmet');
+const { CSP_DIRECTIVES, SECURITY_HEADERS } = require('./src/http/securityHeaders');
 
 const EmailService = require('./src/services/EmailService');
 
@@ -50,19 +51,25 @@ setAssetProvider(createNodeAssetProvider(path.join(distDir, 'static')));
 // Middleware
 app.set('trust proxy', 1);
 
+// helmet needs Node, so the Worker sets its header set by hand. Both read the values from
+// securityHeaders.js, which keeps the two hosts from drifting.
 app.use(helmet({
     crossOriginResourcePolicy: { policy: "cross-origin" },
     contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-            imgSrc: ["'self'", "data:", "https:"],
-            fontSrc: ["'self'", "data:", "https://cdn.jsdelivr.net"],
-            connectSrc: ["'self'", "https://api.pixtooth.com", "https://*.pages.dev", "https://cdn.jsdelivr.net"],
-        },
+        useDefaults: false,
+        directives: CSP_DIRECTIVES,
     },
 }));
+
+// helmet emits its own set. Setting every shared entry here, after helmet, is what makes
+// the Node response byte-for-byte identical to the Worker's, CSP string included.
+app.use((req, res, next) => {
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+        res.setHeader(name, value);
+    }
+
+    next();
+});
 app.use(cors({
     origin(origin, callback) {
         if (!origin) {

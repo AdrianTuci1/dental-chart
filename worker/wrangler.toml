@@ -38,6 +38,13 @@ run_worker_first = true
 #
 # WRANGLER_BUILD_CONDITIONS = "workerd,worker,node"
 
+# The resources and the users are in Europe: the DynamoDB table this Worker reads lives in
+# eu-central-1 (Frankfurt). targeted pins execution to that region instead of letting
+# Cloudflare pick a location from request traffic, which could send EU data elsewhere.
+[placement]
+mode = "targeted"
+region = "aws:eu-central-1"
+
 [observability]
 enabled = true
 

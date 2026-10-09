@@ -14,6 +14,7 @@
  */
 const { routes, API_PREFIX } = require('../routes/definitions');
 const { NO_STORE, cacheControlFor } = require('./staticPolicy');
+const { SECURITY_HEADERS } = require('./securityHeaders');
 const { setAssetProvider } = require('../services/assetProvider');
 const { createAssetsProvider } = require('./workerAssets');
 const { healthPayload } = require('./health');
@@ -287,7 +288,7 @@ const serveStatic = async (request, env) => {
     return withCachePolicy(response, looksLikeFile ? pathname : '/index.html', request.method);
 };
 
-const handle = async (request, env) => {
+const dispatch = async (request, env) => {
     const url = new URL(request.url);
     const pathname = url.pathname;
 
@@ -333,8 +334,31 @@ const handle = async (request, env) => {
     return serveStatic(request, env);
 };
 
+/**
+ * Every answer leaves through here, errors and assets included. helmet is Node-only, so
+ * the Worker sets the same header set by hand from the shared module; a header that only
+ * covers the happy path is the one that gets forgotten.
+ */
+const withSecurityHeaders = (response) => {
+    const headers = new Headers(response.headers);
+
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+        headers.set(name, value);
+    }
+
+    return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+    });
+};
+
+const handle = async (request, env) => withSecurityHeaders(await dispatch(request, env));
+
 module.exports = {
     handle,
+    dispatch,
+    withSecurityHeaders,
     matchRoute,
     createResponse,
     runChain,
