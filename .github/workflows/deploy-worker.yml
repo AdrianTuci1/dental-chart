@@ -2,6 +2,14 @@ name: ☁️ Deploy to Cloudflare Workers
 
 # One Worker serves the built frontend through its assets binding and the API through
 # the shared route table. See docs/serverless-deployment.md.
+#
+# Repository secrets you must add (Settings -> Secrets and variables -> Actions):
+#   CLOUDFLARE_API_TOKEN   deploy credential for the account that owns the Worker
+#   CLOUDFLARE_ACCOUNT_ID  that account's id
+# Everything the Worker stores as a secret is read from Secret Manager instead: the
+# workflow trades the GitHub OIDC token for a short-lived Google credential, so no service
+# account key exists. Optional repository secrets for integrations that are not in Secret
+# Manager: CLOUDFLARE_EMAIL_API_TOKEN, TELEMETRY_EXPORT_SECRET.
 on:
   workflow_dispatch:
     inputs:
@@ -13,6 +21,10 @@ on:
 concurrency:
   group: deploy-worker-production
   cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
 
 env:
   API_DOMAIN: ${{ vars.API_DOMAIN || 'api.pixtooth.com' }}
@@ -64,29 +76,54 @@ jobs:
           npm ci
           npm ci --prefix server
 
-      # The deploy script reads this file and pushes every value it finds as a Worker
-      # secret, which keeps the Worker's configuration equal to the repository secrets.
+      # The GitHub OIDC token is exchanged for a short-lived Google credential. Only
+      # pixtooth@pixtooth.iam.gserviceaccount.com may read the secrets below, and the
+      # provider's condition pins the exchange to this repository.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: projects/233956133307/locations/global/workloadIdentityPools/github/providers/github
+          service_account: pixtooth@pixtooth.iam.gserviceaccount.com
+
+      - name: Read deployment secrets from Secret Manager
+        id: gcloud-secrets
+        uses: google-github-actions/get-secretmanager-secrets@v2
+        with:
+          secrets: |-
+            AWS_REGION:projects/233956133307/secrets/AWS_REGION
+            AWS_ACCOUNT_ID:projects/233956133307/secrets/AWS_ACCOUNT_ID
+            DYNAMODB_TABLE_NAME:projects/233956133307/secrets/DYNAMODB_TABLE_NAME
+            AWS_ACCESS_KEY_ID:projects/233956133307/secrets/AWS_ACCESS_KEY_ID
+            AWS_SECRET_ACCESS_KEY:projects/233956133307/secrets/AWS_SECRET_ACCESS_KEY
+            JWT_SECRET:projects/233956133307/secrets/JWT_SECRET
+            REFRESH_TOKEN_SECRET:projects/233956133307/secrets/REFRESH_TOKEN_SECRET
+            RESEND_API_KEY:projects/233956133307/secrets/RESEND_API_KEY
+            GOOGLE_CLIENT_ID:projects/233956133307/secrets/GOOGLE_CLIENT_ID
+
+      # The deploy script reads this file and pushes every value it recognises as a Worker
+      # secret, and it passes GOOGLE_CLIENT_ID to the frontend build so Vite bakes it in.
+      # Writing it here keeps the Worker secret and the bundle from the same source.
       - name: Write deployment variables
         run: |
           cat > .env.deploy << ENVEOF
-          AWS_REGION=${{ vars.AWS_REGION || 'eu-central-1' }}
-          AWS_ACCOUNT_ID=${{ vars.AWS_ACCOUNT_ID }}
-          DYNAMODB_TABLE_NAME=${{ vars.DYNAMODB_TABLE_NAME || 'DentalChart' }}
+          AWS_REGION=${{ steps.gcloud-secrets.outputs.AWS_REGION }}
+          AWS_ACCOUNT_ID=${{ steps.gcloud-secrets.outputs.AWS_ACCOUNT_ID }}
+          DYNAMODB_TABLE_NAME=${{ steps.gcloud-secrets.outputs.DYNAMODB_TABLE_NAME }}
           CORS_ORIGIN=${{ env.APP_ORIGIN }}
           PASSWORD_RESET_URL=${{ env.APP_ORIGIN }}/reset-password
 
           # The identity the Worker runs as: an IAM user scoped to the DynamoDB table.
-          # Deliberately not secrets.AWS_ACCESS_KEY_ID, which deploys the Lambda stack.
-          AWS_ACCESS_KEY_ID=${{ secrets.WORKER_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY=${{ secrets.WORKER_AWS_SECRET_ACCESS_KEY }}
+          # Deliberately not the key pair that deploys the Lambda stack.
+          AWS_ACCESS_KEY_ID=${{ steps.gcloud-secrets.outputs.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY=${{ steps.gcloud-secrets.outputs.AWS_SECRET_ACCESS_KEY }}
 
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}
+          JWT_SECRET=${{ steps.gcloud-secrets.outputs.JWT_SECRET }}
+          REFRESH_TOKEN_SECRET=${{ steps.gcloud-secrets.outputs.REFRESH_TOKEN_SECRET }}
 
-          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_ID=${{ steps.gcloud-secrets.outputs.GOOGLE_CLIENT_ID }}
           EMAIL_PROVIDER=${{ vars.EMAIL_PROVIDER || 'resend' }}
           EMAIL_FROM=${{ vars.EMAIL_FROM }}
-          RESEND_API_KEY=${{ secrets.RESEND_API_KEY }}
+          RESEND_API_KEY=${{ steps.gcloud-secrets.outputs.RESEND_API_KEY }}
           CLOUDFLARE_ACCOUNT_ID=${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_EMAIL_API_TOKEN=${{ secrets.CLOUDFLARE_EMAIL_API_TOKEN }}
           MODAL_INFERENCE_URL=${{ vars.MODAL_INFERENCE_URL }}

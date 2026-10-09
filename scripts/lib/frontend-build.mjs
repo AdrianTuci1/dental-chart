@@ -9,11 +9,15 @@ import { execFileSync } from 'node:child_process';
  *
  * The OpenAPI page lands in dist/api-docs through scripts/vite-plugin-api-docs.js, so the
  * output of any `npm run build` is complete for either host.
+ *
+ * extraEnv reaches Vite as environment variables. Vite folds every VITE_-prefixed name in
+ * process.env into import.meta.env, which is how a caller passes a value that only lives
+ * in .env.deploy.
  */
-export const buildFrontend = (root) => {
+export const buildFrontend = (root, extraEnv = {}) => {
     execFileSync('npm', ['run', 'build'], {
         stdio: 'inherit',
         cwd: root,
-        env: { ...process.env, VITE_API_URL: 'self' },
+        env: { ...process.env, VITE_API_URL: 'self', ...extraEnv },
     });
 };

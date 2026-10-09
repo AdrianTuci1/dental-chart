@@ -198,7 +198,13 @@ const main = async () => {
 
     if (options.build) {
         console.log('Building the frontend...');
-        buildFrontend(root);
+
+        // The Google client id is baked into the bundle at build time, so Vite needs it
+        // under its own name. .env.deploy keeps it as GOOGLE_CLIENT_ID, which is what the
+        // server reads, so the same value feeds both halves.
+        const googleClientId = fileValues.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+
+        buildFrontend(root, googleClientId ? { VITE_GOOGLE_CLIENT_ID: googleClientId } : {});
     } else {
         console.log('Skipping the build (--no-build).');
     }
