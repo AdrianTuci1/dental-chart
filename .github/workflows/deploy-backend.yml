@@ -31,6 +31,10 @@ jobs:
       - name: Run backend tests
         run: npm test -- --runInBand
 
+      - name: Check backend dependency licenses
+        run: node ../../scripts/check-licenses.mjs apps/backend
+
+
   deploy:
     runs-on: ubuntu-latest
     name: Deploy Backend to VPS
@@ -99,6 +103,14 @@ jobs:
           AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION=${{ vars.AWS_REGION || 'eu-central-1' }}
           DYNAMODB_TABLE_NAME=${{ vars.DYNAMODB_TABLE_NAME || 'DentalChart' }}
+
+          DB_DRIVER=${{ vars.DB_DRIVER || 'dynamo' }}
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          DATABASE_SSL=${{ vars.DATABASE_SSL || 'false' }}
+          DATABASE_SCHEMA=${{ vars.DATABASE_SCHEMA || 'public' }}
+          DATABASE_POOL_MAX=${{ vars.DATABASE_POOL_MAX || '10' }}
+          DATABASE_POOL_IDLE_TIMEOUT_MS=${{ vars.DATABASE_POOL_IDLE_TIMEOUT_MS || '10000' }}
+          DATABASE_POOL_CONNECTION_TIMEOUT_MS=${{ vars.DATABASE_POOL_CONNECTION_TIMEOUT_MS || '10000' }}
 
           ENABLE_TELEMETRY=false
           AI_ANALYSIS_ENABLED=false

@@ -34,8 +34,9 @@ in [docs/backend-architecture.md](./docs/backend-architecture.md).
 | `analytics`, `email` | product telemetry, transactional email |
 
 One route table (`apps/backend/src/routes/definitions.js`) serves every host: the local/VPS
-Express process, AWS Lambda and the Cloudflare Worker. Data lives in a single DynamoDB
-table using `PK`/`SK` keys.
+Express process, AWS Lambda and the Cloudflare Worker. Data lives in a single document
+table using `PK`/`SK` keys: DynamoDB by default, or PostgreSQL with `DB_DRIVER=postgres`
+(see [docs/postgres-setup.md](./docs/postgres-setup.md)).
 
 ### Technology stack
 
@@ -157,9 +158,19 @@ split, secrets, cache rules, rollback and known limits.
 | [docs/architecture-map.md](./docs/architecture-map.md) | navigable mindmap of frontend and backend |
 | [docs/serverless-deployment.md](./docs/serverless-deployment.md) | Lambda and Worker deployment, assets, secrets |
 | [docs/deployment-automation.md](./docs/deployment-automation.md) | CI, VPS release flow, Cloudflare Pages |
+| [docs/postgres-setup.md](./docs/postgres-setup.md) | running the API on PostgreSQL instead of DynamoDB |
 | [docs/vps-setup.md](./docs/vps-setup.md) | step-by-step VPS setup |
+| [docs/compliance.md](./docs/compliance.md) | license, third-party notices, distribution and data-protection checklist |
+| [SECURITY.md](./SECURITY.md) | reporting a vulnerability and supported versions |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | development setup, DCO sign-off and pull requests |
 | [apps/ml/README.md](./apps/ml/README.md) | training pipeline, dataset and Modal commands |
 | [apps/backend/docs/openapi.yaml](./apps/backend/docs/openapi.yaml) | API contract |
+
+## License
+
+Pixtooth is licensed under the Apache License 2.0. See [LICENSE](./LICENSE) and
+[NOTICE](./NOTICE). Third-party licenses, the distribution checklist and the
+data-protection notes are in [docs/compliance.md](./docs/compliance.md).
 
 ---
 

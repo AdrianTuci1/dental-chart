@@ -59,6 +59,15 @@ implementation. The one orchestration that spans modules is registration: `ident
 creates the account, asks `clinic` for the default workspace and `patients` for seed
 data.
 
+## Persistence
+
+Repositories send a small document command set (put, get, delete, query, scan, update)
+through `src/shared/infrastructure/documentClient.js`. `DB_DRIVER=dynamo` (the default)
+uses the DynamoDB document client; `DB_DRIVER=postgres` uses
+`src/shared/infrastructure/postgresDocumentClient.js`, which stores one row per `PK`/`SK`
+in a `documents` table. The repository code does not branch on the driver. See
+[docs/postgres-setup.md](./postgres-setup.md) for configuration and limits.
+
 ## Composition root
 
 `src/container.js` instantiates repositories, services, the email and AI adapters, and

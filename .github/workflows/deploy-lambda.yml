@@ -49,6 +49,10 @@ jobs:
       - name: Run backend tests
         run: npm test --prefix apps/backend -- --runInBand
 
+      - name: Check dependency licenses
+        run: npm run check:licenses
+
+
   deploy:
     runs-on: ubuntu-latest
     name: Deploy Lambda

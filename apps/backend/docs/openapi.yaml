@@ -113,6 +113,87 @@ paths:
         '200':
           description: Server status
 
+  /api/config:
+    get:
+      summary: Read the safe deployment configuration
+      description: >
+        Reports the database driver, email provider, Google and AI state, and which
+        variables are missing. Secret values are never returned.
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Configuration state for the settings screen
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  database:
+                    type: object
+                    properties:
+                      driver:
+                        type: string
+                        enum: [dynamo, postgres]
+                      tableName:
+                        type: string
+                      target:
+                        type: object
+                  email:
+                    type: object
+                    properties:
+                      configured:
+                        type: boolean
+                      provider:
+                        type: string
+                      requestedProvider:
+                        type: [string, 'null']
+                      detail:
+                        type: [string, 'null']
+                  google:
+                    type: object
+                    properties:
+                      configured:
+                        type: boolean
+                  ai:
+                    type: object
+                  auth:
+                    type: object
+                  warnings:
+                    type: array
+                    items:
+                      type: string
+        '401':
+          description: Missing or invalid session
+
+  /api/config/test-email:
+    post:
+      summary: Send a test email to the authenticated account
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: >-
+            Delivery result. A false `delivered` value names the provider reason.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  to:
+                    type: string
+                    format: email
+                  delivered:
+                    type: boolean
+                  provider:
+                    type: string
+                  reason:
+                    type: [string, 'null']
+                  detail:
+                    type: [string, 'null']
+        '401':
+          description: Missing or invalid session
+
   /api/clinics:
     post:
       summary: Create a clinic or organization

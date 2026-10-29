@@ -86,5 +86,16 @@ The Nginx template used by the script is:
 - `BACKEND_PORT`
 - `BACKEND_HOST`
 - `API_DOMAIN`
+- `DB_DRIVER` (`dynamo` by default; `postgres` enables the PostgreSQL adapter on the VPS)
+- `DATABASE_SSL`
+- `DATABASE_SCHEMA`
+- `DATABASE_POOL_MAX`
+- `DATABASE_POOL_IDLE_TIMEOUT_MS`
+- `DATABASE_POOL_CONNECTION_TIMEOUT_MS`
+
+When `DB_DRIVER=postgres`, also set the `DATABASE_URL` secret. The app refuses to start
+without it, so a misconfigured release fails the health check and rolls back. Postgres is
+limited to the long-running hosts; the Lambda and Worker workflows never select it. See
+[postgres-setup.md](./postgres-setup.md).
 
 If those variables are not set, the defaults above are used.

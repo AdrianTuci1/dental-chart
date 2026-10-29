@@ -1,0 +1,6 @@
+Pixtooth
+Copyright 2026 Adrian Tucicovenco
+
+This distribution includes third-party software. Each package keeps its own
+license and attribution notice. The production dependency licenses are listed
+by `npm run check:licenses`.

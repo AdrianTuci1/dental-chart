@@ -7,6 +7,7 @@ import { chartService } from './chartService';
 import { toothService } from './toothService';
 import { aiService } from './aiService';
 import { analyticsService } from './analyticsService';
+import { systemService } from './systemService';
 
 export {
     apiClient,
@@ -18,4 +19,5 @@ export {
     toothService,
     aiService,
     analyticsService,
+    systemService,
 };

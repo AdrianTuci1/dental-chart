@@ -36,6 +36,9 @@ jobs:
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://api.pixtooth.com' }}
 
+      - name: Check frontend dependency licenses
+        run: node ../../scripts/check-licenses.mjs apps/frontend
+
   backend:
     runs-on: ubuntu-latest
     name: Backend Tests
@@ -58,3 +61,6 @@ jobs:
 
       - name: Run backend tests
         run: npm test -- --runInBand
+
+      - name: Check backend dependency licenses
+        run: node ../../scripts/check-licenses.mjs apps/backend

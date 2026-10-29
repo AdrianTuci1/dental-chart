@@ -12,6 +12,13 @@ data:
   AI_ANALYSIS_ENABLED: "false"
   AWS_REGION: "eu-central-1"
   DYNAMODB_TABLE_NAME: "DentalChart"
+  # Database driver: dynamo (default) or postgres. For Postgres, put DATABASE_URL in a
+  # Secret and set DB_DRIVER here; see docs/postgres-setup.md.
+  DB_DRIVER: "dynamo"
+  # DB_DRIVER: "postgres"
+  # DATABASE_SSL: "false"
+  # DATABASE_SCHEMA: "public"
+  # DATABASE_POOL_MAX: "10"
   # Sessions stay valid for a year of inactivity and slide on every refresh, so anyone
   # who opens the app at least once a year is never asked to log in again.
   REFRESH_TOKEN_EXPIRES_IN: "365d"

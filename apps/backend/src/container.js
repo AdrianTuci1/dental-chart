@@ -5,7 +5,8 @@
  * repositories and collaborators through constructors, which keeps the dependency
  * direction pointing inward and makes the HTTP adapters thin.
  */
-const { docClient } = require('./shared/infrastructure/dynamoClient');
+const { loadConfig } = require('./config');
+const { createDocumentClient } = require('./shared/infrastructure/documentClient');
 
 const MedicRepository = require('./modules/identity/infrastructure/MedicRepository');
 const RefreshTokenRepository = require('./modules/identity/infrastructure/RefreshTokenRepository');
@@ -32,12 +33,13 @@ const UserAnalyticsService = require('./modules/analytics/application/UserAnalyt
 const EmailService = require('./modules/email/application/EmailService');
 const AIService = require('./modules/ai/application/AIService');
 const ApiKeyAuthenticator = require('./modules/integration/application/ApiKeyAuthenticator');
+const ConfigurationService = require('./modules/system/application/ConfigurationService');
 
-const tableName = process.env.DYNAMODB_TABLE_NAME
-    || process.env.DYNAMODB_TABLE
-    || 'DentalChart';
+const config = loadConfig();
+const documentClient = createDocumentClient(config);
+const tableName = config.database.tableName;
 
-const repositoryOptions = { client: docClient, tableName };
+const repositoryOptions = { client: documentClient, tableName };
 
 const medicRepository = new MedicRepository(repositoryOptions);
 const clinicRepository = new ClinicRepository(repositoryOptions);
@@ -102,8 +104,15 @@ const authService = new AuthService({
 
 const aiService = new AIService();
 const apiKeyAuthenticator = new ApiKeyAuthenticator({ medicService });
+const configurationService = new ConfigurationService({
+    config,
+    emailService,
+    medicService,
+});
 
 module.exports = {
+    config,
+    documentClient,
     tableName,
     repositories: {
         medicRepository,
@@ -128,4 +137,5 @@ module.exports = {
     authService,
     aiService,
     apiKeyAuthenticator,
+    configurationService,
 };

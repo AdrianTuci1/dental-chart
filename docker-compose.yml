@@ -15,7 +15,9 @@ services:
       - ./apps/backend/src/models/schema.sql:/docker-entrypoint-initdb.d/init.sql
 
   api:
-    build: ./apps/backend
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
     container_name: dchart_api
     ports:
       - "3001:3001"

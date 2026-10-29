@@ -13,6 +13,33 @@ const BASE_URL = `${API_ORIGIN}/api`;
 const useMock = () => import.meta.env.VITE_DEV_MODE === 'true' || !CONFIGURED_API_URL;
 const MOCK_TOKEN = 'mock-session-token';
 
+const MOCK_CONFIG = {
+    runtime: { environment: 'development', corsOrigins: ['http://localhost:5173'] },
+    database: {
+        driver: 'dynamo',
+        tableName: 'DentalChart',
+        region: 'eu-central-1',
+        target: { configured: true, table: 'DentalChart' },
+    },
+    email: {
+        configured: false,
+        provider: 'none',
+        requestedProvider: null,
+        from: null,
+        reason: 'not_configured',
+        detail: 'no email provider configured',
+    },
+    google: { configured: false },
+    ai: { enabled: false, inferenceConfigured: false },
+    auth: {
+        jwtSecretConfigured: true,
+        refreshTokenSecretConfigured: true,
+        accessTokenLifetime: '15m',
+        refreshTokenLifetime: '365d',
+    },
+    warnings: ['no email provider configured'],
+};
+
 // --- Token refresh state ---
 let isRefreshing = false;
 let refreshSubscribers = [];
@@ -105,7 +132,21 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
     if (useMock()) {
         const { MOCK_HIERARCHY_DATA, user0profile } = await import('../utils/mockData');
         const token = localStorage.getItem('token');
-        
+
+        if (endpoint === '/config') {
+            return MOCK_CONFIG;
+        }
+        if (endpoint === '/config/test-email') {
+            return {
+                to: user0profile.email,
+                delivered: false,
+                provider: 'none',
+                reason: 'not_configured',
+                detail: 'no email provider configured',
+                template: 'configuration_test',
+            };
+        }
+
         if (endpoint === '/auth/login' && customConfig.method === 'POST') {
             return {
                 id: user0profile.id,

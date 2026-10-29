@@ -8,6 +8,7 @@ import OrganizationsView from './views/OrganizationsView';
 import BillingView from './views/BillingView';
 import GeneralSettingsView from './views/GeneralSettingsView';
 import ApiAccessView from './views/ApiAccessView';
+import SystemView from './views/SystemView';
 import SupportView from './views/SupportView';
 import { getAvatarColor, getDisplayValue, getInitials } from '../profileUtils';
 import { clearClientSession } from '../../../core/session/sessionActions';
@@ -19,6 +20,7 @@ const VIEW_COMPONENTS = {
     billing: BillingView,
     settings: GeneralSettingsView,
     api: ApiAccessView,
+    system: SystemView,
     support: SupportView,
 };
 
