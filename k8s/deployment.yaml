@@ -22,7 +22,7 @@ spec:
         - name: ghcr-pull
       containers:
         - name: backend
-          image: ghcr.io/adriantuci1/dental-chart-backend:f7a2d56c79df67319ab75b0cc525285a4dd63de5
+          image: ghcr.io/adriantuci1/dental-chart-backend:5dcda55dab87a52277e1b9df51d098919e5204b9
           ports:
             - name: http
               containerPort: 3001
