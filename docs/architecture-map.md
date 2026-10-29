@@ -4,7 +4,8 @@
 
 - Open this file with `Markmap: Open as mindmap` in VS Code for a navigable overview.
 - Use CodeGraphy for the import graph, and use this map for architectural intent.
-- Read from top to bottom: `pages -> layout -> components -> core/store -> api/server`.
+- Read from top to bottom: `pages -> layout -> components -> core/store -> api/backend`.
+- Frontend paths are relative to `apps/frontend/`; backend paths include the `apps/backend/` prefix; ML code lives in `ml/`.
 
 ## Application Entry
 
@@ -205,11 +206,12 @@
 
 ## Backend
 
-- `server/src/services/PatientService.js`
+- `apps/backend/src/modules/patients/application/PatientService.js`
   - Backend source of truth for patient create/update/load.
   - Returns the full updated patient record after mutations.
-- `server/src`
-  - API handlers, services, persistence, tests.
+- `apps/backend/src`
+  - Modular monolith organized by bounded context: `modules/<context>/{domain,application,infrastructure,http}`,
+    plus `shared`, `http` and `routes` (see `docs/backend-architecture.md`).
 
 ## Data Flow
 

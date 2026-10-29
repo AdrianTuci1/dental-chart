@@ -13,7 +13,7 @@ jobs:
     name: Validate Backend
     defaults:
       run:
-        working-directory: server
+        working-directory: apps/backend
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-          cache-dependency-path: server/package-lock.json
+          cache-dependency-path: apps/backend/package-lock.json
 
       - name: Install backend dependencies
         run: npm ci
@@ -71,7 +71,16 @@ jobs:
             --exclude '.env' \
             --exclude 'logs' \
             --exclude '.git' \
-            server/ "vps:$DEPLOY_ROOT/incoming/$RELEASE_ID/"
+            apps/backend/ "vps:$DEPLOY_ROOT/incoming/$RELEASE_ID/"
+
+      - name: Upload VPS release assets
+        run: |
+          rsync -avz deploy/vps/bootstrap-vps.sh deploy/vps/deploy-release.sh \
+            "vps:$DEPLOY_ROOT/incoming/$RELEASE_ID/scripts/"
+          rsync -avz deploy/vps/nginx/ \
+            "vps:$DEPLOY_ROOT/incoming/$RELEASE_ID/scripts/nginx/"
+          rsync -avz deploy/vps/ecosystem.config.js \
+            "vps:$DEPLOY_ROOT/incoming/$RELEASE_ID/"
 
       - name: Write environment variables on VPS
         run: |

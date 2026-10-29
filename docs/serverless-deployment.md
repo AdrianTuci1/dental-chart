@@ -6,47 +6,47 @@ Two deploy targets, each one artifact. Pick one:
 | ------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------------- |
 | Script              | `npm run deploy:lambda`                                                 | `npm run deploy:worker`                                    |
 | Template / config   | `deploy/lambda/template.yaml` (SAM)                                     | `worker/wrangler.toml`                                     |
-| Artifact            | `deploy/lambda/build/` — `dist/` next to `server/`                       | `dist/` uploads to the assets binding; the API is bundled   |
+| Artifact            | `deploy/lambda/build/` — `apps/frontend/dist` next to `apps/backend/`              | `apps/frontend/dist` uploads to the assets binding; the API is bundled |
 | Frontend + API on   | one hostname, API under `/api`                                          | one hostname, API under `/api`                             |
 | Secrets live in     | Lambda environment variables                                            | Worker secrets                                             |
-| Entry point         | `server/lambda.js` via `serverless-http`                                | `worker/index.js` via `server/src/http/workerApp.js`       |
+| Entry point         | `apps/backend/lambda.js` via `serverless-http`                                | `worker/index.js` via `apps/backend/src/http/workerApp.js`       |
 
 Both run the same controllers, services and repositories, and both read the same route
-table in `server/src/routes/definitions.js`. Only the request and response plumbing
-differs, which is why `server/src/http/workerApp.js` exists.
+table in `apps/backend/src/routes/definitions.js`. Only the request and response plumbing
+differs, which is why `apps/backend/src/http/workerApp.js` exists.
 
 Neither one ships the API to the browser. The assets binding and `express.static` both
-expose exactly what the build put in `dist/`; the code, the credentials and the signing
-keys stay on the server side.
+expose exactly what the build put in `apps/frontend/dist/`; the code, the credentials and the
+signing keys stay on the server side.
 
 ## The asset split
 
-`server/src/http/staticPolicy.js` is the single place that decides the caching header for a
+`apps/backend/src/http/staticPolicy.js` is the single place that decides the caching header for a
 response path. It covers the API too, so "the build is cacheable and the API is not" lives
 in one file instead of being spread across middleware:
 
 | Path                             | Origin                          | `Cache-Control`                          |
 | -------------------------------- | ------------------------------- | ---------------------------------------- |
 | `/assets/*`                      | Vite output, content hashed     | `public, max-age=31536000, immutable`     |
-| `/static/*`                      | `public/static/`, hand managed  | `public, max-age=3600, must-revalidate`   |
+| `/static/*`                      | `apps/frontend/public/static/`, hand managed | `public, max-age=3600, must-revalidate` |
 | `/`, `/patients/123`, `/docs`    | the SPA shell                   | `no-cache`                                |
 | `/api/*`, `/health`              | the API                         | `no-store`                                |
 
-`src/utils/assetPaths.js` is the frontend counterpart: `staticPath('teeth/11.png')`
-returns `/static/teeth/11.png`, so nothing in `src/` writes a static URL by hand and the
-prefix is never confused with the hashed one.
+`apps/frontend/src/utils/assetPaths.js` is the frontend counterpart: `staticPath('teeth/11.png')`
+returns `/static/teeth/11.png`, so nothing in `apps/frontend/src/` writes a static URL by hand
+and the prefix is never confused with the hashed one.
 
-There is one runtime asset root, `dist/static`:
+There is one runtime asset root, `apps/frontend/dist/static`:
 
 - the browser fetches it as `/static/...`
-- `server/src/services/nodeAssetProvider.js` reads it from disk
-- `server/src/http/workerAssets.js` reads it through the assets binding
+- `apps/backend/src/modules/ai/infrastructure/nodeAssetProvider.js` reads it from disk
+- `apps/backend/src/http/workerAssets.js` reads it through the assets binding
 
-`public/static/` is the only source in the repository. `server/public/` used to hold a
-second copy of `chart2.png` and `detections.json`; the Modal pipeline writes
-`public/static/detections.json`, so that copy silently went stale and the API answered
-with a frozen result set. It is gone, and both the AI sample images and the fallback
-detections now load through the asset provider like everything else.
+`apps/frontend/public/static/` is the only source in the repository. `apps/backend/public/` used to
+hold a second copy of `chart2.png` and `detections.json`; the Modal pipeline writes
+`apps/frontend/public/static/detections.json`, so that copy silently went stale and the API
+answered with a frozen result set. It is gone, and both the AI sample images and the
+fallback detections now load through the asset provider like everything else.
 
 ## Option A: AWS Lambda
 
@@ -149,7 +149,7 @@ Because the frontend and the API share an origin here, there is no CORS on this 
 
 `worker/wrangler.toml` sets `run_worker_first = true`, so every request reaches the Worker
 before the assets binding. That is what lets the cache headers come from
-`server/src/http/staticPolicy.js` on this host too, instead of the assets binding
+`apps/backend/src/http/staticPolicy.js` on this host too, instead of the assets binding
 answering with its own defaults and the two targets disagreeing.
 
 ### The two build variables
@@ -182,7 +182,7 @@ The zone is on Cloudflare and the proxy is on for the app's hostname on both tar
 Cloudflare's cache sits in front of the frontend and the API alike. Only the built
 frontend may be stored there.
 
-That split is enforced in code, not left to the rules. `server/src/http/staticPolicy.js`
+That split is enforced in code, not left to the rules. `apps/backend/src/http/staticPolicy.js`
 is the single source, and both hosts apply it:
 
 | Path                        | Header the app sends                      | Kept at the edge |
@@ -275,10 +275,10 @@ aws cloudformation rollback-stack --stack-name pixtooth
   Lambda deploy uses.
 - **Cold starts.** A Lambda that has been idle pays a few hundred milliseconds on the
   first request. A Worker isolate is usually already warm.
-- **`server/public/` no longer exists.** The API serves its assets from `dist/static`, so
-  a host without a built `dist/` answers `/api/ai/assets/*` with 404 and the AI fallback
-  with 503 instead of serving from a second copy. Both serverless targets always build
-  `dist/`.
+- **`apps/backend/public/` no longer exists.** The API serves its assets from `apps/frontend/dist/static`,
+  so a host without a built `apps/frontend/dist/` answers `/api/ai/assets/*` with 404 and the AI
+  fallback with 503 instead of serving from a second copy. Both serverless targets always
+  build `apps/frontend/dist/`.
 
 ## Troubleshooting
 
@@ -286,7 +286,7 @@ aws cloudformation rollback-stack --stack-name pixtooth
 | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | `emitWarningIfUnsupportedVersion is not a function`, `loadConfig is not a function` | Bundled with the `browser` condition. Set both build variables above.                     |
 | A stale API answer is served to another user                                   | A cache rule matches the whole hostname or an explicit TTL overrides the app's `no-store`. Remove the rule; the headers already do the right thing. |
-| `/docs` and `/docs/openapi.yaml` answer 404 on the Worker                     | `dist/api-docs/` is missing. Run `npm run build` or re-run the deploy without `--no-build`. |
+| `/docs` and `/docs/openapi.yaml` answer 404 on the Worker                     | `apps/frontend/dist/api-docs/` is missing. Run `npm run build` or re-run the deploy without `--no-build`. |
 | Every data route answers 500 on the Worker                                    | Worker secrets are missing or the AWS keys are expired. Run `npm run deploy:worker -- --sync-secrets`. |
 | `The security token included in the request is invalid`                       | The AWS credentials are present but expired or wrong.                                     |
 | Static files work, every data route fails                                     | DynamoDB is unreachable from that runtime: wrong region, missing table, or an IAM policy that does not cover the table. |

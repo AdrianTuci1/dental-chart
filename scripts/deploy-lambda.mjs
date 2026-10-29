@@ -2,10 +2,11 @@
 /**
  * Deploys Pixtooth as one Lambda artifact.
  *
- * scripts/build-lambda-artifact.mjs puts dist/ next to server/ in deploy/lambda/build/,
- * which is exactly the layout the code already expects, so one package carries the
- * frontend and the API. deploy/lambda/template.yaml wraps it in a function behind an API
- * Gateway HTTP API with a custom domain. There is no EC2 instance, no Nginx and no PM2.
+ * scripts/build-lambda-artifact.mjs puts apps/frontend/dist next to apps/backend/ in
+ * deploy/lambda/build/, which is exactly the layout the code already expects, so one
+ * package carries the frontend and the API. deploy/lambda/template.yaml wraps it in a
+ * function behind an API Gateway HTTP API with a custom domain. There is no EC2 instance,
+ * no Nginx and no PM2.
  *
  * Usage:
  *   npm run deploy:lambda

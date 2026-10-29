@@ -43,18 +43,21 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: |
+            apps/frontend/package-lock.json
+            apps/backend/package-lock.json
 
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm ci --prefix apps/frontend
 
       - name: Run frontend tests
-        run: npx vitest run
+        run: npm test --prefix apps/frontend
 
       - name: Install backend dependencies
-        run: npm ci --prefix server
+        run: npm ci --prefix apps/backend
 
       - name: Run backend tests
-        run: npm test --prefix server -- --runInBand
+        run: npm test --prefix apps/backend -- --runInBand
 
   deploy:
     runs-on: ubuntu-latest
@@ -70,11 +73,14 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: |
+            apps/frontend/package-lock.json
+            apps/backend/package-lock.json
 
       - name: Install dependencies
         run: |
-          npm ci
-          npm ci --prefix server
+          npm ci --prefix apps/frontend
+          npm ci --prefix apps/backend
 
       # The GitHub OIDC token is exchanged for a short-lived Google credential. Only
       # pixtooth@pixtooth.iam.gserviceaccount.com may read the secrets below, and the

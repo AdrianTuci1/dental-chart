@@ -12,10 +12,10 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./server/src/models/schema.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./apps/backend/src/models/schema.sql:/docker-entrypoint-initdb.d/init.sql
 
   api:
-    build: ./server
+    build: ./apps/backend
     container_name: dchart_api
     ports:
       - "3001:3001"
@@ -29,7 +29,7 @@ services:
       - db
       - redis
     volumes:
-      - ./server:/app
+      - ./apps/backend:/app
       - /app/node_modules
 
   ml:

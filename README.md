@@ -1,329 +1,167 @@
 # 🦷 Dental Chart — Digital Dental Application
 
-A modern web application for managing dental charts, treatment planning, and oral health monitoring.
+A web application for dental practices: patient records, treatment planning and a
+3-plane tooth chart built on **ISO 3950** numbering. The chart is a projection of
+completed history and the treatment plan.
 
-![Chart Overview](./public/static/app-chart.png)
+![Chart Overview](./apps/frontend/public/static/app-chart.png)
 
-## 📋 About
-
-**Dental Chart** is a full-stack web application for dental practices. It uses the **ISO 3950 numbering** system and provides detailed 3-plane (frontal, occlusal, lingual) visualizations for each tooth. The data model is **event-sourced**: the Chart is a visual projection of History (completed interventions) and Treatment Plan (planned/monitoring interventions).
-
----
-
-## 🏗️ Architecture Overview
+## Architecture
 
 ```
-┌──────────────────────────────────────────────────────────────┐
-│  FRONTEND (React 18 + Vite)                                   │
-│                                                                │
-│  Pages ──→ AppFacade ──→ PatientAdapter ──→ apiClient ──→ API │
-│    ↕                         ↕                                 │
-│  Zustand Store          Domain Model                           │
-│  (patientSlice,         (PatientBuilder,                       │
-│   chartSlice,            PatientModel)                         │
-│   medicSlice)                                                  │
-└──────────────────────────────────────────────────────────────┘
-         ↕ HTTP (REST)
-┌──────────────────────────────────────────────────────────────┐
-│  BACKEND (Node.js + Express)                                  │
-│                                                                │
-│  Routes ──→ Controllers ──→ Services ──→ Repositories ──→ DB │
-│                                                                │
-│  Single-Table DynamoDB Design                                 │
-│  PK: PATIENT#<id> | MEDIC#<id> | CLINIC#<id>                 │
-│  SK: METADATA# | HISTORY# | PLAN#                            │
-└──────────────────────────────────────────────────────────────┘
+Browser                                Backend
+┌────────────────────────┐             ┌────────────────────────────────────────┐
+│ Pages                  │             │ routes → http → application → domain   │
+│   ↓                    │   REST      │                     ↑                  │
+│ AppFacade → apiClient  │ ⇄  /api     │              infrastructure            │
+│   ↓                    │             │       DynamoDB · email · Modal AI      │
+│ Zustand + adapters     │             └────────────────────────────────────────┘
+└────────────────────────┘
 ```
 
-### Technology Stack
+The backend is a modular monolith: each bounded context owns its `domain`,
+`application`, `infrastructure` and `http` layers, and one composition root wires
+them together. Dependency rules, the error model and the host adapters are documented
+in [docs/backend-architecture.md](./docs/backend-architecture.md).
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React 18, Vite, Zustand, React Router v6 |
-| Styling | Vanilla CSS with CSS Variables |
-| Backend | Node.js, Express |
-| Database | Amazon DynamoDB (Single-Table Design) |
-| State | Zustand (slices: patient, chart, medic) |
+| Module | Responsibility |
+| --- | --- |
+| `identity` | accounts, login, sessions, API keys, Google sign-in, password recovery |
+| `clinic` | workspaces, memberships, invitations, ownership |
+| `patients` | patient records, history, treatment plan |
+| `integration` | external API-key patient contract |
+| `ai` | X-ray inference and fallback detections |
+| `analytics`, `email` | product telemetry, transactional email |
 
----
+One route table (`apps/backend/src/routes/definitions.js`) serves every host: the local/VPS
+Express process, AWS Lambda and the Cloudflare Worker. Data lives in a single DynamoDB
+table using `PK`/`SK` keys.
 
-## 📊 Data Flow
+### Technology stack
 
-The application follows a hierarchical navigation pattern:
+| Area | Technology |
+| --- | --- |
+| Frontend | React 19, Vite 7, Zustand, React Router |
+| Styling | Vanilla CSS with CSS variables |
+| Backend | Node.js 22, Express 5 |
+| Hosts | Express (VPS), AWS Lambda, Cloudflare Workers |
+| Data | Amazon DynamoDB (single table) |
+| AI | Modal: YOLO11-seg + ResNet18 |
 
-```
-Patient List → Patient Dashboard → Patient Chart → Tooth Detail
-                    │                    │               │
-                    │                    │               ├── Overview
-                    │                    │               ├── Endodontic
-                    │                    │               ├── Periodontal
-                    │                    │               ├── Pathology
-                    │                    │               └── Restoration
-                    │                    │
-                    │                    ├── Chart Overview (dental/perio/endo layers)
-                    │                    ├── Quickselect
-                    │                    ├── Periodontal Probing
-                    │                    ├── Pathology View
-                    │                    └── Restoration View
-                    │
-                    ├── Treatment Plan
-                    ├── History
-                    ├── Soft Tissue
-                    ├── Oral Health Metrics
-                    ├── BPE (Basic Periodontal Examination)
-                    └── Medical Issues
-```
+## Features
 
-### Domain Model (standardized `name` field)
+- Patient CRUD with search, treatment plan and chronological history.
+- Chart views: Overview, Quickselect, Periodontal probing, Pathology, Restoration.
+- Tooth detail in frontal, occlusal and lingual planes, with endodontic, periodontal,
+  pathology and restoration tabs.
+- Oral health metrics, BPE, medical issues and patient reports.
+- Google sign-in, refresh-token sessions, account API keys and an external API contract.
+- Panoramic X-ray analysis with a static fallback when the model is unavailable.
 
-```javascript
-// Patient domain object (as seen by frontend)
-{
-  id: string,
-  medicId: string,
-  name: string,          // Standardized — used everywhere
-  email: string,         // Optional
-  phone: string,         // Optional
-  dateOfBirth: string,
-  gender: string,
-  lastExamDate: string,
-  treatmentPlan: { items: [...] },
-  history: { completedItems: [...] },
-  chart: { teeth: { [toothNumber]: { pathology, restoration, endodontic, periodontal } } },
-  oralHealth: { plaqueIndex, bleedingIndex, halitosis },
-  bpe: { upperRight, upperAnterior, upperLeft, lowerRight, lowerAnterior, lowerLeft },
-  medicalIssues: { highBloodPressure, asthma, allergies, other }
-}
-```
+## AI analysis
 
-### Data Transformation Pipeline
-
-```
-Backend DB           →    PatientAdapter.toDomain()    →    Frontend Store
-(name, items, etc.)       (PatientBuilder)                  (Zustand)
-
-Frontend Store       →    PatientAdapter.toApi()       →    Backend DB
-(name, chart, etc.)       (strips UI-only fields)          (DynamoDB)
-```
-
----
-
-## 🔌 API Routes
-
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/auth/register` | Register medic account |
-| `POST` | `/api/auth/login` | Login |
-| `GET` | `/api/auth/me` | Get current user |
-| `GET` | `/api/medics/:id/patients` | List patients for a medic |
-| `POST` | `/api/patients` | Create patient |
-| `GET` | `/api/patients/:id` | Get patient metadata |
-| `GET` | `/api/patients/:id/chart` | Get full patient record (metadata + history + plan) |
-| `PUT` | `/api/patients/:id` | Update patient (splits into METADATA, HISTORY, PLAN) |
-| `DELETE` | `/api/patients/:id` | Delete patient and all sub-records |
-| `POST` | `/api/patients/:patientId/history` | Add history record |
-| `GET` | `/api/patients/:patientId/history` | Get patient history |
-| `POST` | `/api/patients/:patientId/treatment-plans` | Add treatment plan item |
-| `GET` | `/api/patients/:patientId/treatment-plans` | Get treatment plans |
-| `POST` | `/api/ai/analyze` | Analyze X-ray via Modal (with local fallback) |
-| `GET` | `/static/detections.json` | Static fallback for AI detections |
-
----
-
-## 🔬 AI Analysis Pipeline
-
-The application includes an automated dental X-ray analysis pipeline hosted on **Modal**.
-
-### Architecture
-The pipeline now uses two specialized models:
-
-1. **YOLO11-seg** – segments every tooth in the panoramic X-ray and assigns the **FDI (ISO 3950)** number.
-   - 33 classes: `11–18`, `21–28`, `31–38`, `41–48`, `91`.
-2. **ResNet18** – classifies the clinical status of each tooth from a masked crop of the segmented tooth.
-   - 7 classes:
-     - 0 = Tooth without anomalies
-     - 1 = Tooth with fillings
-     - 2 = Tooth with RCT
-     - 3 = Tooth with crown
-     - 4 = Tooth with caries
-     - 5 = Residual root
-     - 6 = Tooth with RCT and crown
-
-- **Dataset**: Kaggle `zwbzwb12341234/a-dual-labeled-dataset` (Labelme JSON annotations; images in `images1/`).
-- **Status label source**: the `group_id` field in each Labelme polygon (`null` = normal = 0).
-- **Training**: runs on **Modal** GPUs (`L40S` by default). Dataset and trained models are persisted in a Modal volume; nothing is kept locally.
-- **Inference**: the deployed endpoint runs on a **T4** GPU (cheaper and sufficient for one-off predictions).
-
-### Pipeline Commands
-
-All commands are run from the `modal-pipeline/models/` directory or via `modal run modal-pipeline/models/<script>.py`.
+`apps/backend/src/modules/ai` calls a Modal endpoint that segments every tooth (YOLO11-seg,
+FDI/ISO 3950 classes) and classifies each masked crop (ResNet18: sound, filling, root
+canal, crown, caries, residual root, root canal + crown). When the endpoint is disabled
+or unreachable, the API serves `/static/detections.json` and a sample image from the
+build.
 
 | Step | Command |
-|------|---------|
-| Dataset preparation | `modal run modal-pipeline/models/data_preparation.py` |
-| FDI segmentation training | `modal run modal-pipeline/models/train.py` |
-| Status classifier training | `modal run modal-pipeline/models/train_status.py` |
-| Resume status training | `modal run modal-pipeline/models/train_status.py --resume true` |
-| Deploy inference endpoint | `modal deploy modal-pipeline/models/inference.py` |
+| --- | --- |
+| Prepare the dataset | `modal run apps/ml/models/data_preparation.py` |
+| Train segmentation | `modal run apps/ml/models/train.py` |
+| Train the status classifier | `modal run apps/ml/models/train_status.py` |
+| Resume classifier training | `modal run apps/ml/models/train_status.py --resume true` |
+| Deploy the inference endpoint | `modal deploy apps/ml/models/inference.py` |
 
-The inference endpoint exposes a `POST` route that accepts the raw X-ray image bytes and returns a JSON with each detected tooth (`fdi`, `bbox`, `contour`, `status`).
-
-### Local Fallback (Mock Mode)
-When the cloud AI service is inactive or `AI_ANALYSIS_ENABLED=false` in `.env`, the backend automatically serves:
-- **Image**: `/api/ai/assets/chart2.png` (Panoramic sample)
-- **Detections**: `/static/detections.json` (Pre-calculated results in the new `teeth` + `status` format)
-
-Both come from the built static tree `dist/static/`, which is filled from `public/static/`. See [serverless-deployment.md](./docs/serverless-deployment.md#the-asset-split).
-
----
-
-## ✨ Features
-
-### Patient Management
-- Patient CRUD with optional email/phone
-- Search and filter
-- Treatment Plan with status tracking
-- History with time-travel (chronological visualization)
-- Oral Health Metrics, BPE, Medical Issues panels
-
-### Dental Charting
-
-![Upper Jaw](./public/overview/upper-jaw.png)
-
-**Views**: Overview, Quickselect, Periodontal Probing, Pathology, Restoration
-
-**Layer System** (Z-Index):
-```
-Layer 8: Selection Highlight
-Layer 7: Annotations
-Layer 6: Periodontal Data
-Layer 5: Endodontic Indicators
-Layer 4: Pathology Markers
-Layer 3: Restorations
-Layer 2: Gingival Tissue
-Layer 1: Base Tooth Images
-```
-
-**View Toggles**: Endo 🔴 | Perio 🟢 | Dental 🔵
-
-### Tooth Detail (3-plane visualization)
-
-Each tooth has Frontal, Occlusal, and Lingual views plus 5 data tabs:
-
-1. **Overview** — General info
-2. **Endodontic** — Percussion, palpation, vitality, stimuli response, root canal
-3. **Periodontal** — 6-site pocket depth, recession, attachment, bleeding, mobility, furcation
-4. **Pathology** — Caries, fractures, resorptions, infections, periapical, other
-5. **Restoration** — Amalgam, composite, crowns, bridges, implants, veneers, inlay/onlay, temporary, others
-
-### ISO 3950 Numbering System
+## Project structure
 
 ```
-                     Upper Jaw
-                RIGHT    |    LEFT
- 18 17 16 15 14 13 12 11 | 21 22 23 24 25 26 27 28
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- 48 47 46 45 44 43 42 41 | 31 32 33 34 35 36 37 38
-                RIGHT    |    LEFT
-                     Lower Jaw
+├── apps/
+│   ├── backend/   API modular monolith — see docs/backend-architecture.md
+│   │   ├── app.js Express host (local and VPS)
+│   │   ├── lambda.js AWS Lambda host
+│   │   └── src/   container.js, modules/, shared/, http/, routes/
+│   ├── frontend/  React app: pages, components, domain adapters, Zustand store
+│   └── ml/        Modal training and inference pipeline
+├── worker/        Cloudflare Worker entry point and Wrangler config
+├── deploy/        SAM template, VPS release assets and generated artifacts
+├── scripts/       build and deploy automation
+├── k8s/           Kubernetes manifests
+└── docs/          architecture map, serverless and VPS deployment guides
 ```
 
----
+## API
 
-## 📁 Project Structure
+The API is documented with OpenAPI in [apps/backend/docs/openapi.yaml](./apps/backend/docs/openapi.yaml)
+and served at `/docs` when the app runs. Main groups:
 
-```
-dchart-oneshot/
-├── server/                         # Backend (Node.js + Express)
-│   └── src/
-│       ├── config/                 # DynamoDB client config
-│       ├── controllers/            # Route handlers
-│       ├── models/
-│       │   ├── Enums.js            # Constants (Gender, ToothZone, Material, etc.)
-│       │   └── repositories/       # DynamoDB data access (Single-Table)
-│       │       ├── BaseRepository.js       # Outgoing/incoming transformations
-│       │       ├── PatientRepository.js    # PATIENT#<id> + METADATA#
-│       │       ├── HistoryRepository.js    # PATIENT#<id> + HISTORY#
-│       │       ├── TreatmentPlanRepository.js  # PATIENT#<id> + PLAN#
-│       │       └── MedicRepository.js      # MEDIC#<id> + METADATA#
-│       ├── services/               # Business logic
-│       ├── routes/api.js           # Route definitions
-│       └── utils/mockData.js       # Seed data templates
-│
-├── src/                            # Frontend (React 18 + Vite)
-│   ├── api/                        # HTTP client & service layer
-│   │   ├── apiClient.js            # Fetch wrapper
-│   │   ├── authService.js          # Auth endpoints
-│   │   └── patientService.js       # Patient CRUD endpoints
-│   ├── core/                       # Domain layer
-│   │   ├── adapters/PatientAdapter.js   # API ↔ Domain translation
-│   │   ├── builders/PatientBuilder.js   # Builder pattern for Patient
-│   │   ├── models/PatientModel.js       # Business logic (completeTreatment, addToHistory)
-│   │   ├── store/appStore.js            # Zustand root store
-│   │   ├── store/slices/                # patientSlice, chartSlice, medicSlice
-│   │   └── AppFacade.js                 # Central UI ↔ Domain entry point
-│   ├── components/
-│   │   ├── Chart/                  # Chart views (Overview, Quickselect, Perio, etc.)
-│   │   ├── Dashboard/              # TreatmentPlan, History, OralHealth, BPE, MedicalIssues
-│   │   ├── Drawers/                # Pathology/Restoration drawers
-│   │   ├── Tooth/                  # Tooth visualization components
-│   │   └── UI/                     # PatientModal, SettingsModal, etc.
-│   ├── pages/                      # Route pages
-│   │   ├── HomePage.jsx            # Login/Signup
-│   │   ├── PatientsListPage.jsx    # Patient list with search
-│   │   ├── PatientDashboardPage.jsx # Patient detail (dashboard)
-│   │   ├── PatientChartPage.jsx    # Dental chart
-│   │   ├── ToothDetailPage.jsx     # Individual tooth detail
-│   │   └── PatientReportPage.jsx   # Reports
-│   ├── assets/teeth/               # 330+ tooth images
-│   └── utils/mockData.js           # Frontend mock data
-└── package.json
-```
+- `/api/auth` — register, login, Google, refresh, logout, password recovery.
+- `/api/medics`, `/api/clinics` — profile, API key rotation, workspaces, members.
+- `/api/patients` — records, chart, history, treatment plans.
+- `/api/ai` — X-ray analysis and fallback assets.
+- `/api/external` — API-key authenticated patient upsert and delete.
 
----
+## Getting started
 
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+
-- AWS DynamoDB (local or cloud) with a table named `DentalChart` (PK + SK keys)
-
-### Backend
-```bash
-cd server
-npm install
-# Set env vars: DYNAMODB_TABLE_NAME, AWS credentials
-npm run dev
-```
-
-### Frontend
-```bash
-npm install
-npm run dev
-```
-
-### Deploy
-
-Both targets ship the frontend and the API as one artifact, so there is no server to
-operate. Pick one; `npm run ci` gates either.
+Prerequisites: Node.js 22+ and a DynamoDB table with `PK`/`SK` keys (see
+[docs/dynamodb-setup.md](./docs/dynamodb-setup.md)).
 
 ```bash
-cp .env.deploy.example .env.deploy && $EDITOR .env.deploy
+npm install --prefix apps/frontend
+npm install --prefix apps/backend
 
-npm run deploy:lambda              # AWS Lambda behind an API Gateway HTTP API
-npm run deploy:worker              # Cloudflare Worker with an assets binding
-npm run deploy:lambda -- --dry-run # build and validate, ship nothing
-npm run deploy:worker -- --dry-run # bundle to deploy/worker/build/, ship nothing
+npm run dev                   # frontend (Vite), from the repo root
+npm run dev --prefix apps/backend  # API (nodemon)
 ```
 
-Full setup, the Cloudflare cache rules, secrets, rollback and known limits:
-[docs/serverless-deployment.md](./docs/serverless-deployment.md).
+Configuration: copy [apps/frontend/.env.example](./apps/frontend/.env.example) for the frontend
+and [apps/backend/.env.example](./apps/backend/.env.example) for the API. Deploy targets read
+[.env.deploy.example](./.env.deploy.example).
+
+```bash
+npm test                    # frontend tests (Vitest)
+npm test --prefix apps/backend   # backend tests (Jest)
+npm run ci                  # frontend tests, frontend build, backend tests
+```
+
+## Deployment
+
+| Target | Command | Guide |
+| --- | --- | --- |
+| VPS (Nginx + PM2) | `npm run deploy:backend` | [docs/deployment-automation.md](./docs/deployment-automation.md) |
+| AWS Lambda (SAM) | `npm run deploy:lambda` | [docs/serverless-deployment.md](./docs/serverless-deployment.md) |
+| Cloudflare Worker | `npm run deploy:worker` | [docs/serverless-deployment.md](./docs/serverless-deployment.md) |
+| Cloudflare Pages | `npm run deploy:frontend` | [docs/deployment-automation.md](./docs/deployment-automation.md) |
+| Kubernetes | `.github/workflows/deploy-k8s.yml` | [k8s/](./k8s/) |
+
+Both serverless targets ship the frontend and the API as one artifact. Validate without
+uploading:
+
+```bash
+npm run deploy:lambda -- --dry-run
+npm run deploy:worker -- --dry-run
+```
+
+`npm run ci` runs the full local gate: frontend tests, frontend build and backend
+tests. The Lambda and Worker workflows run the same checks before deploying. Before
+changing deployment code, read
+[docs/serverless-deployment.md](./docs/serverless-deployment.md); it covers the asset
+split, secrets, cache rules, rollback and known limits.
+
+## Documentation
+
+| Document | Contents |
+| --- | --- |
+| [docs/backend-architecture.md](./docs/backend-architecture.md) | backend modules, layers, composition root, error model |
+| [docs/architecture-map.md](./docs/architecture-map.md) | navigable mindmap of frontend and backend |
+| [docs/serverless-deployment.md](./docs/serverless-deployment.md) | Lambda and Worker deployment, assets, secrets |
+| [docs/deployment-automation.md](./docs/deployment-automation.md) | CI, VPS release flow, Cloudflare Pages |
+| [docs/vps-setup.md](./docs/vps-setup.md) | step-by-step VPS setup |
+| [apps/ml/README.md](./apps/ml/README.md) | training pipeline, dataset and Modal commands |
+| [apps/backend/docs/openapi.yaml](./apps/backend/docs/openapi.yaml) | API contract |
 
 ---
 
 **Version**: 1.0.0-beta
-**Last updated**: March 2026
-## Architecture Map
-
-- Open [docs/architecture-map.md](/Users/adriantucicovenco/Proiecte/dchart-oneshot/docs/architecture-map.md) with `markmap-vscode` for a navigable project mindmap.
-- Use it together with CodeGraphy: CodeGraphy shows imports, while the architecture map explains why files exist and how features are grouped.
+**Last updated**: October 2026

@@ -1,5 +1,5 @@
 name = "pixtooth-app"
-pages_build_output_dir = "dist"
+pages_build_output_dir = "apps/frontend/dist"
 
 [vars]
 # Adaugă aici variabile de mediu dacă este nevoie

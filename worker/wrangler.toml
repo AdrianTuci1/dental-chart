@@ -17,10 +17,10 @@ compatibility_flags = ["nodejs_compat", "nodejs_compat_populate_process_env"]
 
 [assets]
 # Vite output: /assets/* is content hashed, /static/* is hand managed.
-directory = "../dist"
+directory = "../apps/frontend/dist"
 binding = "ASSETS"
 not_found_handling = "none"
-# The Worker answers every request, so the cache policy in server/src/http/staticPolicy.js
+# The Worker answers every request, so the cache policy in apps/backend/src/http/staticPolicy.js
 # applies to assets as well. Without this, Cloudflare would serve matching assets before
 # the Worker and the two hosts would answer with different headers.
 run_worker_first = true

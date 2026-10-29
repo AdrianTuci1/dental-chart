@@ -2,9 +2,9 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
 Description: >-
-  Pixtooth in one artifact: the built frontend (dist/) and the API (server/) travel
-  together in a single Lambda package, served through one API Gateway HTTP API on a
-  custom domain. No EC2, no Nginx, no PM2.
+  Pixtooth in one artifact: the built frontend (apps/frontend/dist) and the API
+  (apps/backend/) travel together in a single Lambda package, served through one API
+  Gateway HTTP API on a custom domain. No EC2, no Nginx, no PM2.
 
 Parameters:
   Stage:
@@ -84,10 +84,10 @@ Resources:
   App:
     Type: AWS::Serverless::Function
     Properties:
-      # Holds dist/ next to server/, exactly like the repository layout, so the paths in
-      # app.js need no adjustment inside the package.
+      # Holds apps/frontend/ next to apps/backend/, exactly like the repository layout,
+      # so the paths in app.js need no adjustment inside the package.
       CodeUri: build/
-      Handler: server/lambda.handler
+      Handler: apps/backend/lambda.handler
       Description: Pixtooth API and static frontend
       Environment:
         Variables:

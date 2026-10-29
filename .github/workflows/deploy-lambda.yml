@@ -1,7 +1,7 @@
 name: 🚀 Deploy to AWS Lambda
 
-# One artifact carries dist/ next to server/, wrapped by deploy/lambda/template.yaml in a
-# function behind an API Gateway HTTP API. See docs/serverless-deployment.md.
+# One artifact carries apps/frontend/dist next to apps/backend/, wrapped by deploy/lambda/template.yaml
+# in a function behind an API Gateway HTTP API. See docs/serverless-deployment.md.
 on:
   workflow_dispatch:
     inputs:
@@ -33,18 +33,21 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: |
+            apps/frontend/package-lock.json
+            apps/backend/package-lock.json
 
       - name: Install frontend dependencies
-        run: npm ci
+        run: npm ci --prefix apps/frontend
 
       - name: Run frontend tests
-        run: npx vitest run
+        run: npm test --prefix apps/frontend
 
       - name: Install backend dependencies
-        run: npm ci --prefix server
+        run: npm ci --prefix apps/backend
 
       - name: Run backend tests
-        run: npm test --prefix server -- --runInBand
+        run: npm test --prefix apps/backend -- --runInBand
 
   deploy:
     runs-on: ubuntu-latest
@@ -60,6 +63,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: apps/frontend/package-lock.json
 
       - name: Setup SAM CLI
         uses: aws-actions/setup-sam@v2
@@ -74,7 +78,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --prefix apps/frontend
 
       - name: Write deployment variables
         run: |

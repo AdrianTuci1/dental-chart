@@ -1,4 +1,5 @@
 import { execFileSync } from 'node:child_process';
+import path from 'node:path';
 
 /**
  * Builds the SPA for a host that answers the API itself.
@@ -17,7 +18,7 @@ import { execFileSync } from 'node:child_process';
 export const buildFrontend = (root, extraEnv = {}) => {
     execFileSync('npm', ['run', 'build'], {
         stdio: 'inherit',
-        cwd: root,
+        cwd: path.join(root, 'apps', 'frontend'),
         env: { ...process.env, VITE_API_URL: 'self', ...extraEnv },
     });
 };
