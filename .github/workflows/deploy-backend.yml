@@ -31,6 +31,9 @@ jobs:
       - name: Run backend tests
         run: npm test -- --runInBand
 
+      - name: Check backend dependency licenses
+        run: node ../../scripts/check-licenses.mjs apps/backend
+
 
   deploy:
     runs-on: ubuntu-latest

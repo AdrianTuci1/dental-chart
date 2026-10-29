@@ -60,6 +60,11 @@ for (const entry of BACKEND_ENTRIES) {
     cpSync(path.join(root, 'apps', 'backend', entry), path.join(backendOut, entry), { recursive: true });
 }
 
+// The license and attribution notice travel with every distributed artifact.
+for (const entry of ['LICENSE', 'NOTICE']) {
+    cpSync(path.join(root, entry), path.join(outDir, entry));
+}
+
 // Development tooling stays out of the package; the size difference is large.
 run('npm', ['ci', '--omit=dev', '--no-audit', '--no-fund'], { cwd: backendOut });
 

@@ -124,6 +124,13 @@ When the heuristic changes a label, the response also includes `fdi_original` an
 - Status is extracted from the `group_id` field of each shape (`null` = 0 = normal).
 - Generated dataset is saved in the persistent `dental-data-storage` volume at `/data/dataset/`.
 
+## License
+
+Part of Pixtooth, licensed under the Apache License 2.0; see
+[../../LICENSE](../../LICENSE). Model weights, datasets and Python packages keep
+their own licenses, so record them before shipping a model. See
+[../../docs/compliance.md](../../docs/compliance.md).
+
 ## ⚙️ Cost / GPU notes
 
 - `data_preparation.py` runs on CPU and does not need a GPU.

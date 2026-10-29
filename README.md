@@ -160,8 +160,17 @@ split, secrets, cache rules, rollback and known limits.
 | [docs/deployment-automation.md](./docs/deployment-automation.md) | CI, VPS release flow, Cloudflare Pages |
 | [docs/postgres-setup.md](./docs/postgres-setup.md) | running the API on PostgreSQL instead of DynamoDB |
 | [docs/vps-setup.md](./docs/vps-setup.md) | step-by-step VPS setup |
+| [docs/compliance.md](./docs/compliance.md) | license, third-party notices, distribution and data-protection checklist |
+| [SECURITY.md](./SECURITY.md) | reporting a vulnerability and supported versions |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | development setup, DCO sign-off and pull requests |
 | [apps/ml/README.md](./apps/ml/README.md) | training pipeline, dataset and Modal commands |
 | [apps/backend/docs/openapi.yaml](./apps/backend/docs/openapi.yaml) | API contract |
+
+## License
+
+Pixtooth is licensed under the Apache License 2.0. See [LICENSE](./LICENSE) and
+[NOTICE](./NOTICE). Third-party licenses, the distribution checklist and the
+data-protection notes are in [docs/compliance.md](./docs/compliance.md).
 
 ---
 

@@ -2,10 +2,11 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-COPY package*.json ./
+COPY apps/backend/package*.json ./
 RUN npm ci --omit=dev
 
-COPY . .
+COPY apps/backend/ ./
+COPY LICENSE NOTICE ./
 
 EXPOSE 3100
 
