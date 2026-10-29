@@ -119,6 +119,7 @@ jobs:
           AWS_ACCOUNT_ID=${{ steps.gcloud-secrets.outputs.AWS_ACCOUNT_ID }}
           DYNAMODB_TABLE_NAME=${{ steps.gcloud-secrets.outputs.DYNAMODB_TABLE_NAME }}
           CORS_ORIGIN=${{ env.APP_ORIGIN }}
+          PLATFORM_ADMIN_EMAILS=${{ vars.PLATFORM_ADMIN_EMAILS }}
           PASSWORD_RESET_URL=${{ env.APP_ORIGIN }}/reset-password
 
           # The identity the Worker runs as: an IAM user scoped to the DynamoDB table.
@@ -139,6 +140,12 @@ jobs:
           AI_ANALYSIS_ENABLED=${{ vars.AI_ANALYSIS_ENABLED || 'false' }}
           ENABLE_TELEMETRY=${{ vars.ENABLE_TELEMETRY || 'false' }}
           TELEMETRY_EXPORT_SECRET=${{ secrets.TELEMETRY_EXPORT_SECRET }}
+
+          PUBLIC_WEB_ORIGIN=${{ env.APP_ORIGIN }}
+          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          STRIPE_PRICE_MONTHLY=${{ vars.STRIPE_PRICE_MONTHLY }}
+          STRIPE_PRICE_YEARLY=${{ vars.STRIPE_PRICE_YEARLY }}
           ENVEOF
 
       - name: Check the required secrets are set

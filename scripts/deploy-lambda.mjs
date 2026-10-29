@@ -44,6 +44,7 @@ const PARAMETERS = {
     API_DOMAIN: 'ApiDomainName',
     API_CERTIFICATE_ARN: 'ApiCertificateArn',
     DYNAMODB_TABLE_NAME: 'DynamoTableName',
+    PLATFORM_ADMIN_EMAILS: 'PlatformAdminEmails',
     JWT_SECRET: 'JwtSecret',
     REFRESH_TOKEN_SECRET: 'RefreshTokenSecret',
     CORS_ORIGIN: 'CorsOrigin',
@@ -58,6 +59,11 @@ const PARAMETERS = {
     MODAL_INFERENCE_URL: 'ModalInferenceUrl',
     AI_ANALYSIS_ENABLED: 'AiAnalysisEnabled',
     ENABLE_TELEMETRY: 'EnableTelemetry',
+    PUBLIC_WEB_ORIGIN: 'PublicWebOrigin',
+    STRIPE_SECRET_KEY: 'StripeSecretKey',
+    STRIPE_WEBHOOK_SECRET: 'StripeWebhookSecret',
+    STRIPE_PRICE_MONTHLY: 'StripePriceMonthly',
+    STRIPE_PRICE_YEARLY: 'StripePriceYearly',
     STAGE: 'Stage',
 };
 

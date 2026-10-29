@@ -24,7 +24,9 @@ const parseAllowedOrigins = (value) => {
 
     const defaults = [
         'http://localhost:5173',
+        'http://localhost:5174',
         'https://app.pixtooth.com',
+        'https://admin.pixtooth.com',
     ];
 
     return [...new Set([...defaults, ...configuredOrigins])];
@@ -40,8 +42,8 @@ const docsDir = path.join(__dirname, '../../docs');
 
 /**
  * Builds the Express host: middleware, the shared route table, the docs, the SPA shell
- * and the error mapper. `app.js` owns the process concerns; this module owns the HTTP
- * adapter, mirroring `workerApp.js` on the Worker host.
+ * and the error mapper. `startServer.js` owns the process concerns; this module owns the
+ * HTTP adapter, mirroring `workerApp.js` on the Worker host.
  */
 const createExpressApp = () => {
     const app = express();
@@ -86,10 +88,17 @@ const createExpressApp = () => {
 
             return callback(new Error('Origin not allowed by CORS'));
         },
-        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization']
     }));
-    app.use(bodyParser.json());
+    // Stripe signs the exact bytes it sends. Keeping them on the request lets the
+    // webhook verify the signature while the parsed JSON stays available to the controller.
+    app.use(bodyParser.json({
+        limit: '1mb',
+        verify: (req, res, buffer) => {
+            req.rawBody = buffer;
+        },
+    }));
     app.use(bodyParser.urlencoded({ extended: true }));
 
     const apiRateLimit = createRateLimit({

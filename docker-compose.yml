@@ -1,56 +1,90 @@
-version: '3.8'
+# Complete self-hosted stack: PostgreSQL, the API, the clinic app and the admin app.
+#
+#   cp .env.docker.example .env
+#   docker compose up -d --build
+#
+# Clinic app: http://localhost:8080
+# Admin app:   http://localhost:8081
+# API:         http://localhost:3100
 
 services:
   db:
-    image: postgres:15-alpine
-    container_name: dchart_db
+    image: postgres:16-alpine
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: dental_chart
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${POSTGRES_USER:-pixtooth}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pixtooth}
+      POSTGRES_DB: ${POSTGRES_DB:-pixtooth}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./apps/backend/src/models/schema.sql:/docker-entrypoint-initdb.d/init.sql
+      - pixtooth-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-pixtooth} -d ${POSTGRES_DB:-pixtooth}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
 
   api:
     build:
       context: .
       dockerfile: apps/backend/Dockerfile
-    container_name: dchart_api
-    ports:
-      - "3001:3001"
     environment:
-      - PORT=3001
-      - DATABASE_URL=postgres://user:password@db:5432/dental_chart
-      - ML_SERVICE_URL=http://ml:8000
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      NODE_ENV: production
+      PORT: 3100
+      DB_DRIVER: postgres
+      DATABASE_URL: postgres://${POSTGRES_USER:-pixtooth}:${POSTGRES_PASSWORD:-pixtooth}@db:5432/${POSTGRES_DB:-pixtooth}
+      DATABASE_SSL: "false"
+      DATABASE_AUTO_MIGRATE: "true"
+      DATABASE_POOL_MAX: ${DATABASE_POOL_MAX:-10}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      REFRESH_TOKEN_SECRET: ${REFRESH_TOKEN_SECRET:-change-me-too}
+      PLATFORM_ADMIN_EMAILS: ${PLATFORM_ADMIN_EMAILS:-}
+      CORS_ORIGIN: ${PUBLIC_WEB_ORIGIN:-http://localhost:8080},${PUBLIC_ADMIN_ORIGIN:-http://localhost:8081}
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID:-}
+      CLOUDFLARE_EMAIL_API_TOKEN: ${CLOUDFLARE_EMAIL_API_TOKEN:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      PASSWORD_RESET_URL: ${PASSWORD_RESET_URL:-http://localhost:8080/reset-password}
+      AI_ANALYSIS_ENABLED: ${AI_ANALYSIS_ENABLED:-false}
+      MODAL_INFERENCE_URL: ${MODAL_INFERENCE_URL:-}
+      PUBLIC_WEB_ORIGIN: ${PUBLIC_WEB_ORIGIN:-http://localhost:8080}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
+      STRIPE_PRICE_MONTHLY: ${STRIPE_PRICE_MONTHLY:-}
+      STRIPE_PRICE_YEARLY: ${STRIPE_PRICE_YEARLY:-}
+      ENABLE_TELEMETRY: "false"
     depends_on:
-      - db
-      - redis
-    volumes:
-      - ./apps/backend:/app
-      - /app/node_modules
-
-  ml:
-    build: ./ml_service
-    container_name: dchart_ml
-    # ports: - "8000:8000" # Worker doesn't need to expose port (unless we keep API for health)
-    environment:
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
-    depends_on:
-      - redis
-    volumes:
-      - ./ml_service:/app
-
-  redis:
-    image: redis:alpine
-    container_name: dchart_redis
+      db:
+        condition: service_healthy
     ports:
-      - "6379:6379"
+      - "3100:3100"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      args:
+        VITE_API_URL: ${PUBLIC_API_URL:-http://localhost:3100}
+        VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+  admin:
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
+      args:
+        VITE_API_URL: ${PUBLIC_API_URL:-http://localhost:3100}
+    depends_on:
+      - api
+    ports:
+      - "8081:80"
+    restart: unless-stopped
 
 volumes:
-  postgres_data:
+  pixtooth-db:

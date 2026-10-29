@@ -17,6 +17,9 @@ relative to `apps/backend/`.
 | `ai` | X-ray inference, fallback detections, sample assets | `AIService`, `AssetService` |
 | `analytics` | Product telemetry attached to the account | `UserAnalyticsService` |
 | `email` | Provider-agnostic email delivery (Resend, Cloudflare, Gmail) | `EmailService`, transports |
+| `system` | Safe runtime configuration status and the test-email action | `ConfigurationService` |
+| `admin` | Platform account administration for the separate admin app | `AdminService` |
+| `billing` | Stripe Checkout, billing portal, webhook-driven license state | `Subscription`, `BillingService`, `StripeGateway` |
 
 Shared code lives outside the modules:
 
@@ -59,6 +62,24 @@ implementation. The one orchestration that spans modules is registration: `ident
 creates the account, asks `clinic` for the default workspace and `patients` for seed
 data.
 
+## Licensing and patient limits
+
+There is one paid license, sold through Stripe at $30/month or $300/year. Stripe owns
+the subscription lifecycle; `billing` only stores what its webhooks report
+(`subscriptionPlan`, `subscriptionStatus`, `billingInterval`, customer and subscription
+IDs). Checkout and the portal are hosted by Stripe, so card data never reaches the API.
+
+`PatientService` checks the cap per workspace (personal or shared) for each member:
+
+- a licensed member has no cap in their own personal workspace;
+- members of a workspace owned by a licensed account have no cap in that shared
+  workspace;
+- every personal workspace of a member without a license stays capped at 5 patients,
+  even when the member belongs to a licensed organization.
+
+The count is scoped to the owning medic and the current clinic, so a shared workspace
+does not consume a member's personal allowance.
+
 ## Persistence
 
 Repositories send a small document command set (put, get, delete, query, scan, update)
@@ -90,9 +111,13 @@ generic and the detail stays in the server log.
 
 | Host | Entry | Adapter |
 | --- | --- | --- |
-| Local / VPS | `app.js` | `src/http/expressApp.js` |
+| Local / VPS | `app.js` | `src/http/startServer.js` around `src/http/expressApp.js` |
 | AWS Lambda | `lambda.js` | `serverless-http` around the same Express app |
 | Cloudflare Worker | `worker/index.js` | `src/http/workerApp.js` request/response shim |
+
+`app.js` only builds the Express app and calls `startServer`. The start module owns the
+process concerns: it binds the port, reports the email provider and drains the document
+client on `SIGTERM` or `SIGINT`. Tests import `app.js` without opening a socket.
 
 `src/routes/definitions.js` is the single route table. The Worker compiles the same
 table, so a path exists on both hosts or on neither.

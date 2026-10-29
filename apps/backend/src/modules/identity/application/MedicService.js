@@ -58,7 +58,21 @@ class MedicService {
             throw new BadRequestError('Name and email are required');
         }
 
-        const existingMedic = await this.medicRepository.getMedicByEmail(medicData.email);
+        // License fields belong to the Stripe webhook. Ignore any values supplied
+        // by the caller so a new account cannot grant itself the paid plan.
+        const {
+            subscriptionPlan,
+            subscriptionStatus,
+            billingInterval,
+            stripeCustomerId,
+            stripeSubscriptionId,
+            subscriptionCurrentPeriodEnd,
+            subscriptionCancelAtPeriodEnd,
+            subscriptionUpdatedAt,
+            ...profile
+        } = medicData;
+
+        const existingMedic = await this.medicRepository.getMedicByEmail(profile.email);
         if (existingMedic) {
             throw new ConflictError('A medic with this email already exists');
         }
@@ -66,26 +80,28 @@ class MedicService {
         const apiKey = ApiKey.generate();
 
         const newMedic = {
-            id: medicData.id || this.idGenerator(),
-            subscriptionPlan: medicData.subscriptionPlan || 'free',
+            id: profile.id || this.idGenerator(),
+            subscriptionPlan: 'free',
             apiKey: null,
-            apiKeyHash: medicData.apiKeyHash || apiKey.hash,
-            apiKeyPrefix: medicData.apiKeyPrefix || apiKey.prefix,
+            apiKeyHash: profile.apiKeyHash || apiKey.hash,
+            apiKeyPrefix: profile.apiKeyPrefix || apiKey.prefix,
             apiKeyLastRotatedAt: new Date().toISOString(),
-            ...medicData,
+            ...profile,
         };
 
-        await this.medicRepository.createMedic(newMedic);
+        // Keep the record the repository returns: it carries createdAt, and updateMedic
+        // replaces the whole item rather than merging fields.
+        const storedMedic = await this.medicRepository.createMedic(newMedic);
 
         const personalClinic = await this.clinicService.createClinic({
-            name: medicData.clinicName || `${medicData.name}'s Clinic`,
+            name: profile.clinicName || `${profile.name}'s Clinic`,
             ownerMedicId: newMedic.id,
             type: 'personal',
             isDefault: true,
         });
 
         const createdMedic = await this.medicRepository.updateMedic(newMedic.id, {
-            ...newMedic,
+            ...storedMedic,
             defaultClinicId: personalClinic.id,
         });
 
@@ -279,6 +295,84 @@ class MedicService {
             ...this.toPublicMedic(updatedMedic),
             apiKey: apiKey.rawKey,
             apiKeyMasked: this.getApiKeyMaskedValue(updatedMedic),
+        };
+    }
+
+    /**
+     * Platform-admin view of every account. Only the columns an administrator needs to
+     * identify an account leave this method; password and API-key material never do.
+     */
+    async listAccounts({ search = '', status = '' } = {}) {
+        const term = String(search || '').trim().toLowerCase();
+        const wantedStatus = String(status || '').trim().toLowerCase();
+        const records = await this.medicRepository.listMedics();
+
+        return records
+            .map((record) => this.toAccountSummary(record))
+            .filter((account) => {
+                if (!account) return false;
+                if (wantedStatus && account.status !== wantedStatus) return false;
+                if (!term) return true;
+
+                return account.name?.toLowerCase().includes(term)
+                    || account.email?.toLowerCase().includes(term);
+            })
+            .sort((left, right) => String(right.createdAt || '').localeCompare(String(left.createdAt || '')));
+    }
+
+    async getAccount(medicId) {
+        const record = await this.medicRepository.getMedicById(medicId);
+        if (!record) {
+            throw new NotFoundError('Account not found');
+        }
+
+        return this.toAccountSummary(record);
+    }
+
+    async setAccountStatus(medicId, status) {
+        if (!['active', 'disabled'].includes(status)) {
+            throw new BadRequestError('status must be "active" or "disabled"');
+        }
+
+        const record = await this.getMedic(medicId);
+        if (!record) {
+            throw new NotFoundError('Account not found');
+        }
+
+        if ((record.status || 'active') === status) {
+            return this.toAccountSummary(record);
+        }
+
+        const updated = await this.medicRepository.updateMedic(medicId, {
+            ...record,
+            status,
+            statusUpdatedAt: new Date().toISOString(),
+        });
+
+        if (status === 'disabled') {
+            await this.sessionService.revokeAllForMedic(medicId);
+        }
+
+        return this.toAccountSummary(updated);
+    }
+
+    toAccountSummary(record) {
+        const medic = Medic.from(record);
+        if (!medic) {
+            return null;
+        }
+
+        return {
+            id: medic.id,
+            name: medic.name,
+            email: medic.email,
+            status: medic.status,
+            subscriptionPlan: medic.subscriptionPlan,
+            subscriptionStatus: medic.subscriptionStatus,
+            subscriptionCurrentPeriodEnd: record.subscriptionCurrentPeriodEnd || null,
+            createdAt: record.createdAt || null,
+            authProviders: medic.authProviders,
+            googleLinked: medic.isGoogleLinked(),
         };
     }
 

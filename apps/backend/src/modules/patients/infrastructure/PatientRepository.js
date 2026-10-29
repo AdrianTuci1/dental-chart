@@ -71,15 +71,23 @@ class PatientRepository extends BaseRepository {
         return response.Items || [];
     }
 
-    async getPatientsByOwnerMedicId(ownerMedicId) {
+    async getPatientsByOwnerMedicId(ownerMedicId, clinicId = null) {
+        const expressionAttributeValues = {
+            ':ownerMedicId': ownerMedicId,
+            ':sk': 'METADATA#',
+            ':patientPrefix': 'PATIENT#',
+        };
+        let filterExpression = 'ownerMedicId = :ownerMedicId AND SK = :sk AND begins_with(PK, :patientPrefix)';
+
+        if (clinicId) {
+            filterExpression += ' AND clinicId = :clinicId';
+            expressionAttributeValues[':clinicId'] = clinicId;
+        }
+
         const command = new ScanCommand({
             TableName: this.tableName,
-            FilterExpression: 'ownerMedicId = :ownerMedicId AND SK = :sk AND begins_with(PK, :patientPrefix)',
-            ExpressionAttributeValues: {
-                ':ownerMedicId': ownerMedicId,
-                ':sk': 'METADATA#',
-                ':patientPrefix': 'PATIENT#',
-            },
+            FilterExpression: filterExpression,
+            ExpressionAttributeValues: expressionAttributeValues,
         });
 
         const response = await this.send(command);
@@ -88,6 +96,11 @@ class PatientRepository extends BaseRepository {
 
     async countPatientsByOwnerMedicId(ownerMedicId) {
         const patients = await this.getPatientsByOwnerMedicId(ownerMedicId);
+        return patients.length;
+    }
+
+    async countPatientsByOwnerMedicIdInClinic(ownerMedicId, clinicId) {
+        const patients = await this.getPatientsByOwnerMedicId(ownerMedicId, clinicId);
         return patients.length;
     }
 

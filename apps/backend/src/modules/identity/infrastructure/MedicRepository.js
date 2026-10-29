@@ -81,6 +81,25 @@ class MedicRepository extends BaseRepository {
         return response.Items && response.Items.length > 0 ? response.Items[0] : null;
     }
 
+    async getMedicByStripeCustomerId(customerId) {
+        if (!customerId) {
+            return null;
+        }
+
+        const command = new ScanCommand({
+            TableName: this.tableName,
+            FilterExpression: 'stripeCustomerId = :customerId AND SK = :sk AND begins_with(PK, :medicPrefix)',
+            ExpressionAttributeValues: {
+                ':customerId': customerId,
+                ':sk': 'METADATA#',
+                ':medicPrefix': 'MEDIC#',
+            },
+        });
+
+        const response = await this.send(command);
+        return response.Items && response.Items.length > 0 ? response.Items[0] : null;
+    }
+
     async getMedicByApiKeyHash(apiKeyHash) {
         const command = new ScanCommand({
             TableName: this.tableName,

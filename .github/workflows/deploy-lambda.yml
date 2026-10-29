@@ -95,6 +95,7 @@ jobs:
 
           DYNAMODB_TABLE_NAME=${{ vars.DYNAMODB_TABLE_NAME || 'DentalChart' }}
           CORS_ORIGIN=${{ vars.CORS_ORIGIN }}
+          PLATFORM_ADMIN_EMAILS=${{ vars.PLATFORM_ADMIN_EMAILS }}
           PASSWORD_RESET_URL=${{ vars.PASSWORD_RESET_URL }}
 
           JWT_SECRET=${{ secrets.JWT_SECRET }}
@@ -110,6 +111,12 @@ jobs:
           AI_ANALYSIS_ENABLED=${{ vars.AI_ANALYSIS_ENABLED || 'false' }}
           ENABLE_TELEMETRY=${{ vars.ENABLE_TELEMETRY || 'false' }}
           TELEMETRY_EXPORT_SECRET=${{ secrets.TELEMETRY_EXPORT_SECRET }}
+
+          PUBLIC_WEB_ORIGIN=${{ vars.PUBLIC_WEB_ORIGIN || 'https://app.pixtooth.com' }}
+          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          STRIPE_PRICE_MONTHLY=${{ vars.STRIPE_PRICE_MONTHLY }}
+          STRIPE_PRICE_YEARLY=${{ vars.STRIPE_PRICE_YEARLY }}
           ENVEOF
 
       # A stack that cannot resolve its own hostname, or that rotates its signing keys on

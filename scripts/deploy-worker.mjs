@@ -52,6 +52,7 @@ const SECRET_NAMES = [
     'AWS_SECRET_ACCESS_KEY',
     'AWS_SESSION_TOKEN',
     'CORS_ORIGIN',
+    'PLATFORM_ADMIN_EMAILS',
     'GOOGLE_CLIENT_ID',
     'PASSWORD_RESET_URL',
     'EMAIL_PROVIDER',
@@ -66,6 +67,11 @@ const SECRET_NAMES = [
     'AI_ANALYSIS_ENABLED',
     'ENABLE_TELEMETRY',
     'TELEMETRY_EXPORT_SECRET',
+    'PUBLIC_WEB_ORIGIN',
+    'STRIPE_SECRET_KEY',
+    'STRIPE_WEBHOOK_SECRET',
+    'STRIPE_PRICE_MONTHLY',
+    'STRIPE_PRICE_YEARLY',
 ];
 
 // A Worker without these fails on the first request that needs data or a session.

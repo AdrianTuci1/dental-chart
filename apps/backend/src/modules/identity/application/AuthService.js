@@ -86,6 +86,10 @@ class AuthService {
             throw new UnauthorizedError('Invalid credentials');
         }
 
+        if (medic.status === 'disabled') {
+            throw new UnauthorizedError('This account is disabled. Contact an administrator.');
+        }
+
         const session = await this.sessionService.issue(medic.id);
         const publicMedic = this.medicService.toPublicMedic(medic);
 
@@ -107,6 +111,10 @@ class AuthService {
     async googleLogin({ idToken } = {}) {
         const claims = await this.googleAuthService.verifyIdToken(idToken);
         const { medic, isNewlyCreated } = await this.medicService.findOrCreateGoogleAccount(claims);
+
+        if (medic.status === 'disabled') {
+            throw new UnauthorizedError('This account is disabled. Contact an administrator.');
+        }
 
         const session = await this.sessionService.issue(medic.id);
         const publicMedic = this.medicService.toPublicMedic(medic);
@@ -142,6 +150,10 @@ class AuthService {
             throw new UnauthorizedError('User not found');
         }
 
+        if (medic.status === 'disabled') {
+            throw new UnauthorizedError('This account is disabled. Contact an administrator.');
+        }
+
         return {
             statusCode: 200,
             body: {
@@ -167,6 +179,10 @@ class AuthService {
         const medic = await this.medicService.getMedicProfile(medicId);
         if (!medic) {
             throw new UnauthorizedError('Session invalid: Medic not found. Please log in again.');
+        }
+
+        if (medic.status === 'disabled') {
+            throw new UnauthorizedError('This account is disabled. Contact an administrator.');
         }
 
         return medic;

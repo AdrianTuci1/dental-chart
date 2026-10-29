@@ -86,6 +86,7 @@ The Nginx template used by the script is:
 - `BACKEND_PORT`
 - `BACKEND_HOST`
 - `API_DOMAIN`
+- `PLATFORM_ADMIN_EMAILS` (comma separated; grants access to the separate admin app)
 - `DB_DRIVER` (`dynamo` by default; `postgres` enables the PostgreSQL adapter on the VPS)
 - `DATABASE_SSL`
 - `DATABASE_SCHEMA`

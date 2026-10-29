@@ -1,0 +1,23 @@
+{
+  "name": "pixtooth-admin",
+  "private": true,
+  "version": "1.0.0-beta",
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "test": "npx vitest run",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
+    "jsdom": "^29.0.1",
+    "vite": "^7.3.2",
+    "vitest": "^4.0.18"
+  }
+}

@@ -13,7 +13,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DEFAULT_APPS = ['apps/backend', 'apps/frontend'];
+const DEFAULT_APPS = ['apps/backend', 'apps/frontend', 'apps/admin'];
 const requestedApps = process.argv.slice(2);
 const APPS = requestedApps.length ? requestedApps : DEFAULT_APPS;
 

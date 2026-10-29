@@ -4,6 +4,8 @@ const PatientRepository = require('../infrastructure/PatientRepository');
 const HistoryRepository = require('../infrastructure/HistoryRepository');
 const TreatmentPlanRepository = require('../infrastructure/TreatmentPlanRepository');
 const ClinicService = require('../../clinic/application/ClinicService');
+const { Clinic } = require('../../clinic/domain/Clinic');
+const { Medic } = require('../../identity/domain/Medic');
 const { Patient, PatientChart } = require('../domain/Patient');
 const {
     BadRequestError,
@@ -45,14 +47,12 @@ class PatientService {
             throw new NotFoundError('Medic not found');
         }
 
-        if ((medic.subscriptionPlan || 'free') === 'free' && !options.skipPlanLimit) {
-            const patientCount = await this.patientRepository.countPatientsByOwnerMedicId(medic.id);
-            if (patientCount >= 5) {
-                throw new ForbiddenError('Free accounts can only manage up to 5 patients');
-            }
+        const clinic = await this.clinicService.resolveClinicForMedic(patientData.medicId, patientData.clinicId);
+
+        if (!options.skipPlanLimit) {
+            await this.assertPatientLimit(medic, clinic);
         }
 
-        const clinic = await this.clinicService.resolveClinicForMedic(patientData.medicId, patientData.clinicId);
         const { fullName: _unusedFullName, ...rest } = patientData;
 
         const newPatient = {
@@ -72,6 +72,36 @@ class PatientService {
         ]);
 
         return this.getPatientFullRecord(newPatient.id);
+    }
+
+    /**
+     * A license covers its own account everywhere and every member of a shared
+     * workspace it owns. Each account keeps the five-patient cap in a personal
+     * workspace, and a shared workspace without a license is capped per member.
+     */
+    async assertPatientLimit(medic, clinic) {
+        if (new Medic(medic).isLicensed()) {
+            return;
+        }
+
+        let owner = medic;
+
+        if (clinic.ownerMedicId && String(clinic.ownerMedicId) !== String(medic.id)) {
+            owner = await this.medicRepository.getMedicById(clinic.ownerMedicId);
+        }
+
+        const isPersonalWorkspace = new Clinic(clinic).isDefaultWorkspace(owner);
+
+        if (!isPersonalWorkspace && new Medic(owner || {}).isLicensed()) {
+            return;
+        }
+
+        const patientCount = await this.patientRepository
+            .countPatientsByOwnerMedicIdInClinic(medic.id, clinic.id);
+
+        if (patientCount >= 5) {
+            throw new ForbiddenError('Free accounts can only manage up to 5 patients per workspace');
+        }
     }
 
     async getPatient(id) {
