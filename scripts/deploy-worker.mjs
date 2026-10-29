@@ -47,6 +47,7 @@ const SECRET_NAMES = [
     'REFRESH_TOKEN_SECRET',
     'DYNAMODB_TABLE_NAME',
     'AWS_REGION',
+    'AWS_ACCOUNT_ID',
     'AWS_ACCESS_KEY_ID',
     'AWS_SECRET_ACCESS_KEY',
     'AWS_SESSION_TOKEN',
@@ -100,12 +101,17 @@ const run = (command, args, options = {}) => execFileSync(command, args, {
     ...options,
 });
 
-const wrangler = (args, options = {}) => run('npx', ['wrangler', ...args], options);
+// Wrangler is installed with the frontend, because that is the package that builds the
+// assets and owns the Wrangler toolchain. Running its local binary keeps deploys pinned to
+// the installed version instead of whatever npx would download.
+const wranglerBin = path.join(root, 'apps', 'frontend', 'node_modules', '.bin', 'wrangler');
+
+const wrangler = (args, options = {}) => run(wranglerBin, args, options);
 
 /** Reads the secret names already stored on the Worker, or null when that cannot be checked. */
 const listSecretNames = (config) => {
     try {
-        const output = execFileSync('npx', ['wrangler', 'secret', 'list', '-c', config], {
+        const output = execFileSync(wranglerBin, ['secret', 'list', '-c', config], {
             cwd: root,
             encoding: 'utf8',
             stdio: ['ignore', 'pipe', 'ignore'],
@@ -161,7 +167,7 @@ const checkSecrets = (config, values) => {
 
     for (const name of missing) {
         const hint = values[name] ? '  (present in .env.deploy; rerun with --sync-secrets)' : '';
-        console.log(`  npx wrangler secret put ${name} -c ${config}${hint}`);
+        console.log(`  apps/frontend/node_modules/.bin/wrangler secret put ${name} -c ${config}${hint}`);
     }
 
     console.log('');
@@ -197,7 +203,13 @@ const main = async () => {
 
     if (options.build) {
         console.log('Building the frontend...');
-        buildFrontend(root);
+
+        // The Google client id is baked into the bundle at build time, so Vite needs it
+        // under its own name. .env.deploy keeps it as GOOGLE_CLIENT_ID, which is what the
+        // backend reads, so the same value feeds both halves.
+        const googleClientId = fileValues.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+
+        buildFrontend(root, googleClientId ? { VITE_GOOGLE_CLIENT_ID: googleClientId } : {});
     } else {
         console.log('Skipping the build (--no-build).');
     }

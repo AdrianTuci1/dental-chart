@@ -2,8 +2,8 @@
 /**
  * Builds the single Lambda artifact: the frontend and the API in one directory tree.
  *
- * The tree mirrors the repository (dist/ next to server/), which is what the code
- * already assumes, so nothing inside the function needs a rewritten path.
+ * The tree mirrors the repository (apps/frontend next to apps/backend), which is what the
+ * code already assumes, so nothing inside the function needs a rewritten path.
  *
  * Output: deploy/lambda/build/  (fed to SAM as CodeUri)
  */
@@ -15,9 +15,10 @@ import { buildFrontend } from './lib/frontend-build.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = path.join(root, 'deploy', 'lambda', 'build');
-const serverOut = path.join(outDir, 'server');
+const frontendOut = path.join(outDir, 'apps', 'frontend', 'dist');
+const backendOut = path.join(outDir, 'apps', 'backend');
 
-const SERVER_ENTRIES = [
+const BACKEND_ENTRIES = [
     'app.js',
     'lambda.js',
     'package.json',
@@ -50,19 +51,20 @@ const megabytes = (bytes) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 buildFrontend(root);
 
 rmSync(outDir, { recursive: true, force: true });
-mkdirSync(serverOut, { recursive: true });
+mkdirSync(path.dirname(frontendOut), { recursive: true });
+mkdirSync(backendOut, { recursive: true });
 
-cpSync(path.join(root, 'dist'), path.join(outDir, 'dist'), { recursive: true });
+cpSync(path.join(root, 'apps', 'frontend', 'dist'), frontendOut, { recursive: true });
 
-for (const entry of SERVER_ENTRIES) {
-    cpSync(path.join(root, 'server', entry), path.join(serverOut, entry), { recursive: true });
+for (const entry of BACKEND_ENTRIES) {
+    cpSync(path.join(root, 'apps', 'backend', entry), path.join(backendOut, entry), { recursive: true });
 }
 
 // Development tooling stays out of the package; the size difference is large.
-run('npm', ['ci', '--omit=dev', '--no-audit', '--no-fund'], { cwd: serverOut });
+run('npm', ['ci', '--omit=dev', '--no-audit', '--no-fund'], { cwd: backendOut });
 
 console.log('');
 console.log(`artifact:     ${path.relative(root, outDir)}`);
-console.log(`frontend:     ${megabytes(directorySize(path.join(outDir, 'dist')))}`);
-console.log(`api + deps:   ${megabytes(directorySize(serverOut))}`);
+console.log(`frontend:     ${megabytes(directorySize(frontendOut))}`);
+console.log(`api + deps:   ${megabytes(directorySize(backendOut))}`);
 console.log('next:         sam deploy --template-file deploy/lambda/template.yaml ...');

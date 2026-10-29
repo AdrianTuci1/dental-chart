@@ -1,9 +1,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const IMAGE_PATH = path.join(__dirname, '../public/static/chart2.png');
-const DETECTIONS_PATH = path.join(__dirname, '../public/static/detections.json');
-const OUTPUT_PATH = path.join(__dirname, '../dist/preview-standalone.html');
+const IMAGE_PATH = path.join(__dirname, '../apps/frontend/public/static/chart2.png');
+const DETECTIONS_PATH = path.join(__dirname, '../apps/frontend/public/static/detections.json');
+const OUTPUT_PATH = path.join(__dirname, '../apps/frontend/dist/preview-standalone.html');
 
 const imageBase64 = fs.readFileSync(IMAGE_PATH).toString('base64');
 const detections = JSON.parse(fs.readFileSync(DETECTIONS_PATH, 'utf8'));

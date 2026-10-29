@@ -25,9 +25,11 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: apps/frontend/package-lock.json
 
       - name: 🔨 Build Frontend
         id: build
+        working-directory: apps/frontend
         run: |
           cat > .env.production << ENVEOF
           VITE_API_URL=https://api.${{ env.DOMAIN }}/api/v1
@@ -52,7 +54,7 @@ jobs:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: pixtooth-app
-          directory: dist
+          directory: apps/frontend/dist
           productionBranch: main
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 

@@ -10,7 +10,7 @@ This repository now has separate validation and deployment flows for frontend an
 
 - Frontend CI: install, run Vitest, build with Vite.
 - Backend CI: install, run Jest.
-- Frontend deploy: only uploads the already validated `dist/` artifact to Cloudflare Pages.
+- Frontend deploy: only uploads the already validated `apps/frontend/dist/` artifact to Cloudflare Pages.
 - Backend deploy: uploads a release folder to the VPS, bootstraps the machine if needed, reloads PM2 in cluster mode, and rolls back to the previous release if the new one fails `/health`.
 
 ## Frontend
@@ -42,9 +42,11 @@ Default production settings:
 The deploy flow is:
 
 1. Run backend tests in GitHub Actions.
-2. Upload the backend into `incoming/<release-id>` on the VPS.
-3. Run `server/scripts/bootstrap-vps.sh`.
-4. Run `server/scripts/deploy-release.sh`.
+2. Upload `apps/backend/` into `incoming/<release-id>` on the VPS, then overlay the VPS
+   assets from `deploy/vps/` (`bootstrap-vps.sh`, `deploy-release.sh`, `nginx/` and
+   `ecosystem.config.js`).
+3. In the release directory, run `scripts/bootstrap-vps.sh`.
+4. Run `scripts/deploy-release.sh`.
 5. Switch `current` to the new release.
 6. `pm2 startOrReload` the cluster.
 7. Verify `http://127.0.0.1:3100/health`.
@@ -54,7 +56,7 @@ Because the live release is only switched at the end, a failed deploy no longer 
 
 ## Empty VPS bootstrap
 
-`server/scripts/bootstrap-vps.sh` is intended for Debian/Ubuntu-style VPS machines and is idempotent.
+`deploy/vps/bootstrap-vps.sh` is intended for Debian/Ubuntu-style VPS machines and is idempotent.
 
 It ensures:
 
@@ -67,7 +69,7 @@ It ensures:
 
 The Nginx template used by the script is:
 
-- `server/deploy/nginx/api.pixtooth.com.conf`
+- `deploy/vps/nginx/api.pixtooth.com.conf`
 
 ## Required GitHub secrets
 

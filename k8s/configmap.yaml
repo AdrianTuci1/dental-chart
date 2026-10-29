@@ -20,7 +20,7 @@ data:
   REFRESH_TOKEN_REUSE_GRACE_MS: "10000"
   # Set to the OAuth 2.0 Web client id to enable "Continue with Google".
   # GOOGLE_CLIENT_ID: "xxxxxxxx.apps.googleusercontent.com"
-  # Email transport: resend | cloudflare | gmail (see server/.env.example)
+  # Email transport: resend | cloudflare | gmail (see apps/backend/.env.example)
   # EMAIL_PROVIDER: "cloudflare"
   # EMAIL_FROM: "Pixtooth <no-reply@pixtooth.com>"
   # CLOUDFLARE_ACCOUNT_ID: ""
