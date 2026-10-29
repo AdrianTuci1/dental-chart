@@ -39,15 +39,7 @@ with DynamoDB. A separate admin app manages the accounts created in the deployme
 
 ## Screenshots
 
-| Clinic app | Admin app |
-| --- | --- |
-| ![Tooth chart](./apps/frontend/public/static/app-chart.png) | ![Account administration](./docs/screenshots/admin-accounts.png) |
-
-The admin app is responsive: on narrow screens the account table becomes a list of cards.
-
-| Mobile admin |
-| --- |
-| ![Admin on a phone](./docs/screenshots/admin-mobile.png) |
+![Tooth chart](./apps/frontend/public/static/app-chart.png)
 
 ## Integrations
 
