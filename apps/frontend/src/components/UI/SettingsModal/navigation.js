@@ -8,6 +8,7 @@ import {
     Shield,
     Mail,
     LogOut,
+    Server,
 } from 'lucide-react';
 
 export const VIEW_CONFIG = {
@@ -16,6 +17,7 @@ export const VIEW_CONFIG = {
     billing: { title: 'Subscription' },
     settings: { title: 'General Settings' },
     api: { title: 'API Configuration' },
+    system: { title: 'System Status' },
     support: { title: 'Support & Legal' },
 };
 
@@ -33,6 +35,7 @@ export const SIDEBAR_SECTIONS = [
         items: [
             { id: 'settings', label: 'General settings', icon: Settings },
             { id: 'api', label: 'API Key', icon: Key },
+            { id: 'system', label: 'System status', icon: Server },
         ],
     },
     {

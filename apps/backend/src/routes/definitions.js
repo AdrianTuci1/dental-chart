@@ -16,6 +16,7 @@ const createTreatmentPlanController = require('../modules/patients/http/treatmen
 const createExternalApiController = require('../modules/integration/http/externalApiController');
 const createAIController = require('../modules/ai/http/aiController');
 const createAnalyticsController = require('../modules/analytics/http/analyticsController');
+const createConfigController = require('../modules/system/http/configController');
 const createAuthMiddleware = require('../modules/identity/http/authMiddleware');
 const { createRateLimit } = require('../http/rateLimitMiddleware');
 const { rateLimitConfig } = require('../http/config/rateLimitConfig');
@@ -31,6 +32,7 @@ const treatmentPlanController = createTreatmentPlanController(services);
 const externalApiController = createExternalApiController(services);
 const aiController = createAIController(services);
 const analyticsController = createAnalyticsController(services);
+const configController = createConfigController(services);
 
 const publicAuthRateLimit = createRateLimit({
     ...rateLimitConfig.auth,
@@ -57,6 +59,11 @@ const routes = [
 
     ...group('/analytics', [], [
         { method: 'post', path: '/navigation', handler: analyticsController.trackNavigation },
+    ]),
+
+    ...group('/config', [requireAuth], [
+        { method: 'get', path: '', handler: configController.getConfig },
+        { method: 'post', path: '/test-email', handler: configController.sendTestEmail },
     ]),
 
     ...group('/clinics', [requireAuth], [

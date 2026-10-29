@@ -480,6 +480,16 @@
     letter-spacing: 0.06em;
 }
 
+.settings-inline-badge.is-on {
+    background: rgba(34, 197, 94, 0.16);
+    color: #86efac;
+}
+
+.settings-inline-badge.is-off {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.55);
+}
+
 .settings-inline-link {
     text-decoration: none;
     border: none;

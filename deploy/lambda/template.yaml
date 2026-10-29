@@ -92,6 +92,9 @@ Resources:
       Environment:
         Variables:
           NODE_ENV: production
+          # Serverless hosts use DynamoDB. Postgres needs a long-running process and a
+          # connection pool; see docs/postgres-setup.md.
+          DB_DRIVER: dynamo
           DYNAMODB_TABLE_NAME: !Ref DynamoTableName
           JWT_SECRET: !Ref JwtSecret
           REFRESH_TOKEN_SECRET: !Ref RefreshTokenSecret
