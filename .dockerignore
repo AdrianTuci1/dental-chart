@@ -10,11 +10,9 @@ status_train.log
 walkthrough.md
 info.md
 deploy
-docs
+/docs
 k8s
 worker
-scripts
-apps/frontend
 apps/ml
 **/node_modules
 **/dist

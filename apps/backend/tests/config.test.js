@@ -98,6 +98,36 @@ describe('runtime configuration', () => {
         expect(description.warnings.join(' ')).toContain('RESEND_API_KEY');
     });
 
+    it('reports that platform administrators exist without leaking their addresses', () => {
+        const env = cleanEnv({
+            PLATFORM_ADMIN_EMAILS: 'Admin@Clinic.test, ops@clinic.test',
+        });
+        const description = describeConfig(loadConfig(env), env);
+
+        expect(description.admin).toEqual({ configured: true, accounts: 2 });
+        expect(JSON.stringify(description)).not.toContain('clinic.test');
+    });
+
+    it('reports Stripe as configured without exposing its secrets', () => {
+        const env = cleanEnv({
+            STRIPE_SECRET_KEY: 'sk_test_do_not_leak',
+            STRIPE_WEBHOOK_SECRET: 'whsec_do_not_leak',
+            STRIPE_PRICE_MONTHLY: 'price_month',
+            STRIPE_PRICE_YEARLY: 'price_year',
+        });
+        const description = describeConfig(loadConfig(env), env);
+
+        expect(description.billing).toEqual({
+            configured: true,
+            provider: 'stripe',
+            prices: { month: 30, year: 300 },
+            currency: 'usd',
+        });
+        expect(JSON.stringify(description)).not.toContain('sk_test_do_not_leak');
+        expect(JSON.stringify(description)).not.toContain('whsec_do_not_leak');
+        expect(JSON.stringify(description)).not.toContain('price_month');
+    });
+
     it('reports the configured Google and email state', () => {
         const env = cleanEnv({
             GOOGLE_CLIENT_ID: 'client.apps.googleusercontent.com',

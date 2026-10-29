@@ -184,6 +184,14 @@ const SystemView = () => {
                         badge={config.google.configured ? 'configured' : 'inactive'}
                     />
                     <StatusRow
+                        label="Billing"
+                        description={config.billing?.configured
+                            ? `Stripe · $${config.billing.prices?.month ?? 30}/month or $${config.billing.prices?.year ?? 300}/year.`
+                            : 'Stripe keys are not configured, so subscriptions are unavailable.'}
+                        active={Boolean(config.billing?.configured)}
+                        badge={config.billing?.configured ? 'enabled' : 'disabled'}
+                    />
+                    <StatusRow
                         label="AI X-ray analysis"
                         description={config.ai.enabled
                             ? 'Analysis is enabled for this deployment.'

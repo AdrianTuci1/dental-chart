@@ -144,8 +144,10 @@ it. That means the Worker has to serve the app: keeping the Pages project on the
 hostname and putting only the API on a Worker hostname would leave the frontend calling
 its own origin. Move the hostname to the Worker, and the Pages project can go.
 
-Because the frontend and the API share an origin here, there is no CORS on this path and
-`CORS_ORIGIN` is only relevant if something else calls the API.
+Because the frontend and the API share an origin here, the clinic app needs no CORS.
+`CORS_ORIGIN` still matters for the separate admin app: list its origin
+(`https://admin.example.com`) and the Worker answers its preflight requests. Origins that
+are not listed receive no CORS headers.
 
 `worker/wrangler.toml` sets `run_worker_first = true`, so every request reaches the Worker
 before the assets binding. That is what lets the cache headers come from

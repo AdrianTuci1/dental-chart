@@ -4,6 +4,11 @@ This document describes the open-source licensing of the repository and the
 practical steps that go with it. It is not legal advice; a deployment that
 handles real patient data needs its own legal and data-protection review.
 
+The control framework, gap analysis and data-protection documents are in
+[docs/compliance/](./compliance/README.md). They are drafts: the project has no
+ISO 27001 certificate, SOC 2 report or AI Act conformity assessment, and these
+documents are not evidence of one.
+
 ## Project license
 
 Pixtooth is licensed under the **Apache License 2.0**. The full text is in
@@ -41,9 +46,9 @@ Production dependencies run under permissive licenses only:
 | BSD-2-Clause | dotenv |
 | BSD-3-Clause | bcryptjs |
 
-`npm run check:licenses` walks the production dependency trees of the backend
-and the frontend and fails on a license outside the allowlist. CI runs it as
-part of `npm run ci`.
+`npm run check:licenses` walks the production dependency trees of the backend,
+frontend and admin app and fails on a license outside the allowlist. CI runs it
+as part of `npm run ci`.
 
 Development-only tooling includes MPL-2.0 (`lightningcss`) and
 LGPL-3.0-or-later (`@img/sharp-libvips`, pulled in by Wrangler). Those packages
@@ -55,6 +60,13 @@ The ML pipeline in `apps/ml` downloads model weights and Python packages under
 their own licenses. Record the license of any model or dataset you add before
 shipping it; model weights are not covered by the repository license.
 
+`ultralytics` is AGPL-3.0 by default and offers a commercial license. A
+distributed or hosted service built on YOLO11 may inherit AGPL obligations that
+conflict with the Apache-2.0 release. Confirm the license or replace the model
+before shipping a combined work. The Kaggle training dataset also needs its
+license and provenance recorded. Both items are tracked in the
+[supplier register](./compliance/supplier-register.md) and in risk R-06 and R-21.
+
 ## Distribution checklist
 
 When you publish a build, include the license and notice with it:
@@ -62,9 +74,9 @@ When you publish a build, include the license and notice with it:
 - source archive: ship `LICENSE`, `NOTICE` and this repository as-is
 - Lambda artifact: `scripts/build-lambda-artifact.mjs` copies `LICENSE` and
   `NOTICE` into `deploy/lambda/build/`
-- container image: the Dockerfile copies `LICENSE` and `NOTICE` into `/app`
-- frontend-only bundle: the license and notice are served from the repository;
-  add them to the release notes or the site's legal page
+- container images: each Dockerfile copies `LICENSE` and `NOTICE` into the image
+- frontend-only bundle: the web and admin containers serve `LICENSE` and `NOTICE` at
+  `/LICENSE` and `/NOTICE`; a static host outside Docker should publish the same files
 
 If you modify files, keep the copyright notices and add a short note describing
 the change in the distribution.
@@ -90,17 +102,18 @@ Technical measures in the codebase:
 - configuration status that reports presence, never secret values
 - patient and clinic deletion endpoints
 
-Operational work that remains outside the codebase:
+Operational work that remains outside the codebase is specified in the
+[compliance pack](./compliance/README.md):
 
-- a retention policy for records, X-rays and logs, with automated deletion
-- encrypted backups and a tested restore procedure
-- an audit trail for access to patient records, with its own retention
-- a data subject request process (export, correction, deletion)
-- a data protection impact assessment and a breach notification procedure
-- hosting in a region acceptable to the practice, with a signed DPA
+- [retention and data subject requests](./compliance/data-protection.md)
+- [audit trail](./compliance/audit-logging.md)
+- [backup and restore](./compliance/backup-and-recovery.md)
+- [DPIA](./compliance/dpia.md) and [incident response](./compliance/incident-response.md)
+- [supplier register](./compliance/supplier-register.md) with the DPA checklist
 
-Do not describe the application as GDPR-, HIPAA- or MDR-compliant until those
-operational controls and the applicable legal review are in place.
+Do not describe the application as GDPR-, HIPAA-, MDR-, ISO 27001- or SOC
+2-compliant until those operational controls, the applicable legal review and,
+where required, an independent audit are in place.
 
 ## Security
 

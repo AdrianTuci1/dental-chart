@@ -22,6 +22,10 @@ Parameters:
   DynamoTableName:
     Type: String
     Description: DynamoDB table holding every workspace, patient and session.
+  PlatformAdminEmails:
+    Type: String
+    Default: ''
+    Description: Comma-separated accounts allowed into the admin app.
   JwtSecret:
     Type: String
     NoEcho: true
@@ -72,6 +76,27 @@ Parameters:
     Type: String
     Default: 'false'
     AllowedValues: ['true', 'false']
+  PublicWebOrigin:
+    Type: String
+    Default: https://app.pixtooth.com
+    Description: Where Stripe returns the browser after checkout or the billing portal.
+  StripeSecretKey:
+    Type: String
+    Default: ''
+    NoEcho: true
+    Description: Leave empty to hide checkout. Required together with the webhook and prices.
+  StripeWebhookSecret:
+    Type: String
+    Default: ''
+    NoEcho: true
+  StripePriceMonthly:
+    Type: String
+    Default: ''
+    Description: Stripe price_... ID for the $30/month license.
+  StripePriceYearly:
+    Type: String
+    Default: ''
+    Description: Stripe price_... ID for the $300/year license.
 
 Globals:
   Function:
@@ -96,6 +121,7 @@ Resources:
           # connection pool; see docs/postgres-setup.md.
           DB_DRIVER: dynamo
           DYNAMODB_TABLE_NAME: !Ref DynamoTableName
+          PLATFORM_ADMIN_EMAILS: !Ref PlatformAdminEmails
           JWT_SECRET: !Ref JwtSecret
           REFRESH_TOKEN_SECRET: !Ref RefreshTokenSecret
           CORS_ORIGIN: !Ref CorsOrigin
@@ -110,6 +136,11 @@ Resources:
           MODAL_INFERENCE_URL: !Ref ModalInferenceUrl
           AI_ANALYSIS_ENABLED: !Ref AiAnalysisEnabled
           ENABLE_TELEMETRY: !Ref EnableTelemetry
+          PUBLIC_WEB_ORIGIN: !Ref PublicWebOrigin
+          STRIPE_SECRET_KEY: !Ref StripeSecretKey
+          STRIPE_WEBHOOK_SECRET: !Ref StripeWebhookSecret
+          STRIPE_PRICE_MONTHLY: !Ref StripePriceMonthly
+          STRIPE_PRICE_YEARLY: !Ref StripePriceYearly
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref DynamoTableName

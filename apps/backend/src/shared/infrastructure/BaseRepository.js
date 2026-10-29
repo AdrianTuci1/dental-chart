@@ -15,6 +15,8 @@ const SEARCHABLE_FIELDS_BY_SK = {
         'gender',
         'lastExamDate',
         'subscriptionPlan',
+        'subscriptionStatus',
+        'stripeCustomerId',
         'apiKey',
         'apiKeyHash',
         'apiKeyPrefix',

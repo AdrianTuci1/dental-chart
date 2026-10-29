@@ -23,13 +23,30 @@ class Medic {
     get name() { return this.record.name; }
     get email() { return this.record.email; }
     get subscriptionPlan() { return this.record.subscriptionPlan || 'free'; }
+    get subscriptionStatus() {
+        // Older records and manually granted plans predate Stripe, so a non-free plan
+        // without a status stays usable. Stripe writes an explicit status on every sync.
+        return this.record.subscriptionStatus || (this.isFreePlan() ? 'inactive' : 'active');
+    }
+    get billingInterval() { return this.record.billingInterval || null; }
     get defaultClinicId() { return this.record.defaultClinicId; }
     get passwordHash() { return this.record.passwordHash; }
     get googleId() { return this.record.googleId; }
     get authProviders() { return this.record.authProviders || []; }
+    get status() { return this.record.status || 'active'; }
+
+    isDisabled() {
+        return this.status === 'disabled';
+    }
 
     isFreePlan() {
         return this.subscriptionPlan === 'free';
+    }
+
+    /** A paid plan counts only while Stripe reports it as active or trialing. */
+    isLicensed() {
+        return !this.isFreePlan()
+            && ['active', 'trialing'].includes(this.subscriptionStatus);
     }
 
     hasPassword() {
@@ -81,7 +98,14 @@ class Medic {
 
     /** Response-safe view: the credential columns never leave the server. */
     toPublic() {
-        const { passwordHash, apiKeyHash, apiKeyPrefix, ...publicRecord } = this.record;
+        const {
+            passwordHash,
+            apiKeyHash,
+            apiKeyPrefix,
+            stripeCustomerId,
+            stripeSubscriptionId,
+            ...publicRecord
+        } = this.record;
         return publicRecord;
     }
 

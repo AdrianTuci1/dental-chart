@@ -84,29 +84,29 @@ const matchRoute = (method, pathname) => {
 const parseBody = async (request) => {
     const contentType = (request.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
 
-    if (!contentType) return undefined;
+    if (!contentType) return { body: undefined };
 
     if (contentType === 'application/json') {
-        const text = await request.text();
-        if (!text) return undefined;
+        const rawBody = Buffer.from(await request.arrayBuffer());
+        if (!rawBody.length) return { body: undefined, rawBody };
 
         try {
-            return JSON.parse(text);
+            return { body: JSON.parse(rawBody.toString('utf8')), rawBody };
         } catch {
-            return undefined;
+            return { body: undefined, rawBody };
         }
     }
 
     if (contentType === 'application/x-www-form-urlencoded') {
-        return Object.fromEntries(new URLSearchParams(await request.text()));
+        return { body: Object.fromEntries(new URLSearchParams(await request.text())) };
     }
 
     // The AI controller hands this straight to fetch as an octet-stream body.
     if (contentType === 'application/octet-stream') {
-        return Buffer.from(await request.arrayBuffer());
+        return { body: Buffer.from(await request.arrayBuffer()) };
     }
 
-    return undefined;
+    return { body: undefined };
 };
 
 const lowerCaseHeaders = (request) => {
@@ -120,6 +120,7 @@ const lowerCaseHeaders = (request) => {
 const buildRequest = async (request, url, params) => {
     const headers = lowerCaseHeaders(request);
     const ip = headers['cf-connecting-ip'] || headers['x-forwarded-for'] || 'unknown';
+    const { body, rawBody } = await parseBody(request);
 
     return {
         method: request.method,
@@ -129,7 +130,8 @@ const buildRequest = async (request, url, params) => {
         headers,
         params,
         query: Object.fromEntries(url.searchParams),
-        body: await parseBody(request),
+        body,
+        rawBody,
         ip,
         socket: { remoteAddress: ip },
         get: (name) => headers[String(name).toLowerCase()],
@@ -359,7 +361,56 @@ const withSecurityHeaders = (response) => {
     });
 };
 
-const handle = async (request, env) => withSecurityHeaders(await dispatch(request, env));
+const allowedOrigins = () => (process.env.CORS_ORIGIN || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+const corsHeadersFor = (request) => {
+    const origin = request.headers.get('origin');
+    if (!origin || !allowedOrigins().includes(origin)) {
+        return null;
+    }
+
+    return {
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type,Authorization,x-api-key',
+        'Access-Control-Max-Age': '600',
+        Vary: 'Origin',
+    };
+};
+
+const withCors = (response, request) => {
+    const cors = corsHeadersFor(request);
+    if (!cors) return response;
+
+    const headers = new Headers(response.headers);
+    for (const [name, value] of Object.entries(cors)) {
+        headers.set(name, value);
+    }
+
+    return new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers,
+    });
+};
+
+/**
+ * The Worker serves the app from the same origin, so CORS only matters when a separate
+ * deployment such as the admin app calls this API. The allowed list comes from
+ * CORS_ORIGIN; an origin that is not listed gets no headers and no preflight answer.
+ */
+const handle = async (request, env) => {
+    const isPreflight = request.method === 'OPTIONS' && corsHeadersFor(request);
+
+    if (isPreflight) {
+        return withCors(withSecurityHeaders(new Response(null, { status: 204 })), request);
+    }
+
+    return withCors(withSecurityHeaders(await dispatch(request, env)), request);
+};
 
 module.exports = {
     handle,

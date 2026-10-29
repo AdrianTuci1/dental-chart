@@ -34,6 +34,9 @@ const EmailService = require('./modules/email/application/EmailService');
 const AIService = require('./modules/ai/application/AIService');
 const ApiKeyAuthenticator = require('./modules/integration/application/ApiKeyAuthenticator');
 const ConfigurationService = require('./modules/system/application/ConfigurationService');
+const AdminService = require('./modules/admin/application/AdminService');
+const BillingService = require('./modules/billing/application/BillingService');
+const { createStripeGateway } = require('./modules/billing/infrastructure/StripeGateway');
 
 const config = loadConfig();
 const documentClient = createDocumentClient(config);
@@ -110,6 +113,13 @@ const configurationService = new ConfigurationService({
     medicService,
 });
 
+const adminService = new AdminService({ config, medicService });
+const billingService = new BillingService({
+    config,
+    medicRepository,
+    gateway: createStripeGateway(config.billing),
+});
+
 module.exports = {
     config,
     documentClient,
@@ -138,4 +148,6 @@ module.exports = {
     aiService,
     apiKeyAuthenticator,
     configurationService,
+    adminService,
+    billingService,
 };

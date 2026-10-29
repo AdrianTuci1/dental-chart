@@ -52,6 +52,32 @@ const parsePositiveInt = (value, fallback, name) => {
     return parsed;
 };
 
+const BILLING_PRICES = { month: 30, year: 300 };
+const BILLING_CURRENCY = 'usd';
+
+const parseBilling = (env) => {
+    const secretKey = (env.STRIPE_SECRET_KEY || '').trim();
+    const webhookSecret = (env.STRIPE_WEBHOOK_SECRET || '').trim();
+    const priceIds = {
+        month: (env.STRIPE_PRICE_MONTHLY || '').trim(),
+        year: (env.STRIPE_PRICE_YEARLY || '').trim(),
+    };
+    const webOrigin = (env.PUBLIC_WEB_ORIGIN || 'http://localhost:5173').replace(/\/$/, '');
+
+    return {
+        provider: 'stripe',
+        enabled: Boolean(secretKey && webhookSecret && priceIds.month && priceIds.year),
+        secretKey,
+        webhookSecret,
+        priceIds,
+        prices: BILLING_PRICES,
+        currency: BILLING_CURRENCY,
+        successUrl: env.BILLING_SUCCESS_URL || `${webOrigin}/?billing=success`,
+        cancelUrl: env.BILLING_CANCEL_URL || `${webOrigin}/?billing=cancelled`,
+        portalReturnUrl: env.BILLING_PORTAL_RETURN_URL || `${webOrigin}/?billing=portal`,
+    };
+};
+
 const parsePostgres = (env) => ({
     connectionString: env.DATABASE_URL || '',
     ssl: env.DATABASE_SSL === 'true',
@@ -110,6 +136,10 @@ const loadConfig = (env = process.env) => {
             enabled: env.AI_ANALYSIS_ENABLED === 'true',
             inferenceConfigured: Boolean(env.MODAL_INFERENCE_URL),
         },
+        admin: {
+            emails: splitList(env.PLATFORM_ADMIN_EMAILS).map((email) => email.toLowerCase()),
+        },
+        billing: parseBilling(env),
         auth: {
             jwtSecretConfigured: Boolean(env.JWT_SECRET),
             refreshTokenSecretConfigured: Boolean(env.REFRESH_TOKEN_SECRET),
@@ -170,6 +200,11 @@ const collectWarnings = (config, env) => {
         warnings.push('AI_ANALYSIS_ENABLED=true but MODAL_INFERENCE_URL is not set');
     }
 
+    const billing = config.billing;
+    if (!billing.enabled && (billing.secretKey || billing.webhookSecret || billing.priceIds.month || billing.priceIds.year)) {
+        warnings.push('Stripe is partially configured; set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, STRIPE_PRICE_MONTHLY and STRIPE_PRICE_YEARLY');
+    }
+
     if (config.database.driver === 'postgres') {
         const target = describePostgresTarget(config.database.postgres.connectionString);
 
@@ -214,6 +249,13 @@ const describeConfig = (config = loadConfig(), env = process.env) => {
         },
         google: { configured: config.google.configured },
         ai: config.ai,
+        admin: { configured: config.admin.emails.length > 0, accounts: config.admin.emails.length },
+        billing: {
+            configured: config.billing.enabled,
+            provider: config.billing.provider,
+            prices: config.billing.prices,
+            currency: config.billing.currency,
+        },
         auth: config.auth,
         warnings: collectWarnings(config, env),
     };

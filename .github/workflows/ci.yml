@@ -39,6 +39,37 @@ jobs:
       - name: Check frontend dependency licenses
         run: node ../../scripts/check-licenses.mjs apps/frontend
 
+  admin:
+    runs-on: ubuntu-latest
+    name: Admin Build And Tests
+    defaults:
+      run:
+        working-directory: apps/admin
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: apps/admin/package-lock.json
+
+      - name: Install admin dependencies
+        run: npm ci
+
+      - name: Run admin tests
+        run: npx vitest run
+
+      - name: Build admin app
+        run: npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://api.pixtooth.com' }}
+
+      - name: Check admin dependency licenses
+        run: node ../../scripts/check-licenses.mjs apps/admin
+
   backend:
     runs-on: ubuntu-latest
     name: Backend Tests

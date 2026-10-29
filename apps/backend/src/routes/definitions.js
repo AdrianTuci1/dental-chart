@@ -17,11 +17,15 @@ const createExternalApiController = require('../modules/integration/http/externa
 const createAIController = require('../modules/ai/http/aiController');
 const createAnalyticsController = require('../modules/analytics/http/analyticsController');
 const createConfigController = require('../modules/system/http/configController');
+const createAdminController = require('../modules/admin/http/adminController');
+const createAdminMiddleware = require('../modules/admin/http/adminMiddleware');
+const createBillingController = require('../modules/billing/http/billingController');
 const createAuthMiddleware = require('../modules/identity/http/authMiddleware');
 const { createRateLimit } = require('../http/rateLimitMiddleware');
 const { rateLimitConfig } = require('../http/config/rateLimitConfig');
 
 const { requireAuth, requireSameMedicParam } = createAuthMiddleware(services);
+const { requirePlatformAdmin } = createAdminMiddleware(services);
 
 const authController = createAuthController(services);
 const medicController = createMedicController(services);
@@ -33,6 +37,8 @@ const externalApiController = createExternalApiController(services);
 const aiController = createAIController(services);
 const analyticsController = createAnalyticsController(services);
 const configController = createConfigController(services);
+const adminController = createAdminController(services);
+const billingController = createBillingController(services);
 
 const publicAuthRateLimit = createRateLimit({
     ...rateLimitConfig.auth,
@@ -64,6 +70,25 @@ const routes = [
     ...group('/config', [requireAuth], [
         { method: 'get', path: '', handler: configController.getConfig },
         { method: 'post', path: '/test-email', handler: configController.sendTestEmail },
+    ]),
+
+    ...group('/admin', [requireAuth, requirePlatformAdmin], [
+        { method: 'get', path: '/accounts', handler: adminController.listAccounts },
+        { method: 'get', path: '/accounts/:id', handler: adminController.getAccount },
+        { method: 'patch', path: '/accounts/:id', handler: adminController.updateAccount },
+        { method: 'delete', path: '/accounts/:id', handler: adminController.deleteAccount },
+    ]),
+
+    ...group('/billing', [requireAuth], [
+        { method: 'get', path: '/status', handler: billingController.getStatus },
+        { method: 'post', path: '/checkout', handler: billingController.createCheckout },
+        { method: 'post', path: '/portal', handler: billingController.createPortal },
+    ]),
+
+    // Stripe signs the exact bytes it sent, so this route verifies req.rawBody and
+    // stays outside the authenticated group. It is not called by the browser.
+    ...group('/billing', [], [
+        { method: 'post', path: '/webhook', handler: billingController.webhook },
     ]),
 
     ...group('/clinics', [requireAuth], [

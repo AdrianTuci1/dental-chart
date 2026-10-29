@@ -8,6 +8,7 @@ import { toothService } from './toothService';
 import { aiService } from './aiService';
 import { analyticsService } from './analyticsService';
 import { systemService } from './systemService';
+import billingService from './billingService';
 
 export {
     apiClient,
@@ -20,4 +21,5 @@ export {
     aiService,
     analyticsService,
     systemService,
+    billingService,
 };

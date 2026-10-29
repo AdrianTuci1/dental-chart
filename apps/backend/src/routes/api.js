@@ -10,7 +10,7 @@ const rawBody = express.raw({ type: 'application/octet-stream', limit: '10mb' })
 for (const route of routes) {
     const handlers = [...route.middleware];
 
-    if (route.rawBody) {
+    if (route.rawBody === true) {
         handlers.push(rawBody);
     }
 

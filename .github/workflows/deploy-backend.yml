@@ -96,6 +96,8 @@ jobs:
           PORT=$BACKEND_PORT
           CORS_ORIGIN=https://app.pixtooth.com
 
+          PLATFORM_ADMIN_EMAILS=${{ vars.PLATFORM_ADMIN_EMAILS }}
+
           JWT_SECRET=${JWT_SECRET}
           REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
 
@@ -114,6 +116,12 @@ jobs:
 
           ENABLE_TELEMETRY=false
           AI_ANALYSIS_ENABLED=false
+
+          PUBLIC_WEB_ORIGIN=${{ vars.PUBLIC_WEB_ORIGIN || 'https://app.pixtooth.com' }}
+          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET=${{ secrets.STRIPE_WEBHOOK_SECRET }}
+          STRIPE_PRICE_MONTHLY=${{ vars.STRIPE_PRICE_MONTHLY }}
+          STRIPE_PRICE_YEARLY=${{ vars.STRIPE_PRICE_YEARLY }}
           ENVEOF"
 
       - name: Bootstrap VPS and activate release

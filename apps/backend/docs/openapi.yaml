@@ -26,6 +26,45 @@ components:
         error:
           type: string
 
+    AdminAccount:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - status
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        status:
+          type: string
+          enum: [active, disabled]
+        subscriptionPlan:
+          type: string
+        createdAt:
+          type: [string, 'null']
+          format: date-time
+        authProviders:
+          type: array
+          items:
+            type: string
+        googleLinked:
+          type: boolean
+
+    AdminAccountStatus:
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: [active, disabled]
+
     ClinicInvitation:
       type: object
       required:
@@ -104,6 +143,59 @@ components:
         ownerMedicId:
           type: string
 
+    BillingStatus:
+      type: object
+      required:
+        - enabled
+        - provider
+        - plan
+        - status
+        - licensed
+        - prices
+        - currency
+        - portalAvailable
+      properties:
+        enabled:
+          type: boolean
+          description: False when the deployment has no complete Stripe configuration.
+        provider:
+          type: string
+          enum: [stripe]
+        plan:
+          type: string
+          enum: [free, pro]
+        status:
+          type: string
+          enum: [inactive, active, trialing, past_due, unpaid, canceled, paused, incomplete]
+        licensed:
+          type: boolean
+          description: True for an active or trialing subscription.
+        interval:
+          type: [string, 'null']
+          enum: [month, year, null]
+        currentPeriodEnd:
+          type: [string, 'null']
+          format: date-time
+        cancelAtPeriodEnd:
+          type: boolean
+        prices:
+          type: object
+          required:
+            - month
+            - year
+          properties:
+            month:
+              type: number
+              example: 30
+            year:
+              type: number
+              example: 300
+        currency:
+          type: string
+          example: usd
+        portalAvailable:
+          type: boolean
+
 
 paths:
   /health:
@@ -155,6 +247,22 @@ paths:
                     properties:
                       configured:
                         type: boolean
+                  billing:
+                    type: object
+                    properties:
+                      configured:
+                        type: boolean
+                      provider:
+                        type: string
+                      prices:
+                        type: object
+                        properties:
+                          month:
+                            type: number
+                          year:
+                            type: number
+                      currency:
+                        type: string
                   ai:
                     type: object
                   auth:
@@ -193,6 +301,104 @@ paths:
                     type: [string, 'null']
         '401':
           description: Missing or invalid session
+
+  /api/billing/status:
+    get:
+      summary: Read the license state of the authenticated account
+      description: >
+        The license covers unlimited patients in the account's personal workspace and
+        removes the 5-patient cap for members of the workspaces it owns. Members keep
+        the cap in their own personal workspaces.
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Current plan, Stripe status and the available prices
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillingStatus'
+        '401':
+          description: Missing or invalid session
+
+  /api/billing/checkout:
+    post:
+      summary: Start a Stripe Checkout session for the license
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - interval
+              properties:
+                interval:
+                  type: string
+                  enum: [month, year]
+      responses:
+        '200':
+          description: Hosted Stripe Checkout URL
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - url
+                properties:
+                  url:
+                    type: string
+                    format: uri
+        '400':
+          description: Unknown interval
+        '401':
+          description: Missing or invalid session
+        '409':
+          description: The account already has an active or pending subscription
+        '503':
+          description: Stripe is not configured on this deployment
+
+  /api/billing/portal:
+    post:
+      summary: Open the Stripe billing portal
+      security:
+        - ApiKeyAuth: []
+      responses:
+        '200':
+          description: Hosted Stripe billing portal URL
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - url
+                properties:
+                  url:
+                    type: string
+                    format: uri
+        '400':
+          description: The account has no Stripe customer yet
+        '401':
+          description: Missing or invalid session
+        '503':
+          description: Stripe is not configured on this deployment
+
+  /api/billing/webhook:
+    post:
+      summary: Receive Stripe subscription events
+      description: >
+        Called by Stripe only. The signature in the `stripe-signature` header is
+        verified against the raw request body; the subscription status here is the
+        source of truth for the license.
+      responses:
+        '200':
+          description: Event accepted
+        '400':
+          description: Missing or invalid signature
+        '503':
+          description: Stripe is not configured on this deployment
 
   /api/clinics:
     post:
@@ -433,6 +639,124 @@ paths:
       responses:
         '204':
           description: Patient deleted
+
+  /api/admin/accounts:
+    get:
+      summary: List accounts for the admin app
+      description: >-
+        Requires an authenticated account whose e-mail is listed in
+        PLATFORM_ADMIN_EMAILS. Credential columns never appear in the response.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Case-insensitive match on name or e-mail.
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [active, disabled]
+      responses:
+        '200':
+          description: Account summaries, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AdminAccount'
+        '401':
+          description: Missing or invalid session
+        '403':
+          description: The account is not a platform administrator
+
+  /api/admin/accounts/{id}:
+    get:
+      summary: Read one account
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Account summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAccount'
+        '401':
+          description: Missing or invalid session
+        '403':
+          description: The account is not a platform administrator
+        '404':
+          description: Account not found
+
+    patch:
+      summary: Enable or disable an account
+      description: Disabling revokes every refresh token for that account.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAccountStatus'
+      responses:
+        '200':
+          description: Updated account
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminAccount'
+        '400':
+          description: Invalid status, or an attempt to disable the signed-in administrator
+        '401':
+          description: Missing or invalid session
+        '403':
+          description: The account is not a platform administrator
+        '404':
+          description: Account not found
+
+    delete:
+      summary: Delete an account and its patient data
+      description: >-
+        Removes the account, its patients and its clinic memberships. An owned clinic
+        with other active members needs an ownership transfer first.
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Account deleted
+        '400':
+          description: An attempt to delete the signed-in administrator
+        '401':
+          description: Missing or invalid session
+        '403':
+          description: The account is not a platform administrator
+        '404':
+          description: Account not found
+        '409':
+          description: Ownership transfer required before deleting an owned clinic
 
   /api/auth/forgot-password:
     post:

@@ -6,7 +6,7 @@ import { AnalyticsAdapter } from '../core/analytics/adapters/AnalyticsAdapter';
 const CONFIGURED_API_URL = import.meta.env.VITE_API_URL;
 const API_ORIGIN = CONFIGURED_API_URL === 'self'
     ? ''
-    : (CONFIGURED_API_URL || 'http://localhost:3001');
+    : (CONFIGURED_API_URL || 'http://localhost:3100');
 
 const BASE_URL = `${API_ORIGIN}/api`;
 
@@ -30,6 +30,12 @@ const MOCK_CONFIG = {
         detail: 'no email provider configured',
     },
     google: { configured: false },
+    billing: {
+        configured: false,
+        provider: 'stripe',
+        prices: { month: 30, year: 300 },
+        currency: 'usd',
+    },
     ai: { enabled: false, inferenceConfigured: false },
     auth: {
         jwtSecretConfigured: true,
@@ -135,6 +141,21 @@ const apiClient = async (endpoint, { body, ...customConfig } = {}) => {
 
         if (endpoint === '/config') {
             return MOCK_CONFIG;
+        }
+        if (endpoint === '/billing/status') {
+            return {
+                enabled: false,
+                provider: 'stripe',
+                plan: 'free',
+                status: 'inactive',
+                licensed: false,
+                prices: { month: 30, year: 300 },
+                currency: 'usd',
+                portalAvailable: false,
+            };
+        }
+        if (endpoint === '/billing/checkout' || endpoint === '/billing/portal') {
+            throw new Error('Billing is not configured on this deployment');
         }
         if (endpoint === '/config/test-email') {
             return {
